@@ -1,0 +1,51 @@
+# Dashboard Gestione Macelleria - Dipendenze Python
+# Creato da Ezio Camporeale
+
+# Core Framework
+streamlit>=1.28.0
+streamlit-authenticator>=0.2.3
+
+# Database
+sqlite3
+
+# Data Analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualization
+plotly>=5.15.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Authentication & Security
+bcrypt>=4.0.0
+python-jose>=3.3.0
+passlib>=1.7.4
+
+# File Handling
+openpyxl>=3.1.0
+xlsxwriter>=3.1.0
+reportlab>=4.0.0
+
+# Date & Time
+python-dateutil>=2.8.0
+
+# Email & Notifications
+smtplib
+email-validator>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+pathlib
+logging
+
+# Development
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Optional: Advanced Features
+# requests>=2.31.0  # Per API esterne
+# beautifulsoup4>=4.12.0  # Per web scraping
+# pillow>=10.0.0  # Per gestione immagini
+
