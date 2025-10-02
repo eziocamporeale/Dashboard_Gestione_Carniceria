@@ -61,15 +61,15 @@ INSERT INTO products (id, name, code, description, category_id, unit_id, cost_pr
 ON CONFLICT (id) DO NOTHING;
 
 -- Inserimento fornitori di esempio
-INSERT INTO suppliers (id, name, contact_person, phone, email, address, total_amount_spent, transactions_count, is_active) VALUES 
+INSERT INTO suppliers (id, name, contact_person, phone, contact_email, address, total_amount, transactions_count, is_active) VALUES 
 ('00000000-0000-0000-0000-000000000601', 'Proveedor Carnes Premium', 'Juan Pérez', '+54 11 1234-5678', 'juan@carnespremium.com', 'Av. Corrientes 1234, Buenos Aires', 15000.00, 25, true),
 ('00000000-0000-0000-0000-000000000602', 'Distribuidora Aves', 'María González', '+54 11 8765-4321', 'maria@aves.com', 'Av. Santa Fe 5678, Buenos Aires', 8500.00, 15, true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Inserimento dipendenti di esempio
-INSERT INTO employees (id, first_name, last_name, dni, phone, email, position, salary, hire_date, is_active) VALUES 
-('00000000-0000-0000-0000-000000000701', 'Carlos', 'Rodríguez', '12345678', '+54 11 1111-1111', 'carlos@carniceria.com', 'Vendedor', 80000.00, '2024-01-15', true),
-('00000000-0000-0000-0000-000000000702', 'Ana', 'Martínez', '87654321', '+54 11 2222-2222', 'ana@carniceria.com', 'Cajera', 75000.00, '2024-02-01', true)
+INSERT INTO employees (id, first_name, last_name, phone, email, position, department, salary, hire_date, is_active) VALUES 
+('00000000-0000-0000-0000-000000000701', 'Carlos', 'Rodríguez', '+54 11 1111-1111', 'carlos@carniceria.com', 'Vendedor', 'Ventas', 80000.00, '2024-01-15', true),
+('00000000-0000-0000-0000-000000000702', 'Ana', 'Martínez', '+54 11 2222-2222', 'ana@carniceria.com', 'Cajera', 'Atención al Cliente', 75000.00, '2024-02-01', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- ==================== VERIFICA DATI ====================
