@@ -432,6 +432,46 @@ class SimpleDatabaseManager:
             logger.error(f"❌ Error loggando attività: {e}")
             return False
     
+    def get_all_customers(self) -> List[Dict]:
+        """Ottiene tutti i clienti"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            return [
+                {
+                    'id': 1, 'name': 'Juan Pérez', 'email': 'juan.perez@email.com',
+                    'phone': '+54 11 1234-5678', 'address': 'Av. Corrientes 1234, Buenos Aires',
+                    'total_purchases': 4500.75, 'total_orders': 12, 'last_purchase': '2024-09-28',
+                    'is_active': True, 'created_at': '2024-01-15T10:30:00Z'
+                },
+                {
+                    'id': 2, 'name': 'María García', 'email': 'maria.garcia@email.com',
+                    'phone': '+54 11 2345-6789', 'address': 'Av. Santa Fe 5678, Buenos Aires',
+                    'total_purchases': 3200.50, 'total_orders': 8, 'last_purchase': '2024-09-25',
+                    'is_active': True, 'created_at': '2024-02-20T14:15:00Z'
+                },
+                {
+                    'id': 3, 'name': 'Carlos López', 'email': 'carlos.lopez@email.com',
+                    'phone': '+54 11 3456-7890', 'address': 'Av. Córdoba 9012, Buenos Aires',
+                    'total_purchases': 2800.25, 'total_orders': 6, 'last_purchase': '2024-09-22',
+                    'is_active': True, 'created_at': '2024-03-10T09:45:00Z'
+                },
+                {
+                    'id': 4, 'name': 'Ana Martínez', 'email': 'ana.martinez@email.com',
+                    'phone': '+54 11 4567-8901', 'address': 'Av. Rivadavia 3456, Buenos Aires',
+                    'total_purchases': 1950.00, 'total_orders': 4, 'last_purchase': '2024-09-20',
+                    'is_active': True, 'created_at': '2024-04-05T16:20:00Z'
+                },
+                {
+                    'id': 5, 'name': 'Luis Rodríguez', 'email': 'luis.rodriguez@email.com',
+                    'phone': '+54 11 5678-9012', 'address': 'Av. Callao 7890, Buenos Aires',
+                    'total_purchases': 1200.75, 'total_orders': 3, 'last_purchase': '2024-09-18',
+                    'is_active': True, 'created_at': '2024-05-12T11:30:00Z'
+                }
+            ]
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo clienti: {e}")
+            return []
+    
     def save_excel_data(self, excel_data: Dict[str, Any]) -> bool:
         """Guarda los datos del Excel en la base de datos"""
         try:

@@ -334,6 +334,15 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo tutti i fornitori: {e}")
             return []
     
+    def get_all_customers(self) -> List[Dict]:
+        """Ottiene tutti i clienti"""
+        try:
+            manager = self._get_manager()
+            return manager.get_all_customers()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo tutti i clienti: {e}")
+            return []
+    
     # ==================== METODI UTILITÀ ====================
     
     def get_database_info(self) -> Dict[str, Any]:
