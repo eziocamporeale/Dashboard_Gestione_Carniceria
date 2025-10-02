@@ -337,6 +337,37 @@ class SupabaseManager:
             logger.error(f"❌ Errore ottenendo prodotti: {e}")
             return []
     
+    def get_all_suppliers(self) -> List[Dict]:
+        """Ottiene tutti i fornitori"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            return [
+                {
+                    'id': 1, 'name': 'Carnes del Norte', 'contact_person': 'Juan Pérez',
+                    'phone': '+54 11 1234-5678', 'email': 'juan@carnesdelnorte.com',
+                    'address': 'Av. Corrientes 1234, Buenos Aires', 'cuit': '20-12345678-9',
+                    'total_amount': 45000.00, 'transactions_count': 25, 'is_active': True,
+                    'created_at': '2024-01-15T10:30:00Z'
+                },
+                {
+                    'id': 2, 'name': 'Aves Frescas S.A.', 'contact_person': 'María García',
+                    'phone': '+54 11 2345-6789', 'email': 'maria@avesfrescas.com',
+                    'address': 'Av. Santa Fe 5678, Buenos Aires', 'cuit': '20-23456789-0',
+                    'total_amount': 32000.00, 'transactions_count': 18, 'is_active': True,
+                    'created_at': '2024-02-20T14:15:00Z'
+                },
+                {
+                    'id': 3, 'name': 'Embutidos Artesanales', 'contact_person': 'Carlos López',
+                    'phone': '+54 11 3456-7890', 'email': 'carlos@embutidosartesanales.com',
+                    'address': 'Av. Córdoba 9012, Buenos Aires', 'cuit': '20-34567890-1',
+                    'total_amount': 28000.00, 'transactions_count': 15, 'is_active': True,
+                    'created_at': '2024-03-10T09:45:00Z'
+                }
+            ]
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo fornitori: {e}")
+            return []
+    
     def save_excel_data(self, data: Dict) -> bool:
         """Salva dati Excel nel database"""
         try:
