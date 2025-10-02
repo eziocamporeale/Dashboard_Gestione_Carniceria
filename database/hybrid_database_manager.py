@@ -29,7 +29,7 @@ class HybridDatabaseManager:
         """Inizializza il gestore ibrido"""
         self.supabase_manager = SupabaseManager()
         self.sqlite_manager = get_sqlite_manager()
-        self.use_supabase = self.supabase_manager.supabase is not None
+        self.use_supabase = self.supabase_manager.is_connected()
         
         if self.use_supabase:
             logger.info("✅ Usando Supabase come database principale")
@@ -339,7 +339,7 @@ class HybridDatabaseManager:
     def authenticate_user(self, username: str, password: str):
         """Autentica un utente"""
         try:
-            if self.use_supabase and self.supabase_manager.supabase:
+            if self.use_supabase and self.supabase_manager.is_connected():
                 return self.supabase_manager.authenticate_user(username, password)
             else:
                 return self.sqlite_manager.authenticate_user(username, password)
