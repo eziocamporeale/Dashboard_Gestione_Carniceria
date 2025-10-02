@@ -293,6 +293,18 @@ class SupabaseManager:
             logger.error(f"❌ Errore loggando attività: {e}")
             return None
     
+    def rpc(self, function_name: str, params: Dict[str, Any]) -> Any:
+        """Chiama una funzione RPC (Remote Procedure Call) su Supabase"""
+        if not self.is_connected():
+            logger.error("❌ Supabase non connesso")
+            return None
+        try:
+            response = self.client.rpc(function_name, params).execute()
+            return response.data
+        except Exception as e:
+            logger.error(f"❌ Errore chiamata RPC '{function_name}': {e}")
+            return None
+    
     # ==================== METODI UTILITÀ ====================
     
     def get_table_info(self, table: str) -> Dict:

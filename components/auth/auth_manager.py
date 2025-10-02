@@ -298,9 +298,12 @@ class AuthManager:
     def _save_session(self, user_data: Dict[str, Any]):
         """Salva i dati della sessione"""
         try:
+            # Gestisci sia username che email per compatibilità
+            username = user_data.get('username', user_data.get('email', 'unknown'))
+            
             session_data = {
                 'user_id': user_data['id'],
-                'username': user_data['username'],
+                'username': username,
                 'login_time': datetime.now().isoformat(),
                 'expires_at': (datetime.now() + timedelta(hours=8)).isoformat()
             }
