@@ -353,7 +353,13 @@ class HybridDatabaseManager:
         """Autentica un utente"""
         try:
             if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
-                return self.supabase_manager.authenticate_user(username, password)
+                # Per Supabase, usa email invece di username
+                # Se username è "admin", convertilo in email
+                if username == "admin":
+                    email = "admin@carniceria.com"
+                else:
+                    email = username  # Assume che sia già un email
+                return self.supabase_manager.authenticate_user(email, password)
             else:
                 return self.sqlite_manager.authenticate_user(username, password)
         except Exception as e:
