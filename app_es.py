@@ -14,6 +14,9 @@ import sys
 from pathlib import Path
 import logging
 
+# Assicurati che pandas sia disponibile globalmente
+pd = __import__('pandas')
+
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
