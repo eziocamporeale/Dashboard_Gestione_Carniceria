@@ -23,7 +23,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Importar módulos del proyecto
-from config_es import APP_NAME, APP_VERSION, APP_AUTHOR, STREAMLIT_CONFIG
+from config_es import APP_NAME, APP_VERSION, APP_AUTHOR
 from database.hybrid_database_manager import get_hybrid_manager
 from components.auth.auth_manager import (
     get_auth_manager, require_auth, require_permission, 
