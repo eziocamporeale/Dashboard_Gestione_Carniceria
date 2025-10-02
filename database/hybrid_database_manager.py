@@ -15,7 +15,7 @@ from pathlib import Path
 current_dir = Path(__file__).parent.parent
 sys.path.append(str(current_dir))
 
-from database.supabase_manager import get_supabase_manager
+from database.supabase_manager import SupabaseManager
 from database.database_manager_simple import get_db_manager as get_sqlite_manager
 
 # Configurazione logging
@@ -27,9 +27,9 @@ class HybridDatabaseManager:
     
     def __init__(self):
         """Inizializza il gestore ibrido"""
-        self.supabase_manager = get_supabase_manager()
+        self.supabase_manager = SupabaseManager()
         self.sqlite_manager = get_sqlite_manager()
-        self.use_supabase = self.supabase_manager.is_connected()
+        self.use_supabase = self.supabase_manager.supabase is not None
         
         if self.use_supabase:
             logger.info("✅ Usando Supabase come database principale")
@@ -336,7 +336,19 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore test connessione: {e}")
             return False
 
-# Instanza globale
+    def authenticate_user(self, username: str, password: str):
+        """Autentica un utente"""
+        try:
+            if self.use_supabase and self.supabase_manager.supabase:
+                return self.supabase_manager.authenticate_user(username, password)
+            else:
+                return self.sqlite_manager.authenticate_user(username, password)
+        except Exception as e:
+            logger.error(f"❌ Errore durante autenticazione: {e}")
+            return None
+
+# Istanza globale
+
 _hybrid_manager = None
 
 def get_hybrid_manager() -> HybridDatabaseManager:
