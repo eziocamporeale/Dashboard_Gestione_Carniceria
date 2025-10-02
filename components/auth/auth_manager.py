@@ -237,14 +237,17 @@ class AuthManager:
         if not user:
             return {}
         
+        # Gestisci sia username che email per compatibilità
+        username = user.get('username', user.get('email', 'unknown'))
+        
         return {
             'id': user['id'],
-            'username': user['username'],
-            'email': user['email'],
-            'first_name': user['first_name'],
-            'last_name': user['last_name'],
-            'full_name': f"{user['first_name']} {user['last_name']}",
-            'role_name': user['role_name'],
+            'username': username,
+            'email': user.get('email', ''),
+            'first_name': user.get('first_name', ''),
+            'last_name': user.get('last_name', ''),
+            'full_name': f"{user.get('first_name', '')} {user.get('last_name', '')}",
+            'role_name': user.get('role_name', ''),
             'is_admin': user.get('is_admin', False),
             'permissions': user.get('permissions', []),
             'login_time': self._get_session_login_time()
