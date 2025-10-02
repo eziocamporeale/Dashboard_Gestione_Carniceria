@@ -23,7 +23,7 @@ $$ language 'plpgsql';
 
 -- Tabella ruoli utente
 CREATE TABLE IF NOT EXISTS roles (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(50) NOT NULL UNIQUE,
     description TEXT,
     permissions JSONB DEFAULT '{}',
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    role_id INTEGER REFERENCES roles(id),
+    role_id UUID REFERENCES roles(id),
     is_active BOOLEAN DEFAULT true,
     last_login TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Tabella categorie prodotti
 CREATE TABLE IF NOT EXISTS product_categories (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     color VARCHAR(7) DEFAULT '#6C757D',
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS product_categories (
 
 -- Tabella unità di misura
 CREATE TABLE IF NOT EXISTS units_of_measure (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(50) NOT NULL UNIQUE,
     symbol VARCHAR(10) NOT NULL,
     description TEXT,
@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(255) NOT NULL,
     code VARCHAR(50) UNIQUE,
     description TEXT,
-    category_id INTEGER REFERENCES product_categories(id),
-    unit_id INTEGER REFERENCES units_of_measure(id),
+    category_id UUID REFERENCES product_categories(id),
+    unit_id UUID REFERENCES units_of_measure(id),
     cost_price DECIMAL(10,2) DEFAULT 0,
     selling_price DECIMAL(10,2) DEFAULT 0,
     current_stock DECIMAL(10,3) DEFAULT 0,
@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS monthly_summary (
 
 -- Tabella impostazioni sistema
 CREATE TABLE IF NOT EXISTS system_settings (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     key VARCHAR(100) NOT NULL UNIQUE,
     value TEXT,
     description TEXT,
@@ -264,32 +264,32 @@ CREATE INDEX IF NOT EXISTS idx_monthly_summary_month ON monthly_summary(month);
 
 -- ==================== INITIAL DATA ====================
 -- Inserimento dati iniziali
-INSERT INTO roles (name, description, permissions) VALUES 
-('admin', 'Administrador completo', '{"all": true}'),
-('manager', 'Gerente de tienda', '{"sales": true, "inventory": true, "reports": true}'),
-('employee', 'Empleado', '{"sales": true, "inventory": false, "reports": false}'),
-('viewer', 'Solo lectura', '{"reports": true}');
+INSERT INTO roles (id, name, description, permissions) VALUES 
+('00000000-0000-0000-0000-000000000001', 'admin', 'Administrador completo', '{"all": true}'),
+('00000000-0000-0000-0000-000000000002', 'manager', 'Gerente de tienda', '{"sales": true, "inventory": true, "reports": true}'),
+('00000000-0000-0000-0000-000000000003', 'employee', 'Empleado', '{"sales": true, "inventory": false, "reports": false}'),
+('00000000-0000-0000-0000-000000000004', 'viewer', 'Solo lectura', '{"reports": true}');
 
-INSERT INTO product_categories (name, description, color) VALUES 
-('Carnes', 'Carnes frescas', '#DC3545'),
-('Aves', 'Pollo y otras aves', '#FFC107'),
-('Embutidos', 'Embutidos y fiambres', '#6F42C1'),
-('Pescados', 'Pescados frescos', '#17A2B8'),
-('Verduras', 'Verduras frescas', '#28A745'),
-('Otros', 'Otros productos', '#6C757D');
+INSERT INTO product_categories (id, name, description, color) VALUES 
+('00000000-0000-0000-0000-000000000101', 'Carnes', 'Carnes frescas', '#DC3545'),
+('00000000-0000-0000-0000-000000000102', 'Aves', 'Pollo y otras aves', '#FFC107'),
+('00000000-0000-0000-0000-000000000103', 'Embutidos', 'Embutidos y fiambres', '#6F42C1'),
+('00000000-0000-0000-0000-000000000104', 'Pescados', 'Pescados frescos', '#17A2B8'),
+('00000000-0000-0000-0000-000000000105', 'Verduras', 'Verduras frescas', '#28A745'),
+('00000000-0000-0000-0000-000000000106', 'Otros', 'Otros productos', '#6C757D');
 
-INSERT INTO units_of_measure (name, symbol, description) VALUES 
-('Kilogramo', 'kg', 'Peso en kilogramos'),
-('Gramo', 'g', 'Peso en gramos'),
-('Unidad', 'un', 'Cantidad en unidades'),
-('Libra', 'lb', 'Peso en libras'),
-('Onza', 'oz', 'Peso en onzas');
+INSERT INTO units_of_measure (id, name, symbol, description) VALUES 
+('00000000-0000-0000-0000-000000000201', 'Kilogramo', 'kg', 'Peso en kilogramos'),
+('00000000-0000-0000-0000-000000000202', 'Gramo', 'g', 'Peso en gramos'),
+('00000000-0000-0000-0000-000000000203', 'Unidad', 'un', 'Cantidad en unidades'),
+('00000000-0000-0000-0000-000000000204', 'Libra', 'lb', 'Peso en libras'),
+('00000000-0000-0000-0000-000000000205', 'Onza', 'oz', 'Peso en onzas');
 
-INSERT INTO system_settings (key, value, description) VALUES 
-('app_name', 'Dashboard Gestión Carnicería', 'Nombre de la aplicación'),
-('app_version', '2.0.0', 'Versión de la aplicación'),
-('currency', 'ARS', 'Moneda principal'),
-('timezone', 'America/Argentina/Buenos_Aires', 'Zona horaria');
+INSERT INTO system_settings (id, key, value, description) VALUES 
+('00000000-0000-0000-0000-000000000301', 'app_name', 'Dashboard Gestión Carnicería', 'Nombre de la aplicación'),
+('00000000-0000-0000-0000-000000000302', 'app_version', '2.0.0', 'Versión de la aplicación'),
+('00000000-0000-0000-0000-000000000303', 'currency', 'ARS', 'Moneda principal'),
+('00000000-0000-0000-0000-000000000304', 'timezone', 'America/Argentina/Buenos_Aires', 'Zona horaria');
 
 -- ==================== COMMENTS ====================
 COMMENT ON TABLE roles IS 'Tabla de roles de usuario del sistema';
