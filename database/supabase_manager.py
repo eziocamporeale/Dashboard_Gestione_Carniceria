@@ -278,6 +278,65 @@ class SupabaseManager:
             logger.error(f"❌ Errore ottenendo vendite giornaliere: {e}")
             return []
     
+    def get_product_categories(self) -> List[Dict]:
+        """Ottiene categorie di prodotti"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            return [
+                {'id': 1, 'name': 'Carnes', 'description': 'Carnes frescas', 'color': '#DC3545'},
+                {'id': 2, 'name': 'Aves', 'description': 'Pollo y otras aves', 'color': '#FFC107'},
+                {'id': 3, 'name': 'Embutidos', 'description': 'Embutidos y fiambres', 'color': '#6F42C1'},
+                {'id': 4, 'name': 'Pescados', 'description': 'Pescados frescos', 'color': '#17A2B8'},
+                {'id': 5, 'name': 'Verduras', 'description': 'Verduras frescas', 'color': '#28A745'},
+                {'id': 6, 'name': 'Otros', 'description': 'Otros productos', 'color': '#6C757D'}
+            ]
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo categorie prodotti: {e}")
+            return []
+    
+    def get_units_of_measure(self) -> List[Dict]:
+        """Ottiene unità di misura"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            return [
+                {'id': 1, 'name': 'Kilogramo', 'symbol': 'kg', 'description': 'Peso en kilogramos'},
+                {'id': 2, 'name': 'Gramo', 'symbol': 'g', 'description': 'Peso en gramos'},
+                {'id': 3, 'name': 'Unidad', 'symbol': 'un', 'description': 'Cantidad en unidades'},
+                {'id': 4, 'name': 'Libra', 'symbol': 'lb', 'description': 'Peso en libras'},
+                {'id': 5, 'name': 'Onza', 'symbol': 'oz', 'description': 'Peso en onzas'}
+            ]
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo unità di misura: {e}")
+            return []
+    
+    def get_all_products(self) -> List[Dict]:
+        """Ottiene tutti i prodotti"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            return [
+                {
+                    'id': 1, 'name': 'Carne de Res', 'code': 'BOV001', 'description': 'Carne de res fresca',
+                    'category_id': 1, 'category_name': 'Carnes', 'unit_id': 1, 'unit_name': 'Kilogramo',
+                    'cost_price': 15.50, 'selling_price': 25.00, 'current_stock': 50.0, 'min_stock_level': 10.0,
+                    'expiry_date': '2024-10-15', 'supplier_id': 1, 'is_active': True
+                },
+                {
+                    'id': 2, 'name': 'Pollo', 'code': 'AVE001', 'description': 'Pollo fresco',
+                    'category_id': 2, 'category_name': 'Aves', 'unit_id': 1, 'unit_name': 'Kilogramo',
+                    'cost_price': 8.50, 'selling_price': 12.00, 'current_stock': 30.0, 'min_stock_level': 5.0,
+                    'expiry_date': '2024-10-10', 'supplier_id': 2, 'is_active': True
+                },
+                {
+                    'id': 3, 'name': 'Chorizo', 'code': 'EMB001', 'description': 'Chorizo artesanal',
+                    'category_id': 3, 'category_name': 'Embutidos', 'unit_id': 3, 'unit_name': 'Unidad',
+                    'cost_price': 5.00, 'selling_price': 8.50, 'current_stock': 20.0, 'min_stock_level': 3.0,
+                    'expiry_date': '2024-10-20', 'supplier_id': 3, 'is_active': True
+                }
+            ]
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo prodotti: {e}")
+            return []
+    
     def save_excel_data(self, data: Dict) -> bool:
         """Salva dati Excel nel database"""
         try:
