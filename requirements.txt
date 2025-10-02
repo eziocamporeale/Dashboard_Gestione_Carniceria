@@ -5,8 +5,9 @@
 streamlit>=1.28.0
 streamlit-authenticator>=0.2.3
 
-# Database
-sqlite3
+# Supabase Database
+supabase>=2.0.0
+postgrest>=0.13.0
 
 # Data Analysis
 pandas>=2.0.0
@@ -31,13 +32,10 @@ reportlab>=4.0.0
 python-dateutil>=2.8.0
 
 # Email & Notifications
-smtplib
 email-validator>=2.0.0
 
 # Utilities
 python-dotenv>=1.0.0
-pathlib
-logging
 
 # Development
 pytest>=7.4.0
