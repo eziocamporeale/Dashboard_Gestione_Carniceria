@@ -27,7 +27,6 @@ font = "sans serif"
 [logger]
 # Logger configuration
 level = "info"
-messageFormat = "%(asctime)s.%(msecs)03d %(color)s%(levelname)s%(color_reset)s from %(name)s %(funcName)s(): %(message)s"
 
 [client]
 # Client configuration
@@ -37,9 +36,3 @@ toolbarMode = "minimal"
 [runner]
 # Runner configuration
 magicEnabled = true
-installTracer = false
-fixMatplotlib = true
-
-[deprecation]
-# Deprecation warnings
-showPyplotGlobalUse = false

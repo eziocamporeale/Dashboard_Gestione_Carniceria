@@ -11,7 +11,7 @@ import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 import logging
-from database.database_manager import get_db_manager
+from database.hybrid_database_manager import get_hybrid_manager
 
 # Configura logging
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class AuthManager:
     """Manager per l'autenticazione e autorizzazione"""
     
     def __init__(self):
-        self.db = get_db_manager()
+        self.db = get_hybrid_manager()
         self.session_key = "macelleria_auth_session"
         self.user_key = "macelleria_user"
     
