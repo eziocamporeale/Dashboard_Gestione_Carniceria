@@ -29,7 +29,8 @@ env.bak/
 venv.bak/
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
+.streamlit/secrets/
 
 # Database
 *.db
