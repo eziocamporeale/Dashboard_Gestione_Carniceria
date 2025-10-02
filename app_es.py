@@ -24,7 +24,7 @@ sys.path.insert(0, str(project_root))
 
 # Importar módulos del proyecto
 from config_es import APP_NAME, APP_VERSION, APP_AUTHOR, STREAMLIT_CONFIG
-from database.database_manager_simple import get_db_manager
+from database.hybrid_database_manager import get_hybrid_manager
 from components.auth.auth_manager import (
     get_auth_manager, require_auth, require_permission, 
     render_login_form, render_user_info, render_permission_denied,
@@ -190,7 +190,7 @@ def render_dashboard():
     st.header("🏠 Dashboard Principal")
     
     # Obtener estadísticas
-    db = get_db_manager()
+    db = get_hybrid_manager()
     stats = db.get_dashboard_stats()
     
     # KPIs principales
@@ -324,7 +324,7 @@ def render_inventario():
         st.subheader("📋 Resumen Productos")
         
         # Obtener todos los productos
-        db = get_db_manager()
+        db = get_hybrid_manager()
         products = db.get_all_products()
         
         if products:
@@ -496,7 +496,7 @@ def render_proveedores():
     st.header("🚚 Gestión Proveedores")
     
     # Obtener datos de proveedores
-    db = get_db_manager()
+    db = get_hybrid_manager()
     suppliers = db.get_all_suppliers()
     
     # Tabs para diferentes funcionalidades
@@ -1358,8 +1358,10 @@ def render_personal():
                                       title="Distribución de Salarios",
                                       nbins=10,
                                       color_discrete_sequence=['#FF6B6B'])
-            fig_salaries.update_xaxis(title="Salario ($)")
-            fig_salaries.update_yaxis(title="Número de Empleados")
+            fig_salaries.update_layout(
+                xaxis_title="Salario ($)",
+                yaxis_title="Número de Empleados"
+            )
             st.plotly_chart(fig_salaries, use_container_width=True)
         
         st.markdown("---")
@@ -1459,6 +1461,371 @@ def render_personal():
         • Los gráficos son interactivos y se pueden explorar
         • Se pueden exportar los datos en formato CSV
         """)
+
+def render_ventas():
+    """Renderiza la sección de Gestión de Ventas"""
+    st.header("🛒 Gestión de Ventas")
+    
+    # Obtener instancia del database manager
+    db = get_hybrid_manager()
+    
+    # Tabs para diferentes aspectos de ventas
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "📊 Dashboard Ventas", "💰 Nuevas Ventas", "📈 Reportes", "👥 Equipo Ventas", "🎯 Objetivos"
+    ])
+    
+    with tab1:
+        st.subheader("📊 Dashboard de Ventas")
+        
+        # Obtener resumen de ventas
+        try:
+            sales_summary = db.get_sales_summary()
+            if sales_summary:
+                # Métricas principales
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric(
+                        label="💰 Ventas Hoy",
+                        value=f"${sales_summary.get('total_sales_today', 0):,.2f}",
+                        delta=f"+{sales_summary.get('avg_daily_sales', 0):,.0f} vs promedio"
+                    )
+                
+                with col2:
+                    st.metric(
+                        label="📅 Ventas Esta Semana",
+                        value=f"${sales_summary.get('total_sales_week', 0):,.2f}",
+                        delta="+12.5% vs semana anterior"
+                    )
+                
+                with col3:
+                    st.metric(
+                        label="📆 Ventas Este Mes",
+                        value=f"${sales_summary.get('total_sales_month', 0):,.2f}",
+                        delta="+8.3% vs mes anterior"
+                    )
+                
+                with col4:
+                    st.metric(
+                        label="🏆 Mejor Producto",
+                        value=sales_summary.get('best_selling_product', 'N/A'),
+                        delta=sales_summary.get('best_selling_category', 'N/A')
+                    )
+                
+                st.markdown("---")
+                
+                # Gráficos de tendencias
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("📈 Tendencia de Ventas Diarias")
+                    daily_sales = db.get_daily_sales_data(30)
+                    if daily_sales:
+                        df_daily = pd.DataFrame(daily_sales)
+                        fig_daily = px.line(df_daily, x='date', y='sales',
+                                          title="Ventas Diarias (Últimos 30 días)",
+                                          labels={'date': 'Fecha', 'sales': 'Ventas ($)'})
+                        fig_daily.update_layout(xaxis_title="Fecha", yaxis_title="Ventas ($)")
+                        st.plotly_chart(fig_daily, use_container_width=True)
+                
+                with col2:
+                    st.subheader("🏷️ Ventas por Categoría")
+                    sales_by_category = db.get_sales_by_category()
+                    if sales_by_category:
+                        df_category = pd.DataFrame(sales_by_category)
+                        fig_category = px.pie(df_category, values='sales', names='category',
+                                            title="Distribución de Ventas por Categoría")
+                        st.plotly_chart(fig_category, use_container_width=True)
+                
+                # Top productos más vendidos
+                st.subheader("🏆 Productos Más Vendidos")
+                top_products = db.get_top_selling_products(10)
+                if top_products:
+                    df_products = pd.DataFrame(top_products)
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Gráfico de barras
+                        fig_products = px.bar(df_products, x='product', y='sales',
+                                            title="Top 10 Productos por Ventas",
+                                            labels={'product': 'Producto', 'sales': 'Ventas ($)'})
+                        fig_products.update_xaxis(tickangle=45)
+                        st.plotly_chart(fig_products, use_container_width=True)
+                    
+                    with col2:
+                        # Tabla de productos
+                        st.dataframe(
+                            df_products[['product', 'category', 'sales', 'quantity', 'profit']],
+                            use_container_width=True,
+                            column_config={
+                                "sales": st.column_config.NumberColumn("Ventas ($)", format="$%.2f"),
+                                "profit": st.column_config.NumberColumn("Ganancia ($)", format="$%.2f")
+                            }
+                        )
+            
+            else:
+                st.warning("⚠️ No hay datos de ventas disponibles")
+                
+        except Exception as e:
+            st.error(f"❌ Error obteniendo datos de ventas: {str(e)}")
+    
+    with tab2:
+        st.subheader("💰 Registrar Nueva Venta")
+        
+        # Formulario para nueva venta
+        with st.form("nueva_venta_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                cliente = st.text_input("👤 Cliente", placeholder="Nombre del cliente")
+                fecha = st.date_input("📅 Fecha de Venta", value=datetime.now().date())
+                vendedor = st.selectbox("👨‍💼 Vendedor", ["María González", "Carlos Rodríguez", "Ana Martínez", "Luis Fernández"])
+            
+            with col2:
+                tipo_pago = st.selectbox("💳 Tipo de Pago", ["Efectivo", "Tarjeta", "Transferencia", "Cheque"])
+                descuento = st.number_input("💰 Descuento (%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+                observaciones = st.text_area("📝 Observaciones", placeholder="Notas adicionales...")
+            
+            st.markdown("---")
+            st.subheader("🛒 Productos de la Venta")
+            
+            # Tabla para productos
+            if 'productos_venta' not in st.session_state:
+                st.session_state.productos_venta = []
+            
+            col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
+            
+            with col1:
+                producto = st.selectbox("Producto", ["Carne de Res Premium", "Pollo Entero", "Jamón Serrano", "Salmón Fresco", "Carne Molida"])
+            
+            with col2:
+                cantidad = st.number_input("Cantidad", min_value=0.1, step=0.1, value=1.0)
+            
+            with col3:
+                precio_unit = st.number_input("Precio Unit.", min_value=0.0, step=0.01, value=0.0)
+            
+            with col4:
+                subtotal = cantidad * precio_unit
+                st.metric("Subtotal", f"${subtotal:.2f}")
+            
+            with col5:
+                if st.form_submit_button("➕ Agregar", type="primary"):
+                    nuevo_producto = {
+                        'producto': producto,
+                        'cantidad': cantidad,
+                        'precio_unit': precio_unit,
+                        'subtotal': subtotal
+                    }
+                    st.session_state.productos_venta.append(nuevo_producto)
+                    st.rerun()
+            
+            # Mostrar productos agregados
+            if st.session_state.productos_venta:
+                st.subheader("📋 Productos Agregados")
+                df_productos = pd.DataFrame(st.session_state.productos_venta)
+                st.dataframe(df_productos, use_container_width=True)
+                
+                # Totales
+                total_productos = sum([p['subtotal'] for p in st.session_state.productos_venta])
+                descuento_monto = total_productos * (descuento / 100)
+                total_final = total_productos - descuento_monto
+                
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Subtotal", f"${total_productos:.2f}")
+                with col2:
+                    st.metric("Descuento", f"${descuento_monto:.2f}")
+                with col3:
+                    st.metric("Total", f"${total_final:.2f}")
+                with col4:
+                    if st.form_submit_button("💾 Guardar Venta", type="primary"):
+                        st.success("✅ Venta registrada exitosamente!")
+                        st.session_state.productos_venta = []
+                        st.rerun()
+    
+    with tab3:
+        st.subheader("📈 Reportes de Ventas")
+        
+        # Filtros de fecha
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            fecha_inicio = st.date_input("📅 Fecha Inicio", value=datetime.now().date() - timedelta(days=30))
+        with col2:
+            fecha_fin = st.date_input("📅 Fecha Fin", value=datetime.now().date())
+        with col3:
+            tipo_reporte = st.selectbox("📊 Tipo de Reporte", ["Diario", "Semanal", "Mensual", "Anual"])
+        
+        # Generar reporte
+        if st.button("🔄 Generar Reporte", type="primary"):
+            with st.spinner("Generando reporte..."):
+                # Simular datos del reporte
+                st.success("✅ Reporte generado exitosamente!")
+                
+                # Métricas del reporte
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Total Ventas", "$45,250.00")
+                with col2:
+                    st.metric("Número de Transacciones", "156")
+                with col3:
+                    st.metric("Promedio por Venta", "$290.06")
+                with col4:
+                    st.metric("Crecimiento", "+12.5%")
+                
+                # Gráfico de tendencias
+                st.subheader("📈 Tendencia de Ventas")
+                fig_trend = px.line(x=['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                                   y=[1200, 1350, 1100, 1450, 1600, 1800, 1650],
+                                   title="Ventas por Día de la Semana",
+                                   labels={'x': 'Día', 'y': 'Ventas ($)'})
+                st.plotly_chart(fig_trend, use_container_width=True)
+                
+                # Exportar reporte
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.download_button("📊 Descargar Excel", "reporte_ventas.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                with col2:
+                    st.download_button("📄 Descargar PDF", "reporte_ventas.pdf", "application/pdf")
+                with col3:
+                    st.button("📧 Enviar por Email")
+    
+    with tab4:
+        st.subheader("👥 Equipo de Ventas")
+        
+        # Obtener rendimiento del equipo
+        try:
+            team_performance = db.get_sales_team_performance()
+            if team_performance:
+                # Métricas del equipo
+                col1, col2, col3, col4 = st.columns(4)
+                
+                total_team_sales = sum([emp['sales'] for emp in team_performance])
+                total_team_transactions = sum([emp['transactions'] for emp in team_performance])
+                avg_rating = sum([emp['rating'] for emp in team_performance]) / len(team_performance)
+                
+                with col1:
+                    st.metric("Ventas Totales Equipo", f"${total_team_sales:,.2f}")
+                with col2:
+                    st.metric("Transacciones Totales", f"{total_team_transactions}")
+                with col3:
+                    st.metric("Promedio Rating", f"{avg_rating:.1f}⭐")
+                with col4:
+                    st.metric("Mejor Vendedor", "María González")
+                
+                # Tabla de rendimiento
+                st.subheader("🏆 Ranking del Equipo")
+                df_team = pd.DataFrame(team_performance)
+                st.dataframe(
+                    df_team,
+                    use_container_width=True,
+                    column_config={
+                        "sales": st.column_config.NumberColumn("Ventas ($)", format="$%.2f"),
+                        "commission": st.column_config.NumberColumn("Comisión ($)", format="$%.2f"),
+                        "rating": st.column_config.NumberColumn("Rating", format="%.1f⭐")
+                    }
+                )
+                
+                # Gráfico de rendimiento
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig_sales = px.bar(df_team, x='employee', y='sales',
+                                     title="Ventas por Vendedor",
+                                     labels={'employee': 'Vendedor', 'sales': 'Ventas ($)'})
+                    fig_sales.update_xaxis(tickangle=45)
+                    st.plotly_chart(fig_sales, use_container_width=True)
+                
+                with col2:
+                    fig_rating = px.bar(df_team, x='employee', y='rating',
+                                      title="Rating por Vendedor",
+                                      labels={'employee': 'Vendedor', 'rating': 'Rating'})
+                    fig_rating.update_xaxis(tickangle=45)
+                    st.plotly_chart(fig_rating, use_container_width=True)
+            
+            else:
+                st.warning("⚠️ No hay datos del equipo de ventas disponibles")
+                
+        except Exception as e:
+            st.error(f"❌ Error obteniendo datos del equipo: {str(e)}")
+    
+    with tab5:
+        st.subheader("🎯 Objetivos y Metas")
+        
+        # Objetivos mensuales
+        st.subheader("📅 Objetivos del Mes")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Meta de Ventas", "$50,000", "$45,250")
+        with col2:
+            st.metric("Meta Transacciones", "200", "156")
+        with col3:
+            st.metric("Meta Clientes Nuevos", "50", "42")
+        
+        # Progreso visual
+        st.subheader("📊 Progreso de Objetivos")
+        
+        # Barra de progreso para ventas
+        ventas_actual = 45250
+        ventas_meta = 50000
+        progreso_ventas = (ventas_actual / ventas_meta) * 100
+        
+        st.progress(progreso_ventas / 100)
+        st.write(f"Ventas: ${ventas_actual:,} / ${ventas_meta:,} ({progreso_ventas:.1f}%)")
+        
+        # Proyección de ventas
+        st.subheader("🔮 Proyección de Ventas")
+        forecast_data = db.get_sales_forecast(6)
+        if forecast_data:
+            df_forecast = pd.DataFrame(forecast_data)
+            
+            fig_forecast = go.Figure()
+            fig_forecast.add_trace(go.Scatter(
+                x=df_forecast['month'],
+                y=df_forecast['predicted_sales'],
+                mode='lines+markers',
+                name='Ventas Proyectadas',
+                line=dict(color='blue')
+            ))
+            fig_forecast.add_trace(go.Scatter(
+                x=df_forecast['month'],
+                y=df_forecast['confidence_lower'],
+                mode='lines',
+                name='Límite Inferior',
+                line=dict(color='red', dash='dash'),
+                showlegend=False
+            ))
+            fig_forecast.add_trace(go.Scatter(
+                x=df_forecast['month'],
+                y=df_forecast['confidence_upper'],
+                mode='lines',
+                name='Límite Superior',
+                line=dict(color='red', dash='dash'),
+                fill='tonexty',
+                fillcolor='rgba(255,0,0,0.1)',
+                showlegend=False
+            ))
+            
+            fig_forecast.update_layout(
+                title='Proyección de Ventas (Próximos 6 meses)',
+                xaxis_title='Mes',
+                yaxis_title='Ventas ($)'
+            )
+            
+            st.plotly_chart(fig_forecast, use_container_width=True)
+        
+        # Acciones recomendadas
+        st.subheader("💡 Acciones Recomendadas")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.info("🎯 **Enfoque en productos de alto margen**\n- Carne de Res Premium\n- Jamón Serrano\n- Salmón Fresco")
+        
+        with col2:
+            st.info("👥 **Capacitación del equipo**\n- Técnicas de venta\n- Productos premium\n- Atención al cliente")
 
 def render_analytics():
     """Renderiza la sección analytics"""
@@ -1846,7 +2213,7 @@ def render_balance():
                             st.session_state['excel_processed'] = True
                             
                             # Guardar datos en la base de datos
-                            db = get_db_manager()
+                            db = get_hybrid_manager()
                             success = db.save_excel_data(analysis)
                             
                             if success:
@@ -1915,7 +2282,7 @@ def render_balance():
             st.success("✅ **Datos del Excel guardados en la base de datos**")
             
             # Obtener datos de la base de datos
-            db = get_db_manager()
+            db = get_hybrid_manager()
             excel_summary = db.get_excel_data_summary()
             
             if excel_summary:

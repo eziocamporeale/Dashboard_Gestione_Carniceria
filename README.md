@@ -1,221 +1,220 @@
-# 🥩 Dashboard Gestione Macelleria
+# 🥩 Dashboard Gestión Carnicería
 
-## 📋 Descrizione del Progetto
-Dashboard completa per la gestione di una macelleria, con funzionalità di inventario, vendite, clienti, fornitori e analytics avanzate.
+**Sistema completo de gestión para carnicerías con base de datos Supabase y deployment en Streamlit Cloud.**
 
-## 🎯 Obiettivi Principali
-- **Gestione Inventario**: Controllo completo di carne, prodotti freschi e surgelati
-- **Gestione Vendite**: Tracking ordini, fatturazione e pagamenti
-- **Gestione Clienti**: Database clienti con preferenze e storico acquisti
-- **Gestione Fornitori**: Controllo fornitori, ordini e pagamenti
-- **Analytics**: Reportistica completa su vendite, profitti e performance
-- **Gestione Personale**: Controllo dipendenti, turni e produttività
+[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 
-## 🏗️ Struttura del Progetto
+## 📋 **Características Principales**
 
-```
-DASH_GESTIONE_MACELLERIA/
-├── 📄 README.md                    # Documentazione principale
-├── 📄 requirements.txt             # Dipendenze Python
-├── 📄 config.py                    # Configurazione globale
-├── 📄 app.py                       # Applicazione principale Streamlit
-│
-├── 📁 database/                   # Gestione database
-│   ├── 📄 schema.sql              # Schema database SQLite
-│   ├── 📄 init_database.py        # Inizializzazione database
-│   ├── 📄 database_manager.py     # Classe gestione database
-│   └── 📄 migrations/             # Migrazioni database
-│
-├── 📁 components/                 # Componenti Streamlit
-│   ├── 📁 auth/                   # Sistema autenticazione
-│   ├── 📁 dashboard/              # Dashboard principale
-│   ├── 📁 inventario/             # Gestione prodotti
-│   ├── 📁 vendite/                # Gestione vendite
-│   ├── 📁 clienti/                # Gestione clienti
-│   ├── 📁 fornitori/              # Gestione fornitori
-│   ├── 📁 personale/              # Gestione dipendenti
-│   ├── 📁 analytics/              # Report e statistiche
-│   └── 📁 settings/               # Impostazioni
-│
-├── 📁 utils/                      # Utility e helper
-│   ├── 📄 helpers.py              # Funzioni helper generiche
-│   ├── 📄 validators.py           # Validazione dati
-│   ├── 📄 exporters.py            # Export dati (Excel, PDF)
-│   ├── 📄 notifications.py       # Sistema notifiche
-│   └── 📄 backup.py               # Sistema backup
-│
-├── 📁 data/                       # Dati applicazione
-│   ├── 📄 macelleria.db           # Database SQLite
-│   ├── 📁 uploads/                # File caricati
-│   └── 📁 exports/                # File esportati
-│
-├── 📁 logs/                       # Log applicazione
-├── 📁 backups/                    # Backup database
-└── 📁 static/                     # File statici
-    ├── 📁 css/                    # Fogli di stile
-    ├── 📁 js/                     # JavaScript
-    └── 📁 images/                 # Immagini
-```
+### 🛒 **Gestión de Ventas**
+- Dashboard completo con métricas en tiempo real
+- Registro de nuevas ventas con formulario intuitivo
+- Reportes avanzados con filtros por fecha
+- Gestión del equipo de ventas y rendimiento
+- Objetivos y metas con proyecciones
 
-## 🚀 Avvio Rapido
+### 📊 **Analytics y Reportes**
+- Estadísticas de ventas, inventario y finanzas
+- Gráficos interactivos con Plotly
+- Exportación a Excel y PDF
+- Análisis de tendencias y proyecciones
+- Reportes personalizables
 
-### Installazione Dipendenze
+### 👥 **Gestión de Personal**
+- Lista completa de empleados
+- Gestión de turnos y horarios
+- Estadísticas de rendimiento
+- Sistema de roles y permisos
+- Formularios de alta/baja/modificación
+
+### 🏢 **Gestión de Proveedores**
+- Base de datos de proveedores
+- Seguimiento de transacciones
+- Estadísticas de compras
+- Gestión de contactos y direcciones
+- Sistema de pedidos
+
+### 📈 **Gestión de Inventario**
+- Control de stock en tiempo real
+- Alertas de productos con stock bajo
+- Productos próximos a vencer
+- Categorización y unidades de medida
+- Gestión de precios y costos
+
+### 📊 **Integración Excel**
+- Importación automática de datos Excel
+- Procesamiento y análisis de datos
+- Almacenamiento en base de datos
+- Exportación de reportes
+- Sincronización bidireccional
+
+## 🚀 **Tecnologías Utilizadas**
+
+- **Frontend:** Streamlit (Python)
+- **Backend:** Supabase (PostgreSQL)
+- **Base de datos:** PostgreSQL con Row Level Security
+- **Visualización:** Plotly, Pandas
+- **Autenticación:** Sistema seguro integrado
+- **Deployment:** Streamlit Cloud
+
+## 🔐 **Seguridad Implementada**
+
+- **Row Level Security (RLS)** en Supabase
+- **Autenticación segura** con roles de usuario
+- **Encriptación** de datos en reposo
+- **Conexiones SSL/TLS** para todas las comunicaciones
+- **Variables de entorno** para credenciales sensibles
+- **Backup automático** diario
+
+## 📦 **Instalación y Configuración**
+
+### **Requisitos**
 ```bash
-pip install -r requirements.txt
+Python 3.8+
+pip install -r requirements_supabase.txt
 ```
 
-### Inizializzazione Database
+### **Configuración Local**
 ```bash
-python database/init_database.py
+# 1. Clonar repositorio
+git clone https://github.com/eziocamporeale/Dashboard_Gestione_Carniceria.git
+cd Dashboard_Gestione_Carniceria
+
+# 2. Instalar dependencias
+pip install -r requirements_supabase.txt
+
+# 3. Configurar variables de entorno
+cp env_template.txt .env
+# Editar .env con tus credenciales
+
+# 4. Probar conexión
+python test_supabase_connection.py
+
+# 5. Ejecutar aplicación
+streamlit run app_es.py
 ```
 
-### Avvio Applicazione
+### **Deployment en Streamlit Cloud**
+Ver [DEPLOYMENT_INSTRUCTIONS.md](DEPLOYMENT_INSTRUCTIONS.md) para instrucciones completas.
+
+## 🗄️ **Configuración de Base de Datos**
+
+### **Supabase Setup**
+1. Crear proyecto en [Supabase](https://supabase.com)
+2. Ejecutar script SQL: `database/supabase_schema.sql`
+3. Configurar Row Level Security
+4. Configurar variables de entorno
+
+### **Estructura de Base de Datos**
+- **users** - Usuarios del sistema
+- **products** - Productos e inventario
+- **sales** - Ventas realizadas
+- **customers** - Clientes
+- **suppliers** - Proveedores
+- **employees** - Empleados
+- **excel_data** - Datos importados de Excel
+
+## 📊 **Funcionalidades por Módulo**
+
+### **🏠 Dashboard Principal**
+- Métricas en tiempo real
+- Gráficos de tendencias
+- Alertas y notificaciones
+- Resumen ejecutivo
+
+### **🛒 Gestión de Ventas**
+- Registro de ventas
+- Análisis de productos más vendidos
+- Reportes por período
+- Gestión de clientes
+
+### **📦 Gestión de Inventario**
+- Control de stock
+- Alertas de reposición
+- Gestión de categorías
+- Precios y costos
+
+### **👥 Gestión de Personal**
+- Base de datos de empleados
+- Gestión de turnos
+- Evaluaciones de rendimiento
+- Sistema de roles
+
+### **🏢 Gestión de Proveedores**
+- Base de datos de proveedores
+- Seguimiento de compras
+- Gestión de contactos
+- Estadísticas de proveedores
+
+### **📊 Analytics y Reportes**
+- Reportes de ventas
+- Análisis financiero
+- Reportes de inventario
+- Análisis de clientes
+
+## 🔧 **Configuración Avanzada**
+
+### **Variables de Entorno**
 ```bash
-streamlit run app.py
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_ANON_KEY=tu-api-key
+USE_SUPABASE=true
+APP_ENVIRONMENT=production
 ```
 
-## 🌐 Accesso
-- **URL**: http://localhost:8501
-- **Database**: SQLite locale
-- **Credenziali Default**: admin / admin123
+### **Configuración de Seguridad**
+- Configurar RLS en Supabase
+- Definir políticas de acceso
+- Configurar autenticación
+- Establecer roles de usuario
 
-## 📊 Funzionalità Principali
+## 📈 **Monitoreo y Mantenimiento**
 
-### 🏠 Dashboard Principale
-- KPI in tempo reale (vendite, margini, prodotti più venduti)
-- Grafici interattivi (trend vendite, analisi stagionalità)
-- Alert (scorte basse, prodotti in scadenza, pagamenti scaduti)
-- Quick Actions (nuovo ordine, aggiunta prodotto, registrazione vendita)
+### **Métricas Importantes**
+- Uptime de la aplicación
+- Performance de la base de datos
+- Uso de memoria
+- Errores y logs
 
-### 📦 Gestione Inventario
-- Catalogo prodotti (carne bovina, suina, pollame, salumi)
-- Controllo scorte (quantità disponibili, scadenze, lotti)
-- Gestione prezzi (prezzi al kg, sconti, promozioni)
-- Tracciabilità (lotto, data macellazione, provenienza)
-- Alert scorte (notifiche automatiche per riordino)
+### **Backup y Recovery**
+- Backup automático en Supabase
+- Versionado en GitHub
+- Rollback rápido si es necesario
 
-### 🛒 Gestione Vendite
-- POS integrato (registrazione vendite rapida)
-- Ordini clienti (gestione ordini personalizzati)
-- Fatturazione (emissione fatture e ricevute)
-- Gestione pagamenti (contanti, carte, bonifici, rate)
-- Sconti e promozioni (gestione offerte speciali)
+## 🤝 **Contribución**
 
-### 👥 Gestione Clienti
-- Database clienti (dati anagrafici, preferenze, allergie)
-- Storico acquisti (analisi comportamento d'acquisto)
-- Programmi fedeltà (punti, sconti, promozioni personalizzate)
-- Comunicazioni (SMS/Email promozionali, ricette)
-- Preferenze (tagli preferiti, giorni di acquisto)
+1. Fork el proyecto
+2. Crear rama para feature (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
 
-### 🚚 Gestione Fornitori
-- Database fornitori (macelli, allevatori, distributori)
-- Ordini (gestione ordini di approvvigionamento)
-- Controllo qualità (valutazioni fornitori, certificazioni)
-- Pagamenti (gestione fatture e pagamenti fornitori)
-- Contratti (gestione contratti e condizioni)
+## 📝 **Licencia**
 
-### 👨‍💼 Gestione Personale
-- Database dipendenti (dati anagrafici, competenze, contratti)
-- Turni (gestione orari e turni di lavoro)
-- Produttività (tracking performance individuali)
-- Formazione (gestione corsi e certificazioni)
-- Paghe (calcolo ore lavoro e stipendi)
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
-### 📊 Analytics e Reporting
-- Vendite (analisi per periodo, prodotto, cliente)
-- Profitti (margini, costi, ROI per prodotto)
-- Inventario (rotazione scorte, sprechi, ottimizzazione)
-- Clienti (analisi comportamento, segmentazione)
-- Personale (produttività, efficienza, costi)
+## 👨‍💻 **Autor**
 
-## 🔧 Tecnologie Utilizzate
+**Ezio Camporeale**
+- GitHub: [@eziocamporeale](https://github.com/eziocamporeale)
+- Email: [tu-email@example.com]
 
-### Frontend
-- **Streamlit**: Framework web per Python
-- **Plotly**: Grafici interattivi
-- **CSS**: Styling personalizzato
+## 🙏 **Agradecimientos**
 
-### Backend
-- **Python 3.8+**: Linguaggio principale
-- **SQLite**: Database locale
-- **Pandas**: Manipolazione dati
-
-### Librerie Principali
-- **streamlit**: Interfaccia web
-- **plotly**: Visualizzazione dati
-- **pandas**: Analisi dati
-- **sqlite3**: Database
-- **bcrypt**: Hashing password
-- **openpyxl**: Export Excel
-
-## 🎯 Roadmap Implementazione
-
-### FASE 1: Setup Base (Settimana 1-2)
-- [x] Creazione struttura progetto
-- [ ] Setup database SQLite
-- [ ] Sistema autenticazione
-- [ ] Dashboard principale con KPI base
-- [ ] Gestione prodotti base
-
-### FASE 2: Core Business (Settimana 3-4)
-- [ ] Gestione inventario completa
-- [ ] Sistema vendite e POS
-- [ ] Gestione clienti base
-- [ ] Fatturazione base
-
-### FASE 3: Advanced Features (Settimana 5-6)
-- [ ] Gestione fornitori
-- [ ] Analytics avanzate
-- [ ] Gestione personale
-- [ ] Sistema notifiche
-
-### FASE 4: Polish & Deploy (Settimana 7-8)
-- [ ] Ottimizzazioni UI/UX
-- [ ] Testing completo
-- [ ] Backup e sicurezza
-- [ ] Documentazione finale
-
-## 🔐 Sicurezza
-
-### Autenticazione
-- Hashing password con bcrypt
-- Sessioni sicure
-- Timeout automatico
-- Log accessi
-
-### Autorizzazione
-- Sistema ruoli granulare
-- Controllo permessi per modulo
-- Audit trail attività
-
-### Dati
-- Validazione input
-- Sanitizzazione dati
-- Backup automatici
-- Log operazioni critiche
-
-## 📈 Scalabilità
-
-### Database
-- Migrazione a PostgreSQL per grandi volumi
-- Ottimizzazione query
-- Indici appropriati
-- Partizionamento tabelle
-
-### Performance
-- Caching risultati
-- Paginazione dati
-- Lazy loading
-- Ottimizzazione immagini
-
-### Funzionalità
-- API REST per integrazioni
-- Webhook per automazioni
-- Export/import dati
-- Backup cloud
+- [Streamlit](https://streamlit.io) por el framework
+- [Supabase](https://supabase.com) por la base de datos
+- [Plotly](https://plotly.com) por las visualizaciones
+- Comunidad de desarrolladores
 
 ---
 
-*Dashboard creata da Ezio Camporeale - DASH_GESTIONE_MACELLERIA*
+## 📞 **Soporte**
 
+Para soporte técnico o preguntas:
+- Crear issue en GitHub
+- Contactar al autor
+- Revisar documentación
+
+**¡Sistema listo para producción!** 🚀

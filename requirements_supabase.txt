@@ -1,0 +1,42 @@
+# Dashboard Gestión Carnicería - Dipendenze Supabase
+# Versione: 2.0.0
+# Creato da: Ezio Camporeale
+
+# Core Streamlit
+streamlit>=1.28.0
+streamlit-authenticator>=0.2.3
+
+# Supabase
+supabase>=2.0.0
+postgrest>=0.13.0
+realtime>=2.0.0
+storage3>=0.7.0
+
+# Database e ORM
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+sqlite3
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+plotly>=5.15.0
+
+# Autenticazione e Sicurezza
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.6
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+httpx>=0.24.0
+
+# Logging e Monitoring
+structlog>=23.1.0
+sentry-sdk[streamlit]>=1.32.0
+
+# Development (opzionale)
+pytest>=7.4.0
+black>=23.7.0
+flake8>=6.0.0

@@ -1,0 +1,32 @@
+# Dashboard Gestión Carnicería - Template Variabili Ambiente
+# Copia questo file come .env e configura le tue credenziali
+# ⚠️ NON COMMITTARE MAI IL FILE .env!
+
+# ==================== SUPABASE CONFIGURATION ====================
+SUPABASE_URL=https://xaxzwfuedzwhsshottum.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhheHp3ZnVlZHp3aHNzaG90dHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODQ0MDgsImV4cCI6MjA3NDk2MDQwOH0.VcPt8PSe-x_BGQquCXfKsh2HAwxOgs9mQBj7OWdB95k
+
+# ==================== DATABASE CONFIGURATION ====================
+USE_SUPABASE=true
+FALLBACK_TO_SQLITE=true
+
+# ==================== SECURITY CONFIGURATION ====================
+SECRET_KEY=your-secret-key-here-change-this-in-production
+ENCRYPTION_KEY=your-encryption-key-here-32-chars-minimum
+
+# ==================== AUTHENTICATION ====================
+AUTH_COOKIE_NAME=carniceria_auth
+AUTH_COOKIE_EXPIRY_DAYS=30
+SESSION_TIMEOUT_MINUTES=60
+
+# ==================== APP CONFIGURATION ====================
+APP_NAME=Dashboard Gestión Carnicería
+APP_VERSION=2.0.0
+APP_ENVIRONMENT=development
+
+# ==================== STREAMLIT CLOUD (per deployment) ====================
+# Configura queste variabili su Streamlit Cloud:
+# SUPABASE_URL=https://xaxzwfuedzwhsshottum.supabase.co
+# SUPABASE_ANON_KEY=[LA TUA API KEY]
+# USE_SUPABASE=true
+# APP_ENVIRONMENT=production
