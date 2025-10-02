@@ -15,7 +15,15 @@ from pathlib import Path
 current_dir = Path(__file__).parent.parent
 sys.path.append(str(current_dir))
 
-from database.supabase_manager import SupabaseManager
+# Import condizionali per evitare errori
+try:
+    from database.supabase_manager import SupabaseManager
+    SUPABASE_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️ Supabase non disponibile: {e}")
+    SUPABASE_AVAILABLE = False
+    SupabaseManager = None
+
 from database.database_manager_simple import SimpleDatabaseManager
 
 # Configurazione logging
@@ -27,9 +35,14 @@ class HybridDatabaseManager:
     
     def __init__(self):
         """Inizializza il gestore ibrido"""
-        self.supabase_manager = SupabaseManager()
+        if SUPABASE_AVAILABLE and SupabaseManager:
+            self.supabase_manager = SupabaseManager()
+            self.use_supabase = self.supabase_manager.is_connected()
+        else:
+            self.supabase_manager = None
+            self.use_supabase = False
+            
         self.sqlite_manager = SimpleDatabaseManager()
-        self.use_supabase = self.supabase_manager.is_connected()
         
         if self.use_supabase:
             logger.info("✅ Usando Supabase come database principale")
@@ -38,14 +51,14 @@ class HybridDatabaseManager:
     
     def _get_manager(self):
         """Ottiene il manager attivo (Supabase o SQLite)"""
-        if self.use_supabase and self.supabase_manager.is_connected():
+        if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
             return self.supabase_manager
         else:
             return self.sqlite_manager
     
     def is_supabase_active(self) -> bool:
         """Verifica se Supabase è attivo"""
-        return self.use_supabase and self.supabase_manager.is_connected()
+        return self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected()
     
     def switch_to_sqlite(self):
         """Forza l'uso di SQLite"""
@@ -339,7 +352,7 @@ class HybridDatabaseManager:
     def authenticate_user(self, username: str, password: str):
         """Autentica un utente"""
         try:
-            if self.use_supabase and self.supabase_manager.is_connected():
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
                 return self.supabase_manager.authenticate_user(username, password)
             else:
                 return self.sqlite_manager.authenticate_user(username, password)
