@@ -254,12 +254,13 @@ class SupabaseManager:
         
         try:
             # Implementazione autenticazione sicura
-            # Per ora, implementazione semplificata
             users = self.select('users', filters={'email': email})
             if users:
                 user = users[0]
-                # Verifica password (implementazione semplificata)
-                if user.get('password_hash') == password:  # In produzione, usare hash sicuro
+                # Verifica password con bcrypt
+                import bcrypt
+                password_hash = user.get('password_hash')
+                if password_hash and bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
                     return user
             return None
         except Exception as e:
