@@ -166,38 +166,38 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo ordini recenti: {e}")
             return []
     
-    def get_top_products(self) -> List[Dict]:
+    def get_top_products(self, limit: int = 10) -> List[Dict]:
         """Ottiene prodotti più venduti"""
         try:
             manager = self._get_manager()
-            return manager.get_top_products()
+            return manager.get_top_products(limit=limit)
         except Exception as e:
             logger.error(f"❌ Errore ottenendo top prodotti: {e}")
             return []
     
-    def get_top_customers(self) -> List[Dict]:
+    def get_top_customers(self, limit: int = 5) -> List[Dict]:
         """Ottiene clienti migliori"""
         try:
             manager = self._get_manager()
-            return manager.get_top_customers()
+            return manager.get_top_customers(limit=limit)
         except Exception as e:
             logger.error(f"❌ Errore ottenendo top clienti: {e}")
             return []
     
-    def get_monthly_revenue(self) -> List[Dict]:
+    def get_monthly_revenue(self, months: int = 6) -> List[Dict]:
         """Ottiene ricavi mensili"""
         try:
             manager = self._get_manager()
-            return manager.get_monthly_revenue()
+            return manager.get_monthly_revenue(months=months)
         except Exception as e:
             logger.error(f"❌ Errore ottenendo ricavi mensili: {e}")
             return []
     
-    def get_daily_sales(self) -> List[Dict]:
+    def get_daily_sales(self, days: int = 7) -> List[Dict]:
         """Ottiene vendite giornaliere"""
         try:
             manager = self._get_manager()
-            return manager.get_daily_sales()
+            return manager.get_daily_sales(days=days)
         except Exception as e:
             logger.error(f"❌ Errore ottenendo vendite giornaliere: {e}")
             return []
