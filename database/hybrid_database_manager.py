@@ -120,11 +120,21 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo unità di misura: {e}")
             return []
     
-    def get_sales_by_period(self, period: str = 'month') -> List[Dict]:
-        """Ottiene vendite per periodo"""
+    def get_sales_by_period(self, start_date=None, end_date=None, period: str = 'month') -> List[Dict]:
+        """Ottiene vendite per periodo - compatibile con entrambe le firme"""
         try:
             manager = self._get_manager()
-            return manager.get_sales_by_period(period)
+            
+            # Se sono stati passati start_date e end_date, usa quella firma
+            if start_date is not None and end_date is not None:
+                if hasattr(manager, 'get_sales_by_period') and manager.get_sales_by_period.__code__.co_argcount >= 3:
+                    return manager.get_sales_by_period(start_date, end_date)
+                else:
+                    # Fallback: usa il periodo
+                    return manager.get_sales_by_period(period)
+            else:
+                # Usa la firma con periodo
+                return manager.get_sales_by_period(period)
         except Exception as e:
             logger.error(f"❌ Errore ottenendo vendite per periodo: {e}")
             return []

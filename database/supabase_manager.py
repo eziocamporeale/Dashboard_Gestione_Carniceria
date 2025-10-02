@@ -187,17 +187,29 @@ class SupabaseManager:
             logger.error(f"❌ Errore ottenendo prodotti in scadenza: {e}")
             return []
     
-    def get_sales_by_period(self, period: str = 'month') -> List[Dict]:
-        """Ottiene vendite per periodo"""
+    def get_sales_by_period(self, start_date=None, end_date=None, period: str = 'month') -> List[Dict]:
+        """Ottiene vendite per periodo - compatibile con entrambe le firme"""
         try:
-            if period == 'month':
-                start_date = datetime.now() - timedelta(days=30)
-            elif period == 'week':
-                start_date = datetime.now() - timedelta(days=7)
+            # Se sono stati passati start_date e end_date, usa quelli
+            if start_date is not None and end_date is not None:
+                # Usa le date specifiche
+                pass
             else:
-                start_date = datetime.now() - timedelta(days=1)
+                # Usa il periodo predefinito
+                if period == 'month':
+                    start_date = datetime.now() - timedelta(days=30)
+                elif period == 'week':
+                    start_date = datetime.now() - timedelta(days=7)
+                else:
+                    start_date = datetime.now() - timedelta(days=1)
+                end_date = datetime.now()
             
-            return self.select('sales', filters={'sale_date': start_date.isoformat()})
+            # Query per range di date
+            query = self.client.table('sales').select('*')
+            query = query.gte('sale_date', start_date.isoformat())
+            query = query.lte('sale_date', end_date.isoformat())
+            result = query.execute()
+            return result.data if result.data else []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo vendite per periodo: {e}")
             return []
