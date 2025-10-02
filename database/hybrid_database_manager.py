@@ -16,7 +16,7 @@ current_dir = Path(__file__).parent.parent
 sys.path.append(str(current_dir))
 
 from database.supabase_manager import SupabaseManager
-from database.database_manager_simple import get_db_manager as get_sqlite_manager
+from database.database_manager_simple import SimpleDatabaseManager
 
 # Configurazione logging
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +28,7 @@ class HybridDatabaseManager:
     def __init__(self):
         """Inizializza il gestore ibrido"""
         self.supabase_manager = SupabaseManager()
-        self.sqlite_manager = get_sqlite_manager()
+        self.sqlite_manager = SimpleDatabaseManager()
         self.use_supabase = self.supabase_manager.is_connected()
         
         if self.use_supabase:
