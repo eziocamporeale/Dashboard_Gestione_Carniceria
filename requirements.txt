@@ -47,3 +47,4 @@ flake8>=6.0.0
 # beautifulsoup4>=4.12.0  # Per web scraping
 # pillow>=10.0.0  # Per gestione immagini
 
+# Force refresh Thu Oct  2 20:09:23 WEST 2025

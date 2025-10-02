@@ -279,6 +279,20 @@ class SupabaseManager:
             logger.error(f"❌ Errore creando utente: {e}")
             return None
     
+    def log_activity(self, user_id: str, action: str, details: str, ip_address: str = None):
+        """Log dell'attività utente"""
+        try:
+            activity_data = {
+                'user_id': user_id,
+                'activity_type': action,
+                'description': details,
+                'ip_address': ip_address
+            }
+            return self.insert('activity_log', activity_data)
+        except Exception as e:
+            logger.error(f"❌ Errore loggando attività: {e}")
+            return None
+    
     # ==================== METODI UTILITÀ ====================
     
     def get_table_info(self, table: str) -> Dict:

@@ -401,6 +401,37 @@ class SimpleDatabaseManager:
             logger.error(f"❌ Error obteniendo resumen financiero: {e}")
             return {}
     
+    def log_activity(self, user_id: str, action: str, details: str, ip_address: str = None):
+        """Log dell'attività utente"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Crea la tabella activity_log se non esiste
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS activity_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT,
+                    activity_type TEXT,
+                    description TEXT,
+                    ip_address TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            # Inserisci il log
+            cursor.execute("""
+                INSERT INTO activity_log (user_id, activity_type, description, ip_address)
+                VALUES (?, ?, ?, ?)
+            """, (user_id, action, details, ip_address))
+            
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error loggando attività: {e}")
+            return False
+    
     def save_excel_data(self, excel_data: Dict[str, Any]) -> bool:
         """Guarda los datos del Excel en la base de datos"""
         try:

@@ -365,6 +365,29 @@ class HybridDatabaseManager:
         except Exception as e:
             logger.error(f"❌ Errore durante autenticazione: {e}")
             return None
+    
+    def log_activity(self, user_id: str, action: str, details: str, ip_address: str = None):
+        """Log dell'attività utente"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                # Per Supabase, usa il metodo log_activity se disponibile
+                if hasattr(self.supabase_manager, 'log_activity'):
+                    return self.supabase_manager.log_activity(user_id, action, details, ip_address)
+                else:
+                    # Implementazione semplificata per Supabase
+                    activity_data = {
+                        'user_id': user_id,
+                        'activity_type': action,
+                        'description': details,
+                        'ip_address': ip_address
+                    }
+                    return self.supabase_manager.insert('activity_log', activity_data)
+            else:
+                # Per SQLite, usa il metodo del SimpleDatabaseManager
+                return self.sqlite_manager.log_activity(user_id, action, details, ip_address)
+        except Exception as e:
+            logger.error(f"❌ Errore durante log attività: {e}")
+            return None
 
 # Istanza globale
 
