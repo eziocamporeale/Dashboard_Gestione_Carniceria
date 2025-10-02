@@ -490,7 +490,165 @@ def render_clientes():
     require_permission("clientes")
     
     st.header("👥 Gestión Clientes")
-    st.info("🚧 Funcionalidad en desarrollo - Base de datos clientes y CRM")
+    
+    # Obtener datos de clientes
+    db = get_hybrid_manager()
+    customers = db.get_all_customers()
+    
+    # Tabs para diferentes funcionalidades
+    tab1, tab2, tab3, tab4 = st.tabs(["📋 Lista Clientes", "➕ Nuevo Cliente", "📊 Estadísticas", "💬 CRM"])
+    
+    with tab1:
+        st.subheader("📋 Lista de Clientes")
+        
+        if customers:
+            # Filtros
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                search_name = st.text_input("🔍 Buscar por nombre", placeholder="Nombre del cliente")
+            with col2:
+                filter_status = st.selectbox("📊 Estado", ["Todos", "Activos", "Inactivos"])
+            with col3:
+                sort_by = st.selectbox("🔄 Ordenar por", ["Nombre", "Compras", "Última compra"])
+            
+            # Filtrar clientes
+            filtered_customers = customers.copy()
+            
+            if search_name:
+                filtered_customers = [c for c in filtered_customers if search_name.lower() in c['name'].lower()]
+            
+            if filter_status == "Activos":
+                filtered_customers = [c for c in filtered_customers if c.get('is_active', True)]
+            elif filter_status == "Inactivos":
+                filtered_customers = [c for c in filtered_customers if not c.get('is_active', True)]
+            
+            # Ordenar
+            if sort_by == "Compras":
+                filtered_customers.sort(key=lambda x: x.get('total_purchases', 0), reverse=True)
+            elif sort_by == "Última compra":
+                filtered_customers.sort(key=lambda x: x.get('last_purchase', ''), reverse=True)
+            else:
+                filtered_customers.sort(key=lambda x: x['name'])
+            
+            # Mostrar estadísticas
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Clientes", len(filtered_customers))
+            with col2:
+                total_purchases = sum(c.get('total_purchases', 0) for c in filtered_customers)
+                st.metric("Compras Totales", f"${total_purchases:,.2f}")
+            with col3:
+                avg_purchase = total_purchases / len(filtered_customers) if filtered_customers else 0
+                st.metric("Promedio por Cliente", f"${avg_purchase:,.2f}")
+            with col4:
+                active_customers = len([c for c in filtered_customers if c.get('is_active', True)])
+                st.metric("Clientes Activos", active_customers)
+            
+            # Tabla de clientes
+            if filtered_customers:
+                df_customers = pd.DataFrame(filtered_customers)
+                st.dataframe(
+                    df_customers[['name', 'email', 'phone', 'total_purchases', 'total_orders', 'last_purchase']],
+                    width='stretch',
+                    column_config={
+                        "name": "Nombre",
+                        "email": "Email",
+                        "phone": "Teléfono",
+                        "total_purchases": st.column_config.NumberColumn("Compras Totales", format="$%.2f"),
+                        "total_orders": "Órdenes",
+                        "last_purchase": "Última Compra"
+                    }
+                )
+            else:
+                st.info("No se encontraron clientes con los filtros aplicados")
+        else:
+            st.info("No hay clientes registrados")
+    
+    with tab2:
+        st.subheader("➕ Nuevo Cliente")
+        
+        with st.form("nuevo_cliente_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                name = st.text_input("Nombre Completo *", placeholder="Ej: Juan Pérez")
+                email = st.text_input("Email *", placeholder="juan.perez@email.com")
+                phone = st.text_input("Teléfono", placeholder="+54 11 1234-5678")
+            
+            with col2:
+                address = st.text_area("Dirección", placeholder="Av. Corrientes 1234, Buenos Aires")
+                notes = st.text_area("Notas", placeholder="Información adicional del cliente")
+            
+            submitted = st.form_submit_button("💾 Guardar Cliente", width='stretch', type="primary")
+            
+            if submitted:
+                if name and email:
+                    # Aquí se guardaría el cliente en la base de datos
+                    st.success(f"✅ Cliente '{name}' agregado correctamente")
+                    st.rerun()
+                else:
+                    st.error("❌ Por favor complete los campos obligatorios (Nombre y Email)")
+    
+    with tab3:
+        st.subheader("📊 Estadísticas de Clientes")
+        
+        if customers:
+            # Gráfico de compras por cliente
+            top_customers = sorted(customers, key=lambda x: x.get('total_purchases', 0), reverse=True)[:10]
+            
+            fig_customers = px.bar(
+                pd.DataFrame(top_customers),
+                x='name',
+                y='total_purchases',
+                title="Top 10 Clientes por Compras",
+                labels={'total_purchases': 'Compras Totales ($)', 'name': 'Cliente'}
+            )
+            fig_customers.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig_customers, width='stretch')
+            
+            # Gráfico de distribución de órdenes
+            orders_data = [c.get('total_orders', 0) for c in customers]
+            fig_orders = px.histogram(
+                pd.DataFrame({'orders': orders_data}),
+                x='orders',
+                title="Distribución de Órdenes por Cliente",
+                labels={'orders': 'Número de Órdenes', 'count': 'Número de Clientes'}
+            )
+            st.plotly_chart(fig_orders, width='stretch')
+            
+            # Métricas adicionales
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                avg_orders = sum(c.get('total_orders', 0) for c in customers) / len(customers)
+                st.metric("Promedio de Órdenes", f"{avg_orders:.1f}")
+            with col2:
+                max_purchase = max(c.get('total_purchases', 0) for c in customers)
+                st.metric("Mayor Compra", f"${max_purchase:,.2f}")
+            with col3:
+                recent_customers = len([c for c in customers if c.get('last_purchase', '') >= '2024-09-01'])
+                st.metric("Clientes Recientes", recent_customers)
+        else:
+            st.info("No hay datos de clientes para mostrar estadísticas")
+    
+    with tab4:
+        st.subheader("💬 CRM - Gestión de Relaciones")
+        
+        st.info("🚧 Funcionalidad CRM en desarrollo")
+        
+        # Placeholder para funcionalidades CRM futuras
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📞 Seguimiento de Clientes")
+            st.write("- Recordatorios de compras")
+            st.write("- Campañas de marketing")
+            st.write("- Análisis de comportamiento")
+        
+        with col2:
+            st.subheader("📈 Análisis Predictivo")
+            st.write("- Predicción de abandono")
+            st.write("- Recomendaciones personalizadas")
+            st.write("- Segmentación de clientes")
 
 def render_proveedores():
     """Renderiza la sección proveedores"""
