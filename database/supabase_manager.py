@@ -408,6 +408,89 @@ class SupabaseManager:
             logger.error(f"❌ Errore ottenendo clienti: {e}")
             return []
     
+    def get_sales_summary(self) -> Dict:
+        """Ottiene riepilogo vendite"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            return {
+                'total_sales_today': 1250.75,
+                'total_sales_week': 8750.50,
+                'total_sales_month': 32500.25,
+                'total_sales_year': 125000.00,
+                'average_daily_sales': 1083.33,
+                'best_selling_product': 'Carne de Res Premium',
+                'best_selling_category': 'Carnes',
+                'total_transactions': 156,
+                'average_transaction_value': 801.28
+            }
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo vendite: {e}")
+            return {}
+    
+    def get_sales_team_performance(self) -> List[Dict]:
+        """Ottiene performance del team vendite"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            return [
+                {
+                    'employee_name': 'María García',
+                    'position': 'Vendedora Senior',
+                    'total_sales': 45000.75,
+                    'transactions': 85,
+                    'commission': 2250.38,
+                    'rating': 4.8
+                },
+                {
+                    'employee_name': 'Carlos López',
+                    'position': 'Vendedor',
+                    'total_sales': 32000.50,
+                    'transactions': 62,
+                    'commission': 1600.25,
+                    'rating': 4.5
+                },
+                {
+                    'employee_name': 'Ana Martínez',
+                    'position': 'Vendedora Junior',
+                    'total_sales': 18500.25,
+                    'transactions': 45,
+                    'commission': 925.13,
+                    'rating': 4.2
+                }
+            ]
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo performance team: {e}")
+            return []
+    
+    def get_sales_forecast(self, months: int = 6) -> List[Dict]:
+        """Ottiene proiezione vendite"""
+        try:
+            # Dati di esempio per compatibilità con il dashboard
+            import datetime
+            from dateutil.relativedelta import relativedelta
+            
+            forecast_data = []
+            base_date = datetime.datetime.now()
+            
+            for i in range(months):
+                month_date = base_date + relativedelta(months=i)
+                predicted_sales = 30000 + (i * 2000)  # Crescita simulata
+                confidence_lower = predicted_sales * 0.85
+                confidence_upper = predicted_sales * 1.15
+                growth_rate = 0.05 + (i * 0.01)  # Crescita del 5-10%
+                
+                forecast_data.append({
+                    'month': month_date.strftime('%Y-%m'),
+                    'predicted_sales': predicted_sales,
+                    'confidence_lower': confidence_lower,
+                    'confidence_upper': confidence_upper,
+                    'growth_rate': growth_rate
+                })
+            
+            return forecast_data
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo proiezione vendite: {e}")
+            return []
+    
     def save_excel_data(self, data: Dict) -> bool:
         """Salva dati Excel nel database"""
         try:

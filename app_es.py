@@ -603,7 +603,7 @@ def render_clientes():
                 title="Top 10 Clientes por Compras",
                 labels={'total_purchases': 'Compras Totales ($)', 'name': 'Cliente'}
             )
-            fig_customers.update_layout(xaxis_tickangle=-45)
+            fig_customers.update_layout(xaxis=dict(tickangle=-45))
             st.plotly_chart(fig_customers, width='stretch')
             
             # Gráfico de distribución de órdenes
@@ -809,7 +809,7 @@ def render_proveedores():
                         title="Top 5 Proveedores por Monto",
                         labels={'name': 'Proveedor', 'total_amount': 'Monto Total ($)'}
                     )
-                    fig_bar.update_layout(xaxis_tickangle=-45)
+                    fig_bar.update_layout(xaxis=dict(tickangle=-45))
                     st.plotly_chart(fig_bar, width='stretch')
                 
                 with col2:
@@ -2046,7 +2046,7 @@ def render_analytics():
             title="Ventas Diarias (Últimos 30 días)",
             labels={'fecha': 'Fecha', 'ventas': 'Ventas ($)'}
         )
-        fig_line.update_layout(xaxis_tickangle=-45)
+        fig_line.update_layout(xaxis=dict(tickangle=-45))
         st.plotly_chart(fig_line, width='stretch')
     
     with tab2:
