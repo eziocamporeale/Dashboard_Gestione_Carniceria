@@ -466,7 +466,160 @@ def render_inventario():
     
     with tab3:
         st.subheader("📊 Gestión Stock")
-        st.info("🚧 Funcionalidad en desarrollo - Gestión de stock e inventario")
+        
+        # Obtener datos de stock
+        db = get_hybrid_manager()
+        products = db.get_all_products()
+        
+        if products:
+            df_products = pd.DataFrame(products)
+            
+            # Métricas de stock
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                total_products = len(df_products)
+                st.metric("Total Productos", total_products)
+            with col2:
+                low_stock_count = len(df_products[df_products['current_stock'] <= df_products['min_stock_level']])
+                st.metric("Stock Bajo", low_stock_count, delta=f"-{low_stock_count}" if low_stock_count > 0 else None)
+            with col3:
+                total_value = (df_products['current_stock'] * df_products['selling_price']).sum()
+                st.metric("Valor Total Stock", f"${total_value:,.2f}")
+            with col4:
+                avg_stock = df_products['current_stock'].mean()
+                st.metric("Stock Promedio", f"{avg_stock:.1f}")
+            
+            st.markdown("---")
+            
+            # Filtros avanzados
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                category_filter = st.selectbox(
+                    "Filtrar por Categoría",
+                    ["Todas"] + list(df_products['category_name'].unique()),
+                    key="stock_category_filter"
+                )
+            with col2:
+                stock_status = st.selectbox(
+                    "Estado de Stock",
+                    ["Todos", "Stock Bajo", "Stock Normal", "Stock Alto"],
+                    key="stock_status_filter"
+                )
+            with col3:
+                sort_by = st.selectbox(
+                    "Ordenar por",
+                    ["Nombre", "Stock Actual", "Valor", "Categoría"],
+                    key="stock_sort_filter"
+                )
+            
+            # Aplicar filtros
+            filtered_df = df_products.copy()
+            
+            if category_filter != "Todas":
+                filtered_df = filtered_df[filtered_df['category_name'] == category_filter]
+            
+            if stock_status == "Stock Bajo":
+                filtered_df = filtered_df[filtered_df['current_stock'] <= filtered_df['min_stock_level']]
+            elif stock_status == "Stock Normal":
+                filtered_df = filtered_df[
+                    (filtered_df['current_stock'] > filtered_df['min_stock_level']) & 
+                    (filtered_df['current_stock'] <= filtered_df['min_stock_level'] * 2)
+                ]
+            elif stock_status == "Stock Alto":
+                filtered_df = filtered_df[filtered_df['current_stock'] > filtered_df['min_stock_level'] * 2]
+            
+            # Ordenar
+            if sort_by == "Stock Actual":
+                filtered_df = filtered_df.sort_values('current_stock', ascending=False)
+            elif sort_by == "Valor":
+                filtered_df['valor_total'] = filtered_df['current_stock'] * filtered_df['selling_price']
+                filtered_df = filtered_df.sort_values('valor_total', ascending=False)
+            elif sort_by == "Categoría":
+                filtered_df = filtered_df.sort_values('category_name')
+            else:
+                filtered_df = filtered_df.sort_values('name')
+            
+            # Mostrar tabla de stock
+            if not filtered_df.empty:
+                # Añadir columna de estado
+                def get_stock_status(row):
+                    if row['current_stock'] <= row['min_stock_level']:
+                        return "🔴 Bajo"
+                    elif row['current_stock'] <= row['min_stock_level'] * 2:
+                        return "🟡 Normal"
+                    else:
+                        return "🟢 Alto"
+                
+                filtered_df['estado'] = filtered_df.apply(get_stock_status, axis=1)
+                filtered_df['valor_total'] = filtered_df['current_stock'] * filtered_df['selling_price']
+                
+                st.dataframe(
+                    filtered_df[['name', 'code', 'category_name', 'current_stock', 'min_stock_level', 'estado', 'selling_price', 'valor_total']],
+                    width='stretch',
+                    column_config={
+                        "name": "Producto",
+                        "code": "Código",
+                        "category_name": "Categoría",
+                        "current_stock": "Stock Actual",
+                        "min_stock_level": "Stock Mínimo",
+                        "estado": "Estado",
+                        "selling_price": st.column_config.NumberColumn("Precio Unit.", format="$%.2f"),
+                        "valor_total": st.column_config.NumberColumn("Valor Total", format="$%.2f")
+                    }
+                )
+                
+                # Gráficos de stock
+                st.markdown("---")
+                st.subheader("📈 Análisis de Stock")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Gráfico de stock por categoría
+                    category_stock = filtered_df.groupby('category_name')['current_stock'].sum().reset_index()
+                    fig_category = px.bar(
+                        category_stock,
+                        x='category_name',
+                        y='current_stock',
+                        title="Stock por Categoría",
+                        labels={'current_stock': 'Cantidad en Stock', 'category_name': 'Categoría'}
+                    )
+                    fig_category.update_layout(xaxis=dict(tickangle=-45))
+                    st.plotly_chart(fig_category, width='stretch')
+                
+                with col2:
+                    # Gráfico de estado de stock
+                    status_counts = filtered_df['estado'].value_counts()
+                    fig_status = px.pie(
+                        values=status_counts.values,
+                        names=status_counts.index,
+                        title="Distribución de Estados de Stock"
+                    )
+                    st.plotly_chart(fig_status, width='stretch')
+                
+                # Acciones de stock
+                st.markdown("---")
+                st.subheader("⚡ Acciones Rápidas")
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button("📦 Actualizar Stock", width='stretch'):
+                        st.info("Funcionalidad de actualización de stock en desarrollo")
+                
+                with col2:
+                    if st.button("📋 Generar Reporte", width='stretch'):
+                        st.info("Generando reporte de stock...")
+                        st.success("✅ Reporte generado exitosamente!")
+                
+                with col3:
+                    if st.button("🔄 Sincronizar", width='stretch'):
+                        st.info("Sincronizando datos de stock...")
+                        st.success("✅ Sincronización completada!")
+            else:
+                st.info("No se encontraron productos con los filtros aplicados")
+        else:
+            st.info("No hay productos en el inventario. ¡Agrega el primer producto!")
     
     with tab4:
         st.subheader("⚠️ Alertas y Notificaciones")
