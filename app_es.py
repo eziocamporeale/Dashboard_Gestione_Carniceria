@@ -1869,7 +1869,7 @@ def render_ventas():
                         fig_products = px.bar(df_products, x='product', y='sales',
                                             title="Top 10 Productos por Ventas",
                                             labels={'product': 'Producto', 'sales': 'Ventas ($)'})
-                        fig_products.update_xaxis(tickangle=45)
+                        fig_products.update_layout(xaxis=dict(tickangle=45))
                         st.plotly_chart(fig_products, width='stretch')
                     
                     with col2:
@@ -2052,14 +2052,14 @@ def render_ventas():
                     fig_sales = px.bar(df_team, x='employee', y='sales',
                                      title="Ventas por Vendedor",
                                      labels={'employee': 'Vendedor', 'sales': 'Ventas ($)'})
-                    fig_sales.update_xaxis(tickangle=45)
+                    fig_sales.update_layout(xaxis=dict(tickangle=45))
                     st.plotly_chart(fig_sales, width='stretch')
                 
                 with col2:
                     fig_rating = px.bar(df_team, x='employee', y='rating',
                                       title="Rating por Vendedor",
                                       labels={'employee': 'Vendedor', 'rating': 'Rating'})
-                    fig_rating.update_xaxis(tickangle=45)
+                    fig_rating.update_layout(xaxis=dict(tickangle=45))
                     st.plotly_chart(fig_rating, width='stretch')
             
             else:
