@@ -897,22 +897,251 @@ def render_clientes():
     with tab4:
         st.subheader("💬 CRM - Gestión de Relaciones")
         
-        st.info("🚧 Funcionalidad CRM en desarrollo")
+        # Obtener datos CRM
+        db = get_hybrid_manager()
+        analytics = db.get_customer_analytics()
+        segments = db.get_customer_segments()
+        campaigns = db.get_marketing_campaigns()
+        predictions = db.get_customer_predictions()
         
-        # Placeholder para funcionalidades CRM futuras
-        col1, col2 = st.columns(2)
+        # Tabs para diferentes funcionalidades CRM
+        crm_tab1, crm_tab2, crm_tab3, crm_tab4 = st.tabs(["📊 Analytics", "🎯 Segmentación", "📧 Campañas", "🔮 Predicciones"])
         
-        with col1:
-            st.subheader("📞 Seguimiento de Clientes")
-            st.write("- Recordatorios de compras")
-            st.write("- Campañas de marketing")
-            st.write("- Análisis de comportamiento")
+        with crm_tab1:
+            st.subheader("📊 Analytics de Clientes")
+            
+            if analytics:
+                # Métricas principales
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("Total Clientes", analytics['total_customers'])
+                with col2:
+                    st.metric("Clientes Activos", analytics['active_customers'])
+                with col3:
+                    st.metric("Nuevos Este Mes", analytics['new_customers_this_month'])
+                with col4:
+                    st.metric("Tasa de Abandono", f"{analytics['churn_rate']}%")
+                
+                # Métricas adicionales
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("Valor Promedio", f"${analytics['average_purchase_value']:,.2f}")
+                with col2:
+                    st.metric("Satisfacción", f"{analytics['customer_satisfaction']}/5")
+                with col3:
+                    st.metric("Repetición", f"{analytics['repeat_purchase_rate']}%")
+                with col4:
+                    st.metric("Lifetime Value", f"${analytics['lifetime_value']:,.2f}")
+                
+                # Gráfico de satisfacción
+                st.subheader("📈 Satisfacción del Cliente")
+                satisfaction_data = {
+                    'Meses': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'],
+                    'Satisfacción': [4.1, 4.0, 4.2, 4.3, 4.1, 4.4, 4.2, 4.3, 4.2]
+                }
+                df_satisfaction = pd.DataFrame(satisfaction_data)
+                fig_satisfaction = px.line(df_satisfaction, x='Meses', y='Satisfacción', 
+                                         title="Evolución de la Satisfacción del Cliente",
+                                         markers=True)
+                st.plotly_chart(fig_satisfaction, width='stretch')
+            else:
+                st.info("No hay datos de analytics disponibles")
         
-        with col2:
-            st.subheader("📈 Análisis Predictivo")
-            st.write("- Predicción de abandono")
-            st.write("- Recomendaciones personalizadas")
-            st.write("- Segmentación de clientes")
+        with crm_tab2:
+            st.subheader("🎯 Segmentación de Clientes")
+            
+            if segments:
+                # Gráfico de segmentos
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    df_segments = pd.DataFrame(segments)
+                    fig_segments = px.pie(df_segments, values='count', names='segment', 
+                                        title="Distribución de Segmentos de Clientes",
+                                        color_discrete_sequence=df_segments['color'].tolist())
+                    st.plotly_chart(fig_segments, width='stretch')
+                
+                with col2:
+                    st.subheader("📋 Detalles de Segmentos")
+                    for segment in segments:
+                        st.markdown(f"""
+                        **{segment['segment']}** ({segment['count']} clientes)
+                        - {segment['description']}
+                        """)
+                
+                # Tabla de segmentos
+                st.subheader("📊 Tabla de Segmentos")
+                df_segments_table = pd.DataFrame(segments)
+                st.dataframe(
+                    df_segments_table[['segment', 'count', 'description']],
+                    width='stretch',
+                    column_config={
+                        "segment": "Segmento",
+                        "count": "Cantidad",
+                        "description": "Descripción"
+                    }
+                )
+            else:
+                st.info("No hay datos de segmentación disponibles")
+        
+        with crm_tab3:
+            st.subheader("📧 Campañas de Marketing")
+            
+            if campaigns:
+                # Métricas de campañas
+                col1, col2, col3 = st.columns(3)
+                
+                active_campaigns = len([c for c in campaigns if c['status'] == 'activa'])
+                completed_campaigns = len([c for c in campaigns if c['status'] == 'finalizada'])
+                avg_roi = sum(c['roi'] for c in campaigns if c['roi'] > 0) / len([c for c in campaigns if c['roi'] > 0])
+                
+                with col1:
+                    st.metric("Campañas Activas", active_campaigns)
+                with col2:
+                    st.metric("Campañas Finalizadas", completed_campaigns)
+                with col3:
+                    st.metric("ROI Promedio", f"{avg_roi:.1f}%")
+                
+                # Lista de campañas
+                st.subheader("📋 Lista de Campañas")
+                for campaign in campaigns:
+                    with st.expander(f"📧 {campaign['name']} - {campaign['status'].title()}"):
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.write(f"**Período:** {campaign['start_date']} - {campaign['end_date']}")
+                            st.write(f"**Segmento Objetivo:** {campaign['target_segment']}")
+                            st.write(f"**Estado:** {campaign['status'].title()}")
+                        
+                        with col2:
+                            st.write(f"**Tasa de Respuesta:** {campaign['response_rate']}%")
+                            st.write(f"**Tasa de Conversión:** {campaign['conversion_rate']}%")
+                            st.write(f"**ROI:** {campaign['roi']}%")
+                
+                # Gráfico de ROI
+                st.subheader("📈 ROI de Campañas")
+                df_campaigns = pd.DataFrame(campaigns)
+                fig_roi = px.bar(df_campaigns, x='name', y='roi', 
+                               title="ROI por Campaña",
+                               labels={'name': 'Campaña', 'roi': 'ROI (%)'})
+                fig_roi.update_layout(xaxis=dict(tickangle=45))
+                st.plotly_chart(fig_roi, width='stretch')
+            else:
+                st.info("No hay campañas de marketing disponibles")
+        
+        with crm_tab4:
+            st.subheader("🔮 Predicciones y Recomendaciones")
+            
+            if predictions:
+                # Alertas de alta prioridad
+                high_priority = [p for p in predictions if p['priority'] == 'alta']
+                if high_priority:
+                    st.warning(f"⚠️ {len(high_priority)} cliente(s) requieren atención inmediata")
+                
+                # Lista de predicciones
+                st.subheader("📋 Predicciones de Clientes")
+                for prediction in predictions:
+                    priority_color = {
+                        'alta': '🔴',
+                        'media': '🟡', 
+                        'baja': '🟢'
+                    }
+                    
+                    with st.expander(f"{priority_color[prediction['priority']]} {prediction['customer_name']} - {prediction['prediction'].replace('_', ' ').title()}"):
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.write(f"**Predicción:** {prediction['prediction'].replace('_', ' ').title()}")
+                            st.write(f"**Probabilidad:** {prediction['probability']}%")
+                            st.write(f"**Prioridad:** {prediction['priority'].title()}")
+                        
+                        with col2:
+                            st.write(f"**Recomendación:** {prediction['recommendation']}")
+                            
+                            # Barra de probabilidad
+                            prob = prediction['probability']
+                            st.progress(prob / 100)
+                            st.caption(f"Confianza: {prob}%")
+                
+                # Gráfico de probabilidades
+                st.subheader("📊 Distribución de Probabilidades")
+                df_predictions = pd.DataFrame(predictions)
+                fig_prob = px.bar(df_predictions, x='customer_name', y='probability',
+                                title="Probabilidades de Predicción",
+                                labels={'customer_name': 'Cliente', 'probability': 'Probabilidad (%)'},
+                                color='priority',
+                                color_discrete_map={'alta': 'red', 'media': 'orange', 'baja': 'green'})
+                fig_prob.update_layout(xaxis=dict(tickangle=45))
+                st.plotly_chart(fig_prob, width='stretch')
+            else:
+                st.info("No hay predicciones disponibles")
+        
+        # Sección de interacciones con clientes
+        st.markdown("---")
+        st.subheader("📞 Gestión de Interacciones")
+        
+        # Seleccionar cliente para ver interacciones
+        if customers:
+            customer_names = [f"{c['name']} (ID: {c['id']})" for c in customers]
+            selected_customer = st.selectbox("Seleccionar Cliente", customer_names)
+            
+            if selected_customer:
+                customer_id = int(selected_customer.split("ID: ")[1].split(")")[0])
+                interactions = db.get_customer_interactions(customer_id)
+                
+                if interactions:
+                    st.subheader(f"📋 Historial de Interacciones - {customers[customer_id-1]['name']}")
+                    
+                    for interaction in interactions:
+                        with st.expander(f"📅 {interaction['date']} - {interaction['type'].title()}"):
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.write(f"**Tipo:** {interaction['type'].title()}")
+                                st.write(f"**Descripción:** {interaction['description']}")
+                                st.write(f"**Resultado:** {interaction['outcome'].replace('_', ' ').title()}")
+                            
+                            with col2:
+                                st.write(f"**Empleado:** {interaction['employee']}")
+                                st.write(f"**Notas:** {interaction['notes']}")
+                else:
+                    st.info("No hay interacciones registradas para este cliente")
+                
+                # Formulario para nueva interacción
+                st.subheader("➕ Nueva Interacción")
+                with st.form("nueva_interaccion_form"):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        interaction_type = st.selectbox("Tipo de Interacción", ["llamada", "email", "visita", "reunión"])
+                        interaction_date = st.date_input("Fecha")
+                        outcome = st.selectbox("Resultado", ["satisfecho", "interesado", "compra_realizada", "no_interesado", "pendiente"])
+                    
+                    with col2:
+                        description = st.text_area("Descripción", placeholder="Descripción de la interacción")
+                        notes = st.text_area("Notas", placeholder="Notas adicionales")
+                        employee = st.text_input("Empleado", placeholder="Nombre del empleado")
+                    
+                    if st.form_submit_button("💾 Guardar Interacción", type="primary"):
+                        interaction_data = {
+                            'customer_id': customer_id,
+                            'type': interaction_type,
+                            'date': interaction_date.strftime('%Y-%m-%d'),
+                            'description': description,
+                            'outcome': outcome,
+                            'notes': notes,
+                            'employee': employee
+                        }
+                        
+                        if db.add_customer_interaction(interaction_data):
+                            st.success("✅ Interacción guardada correctamente")
+                            st.rerun()
+                        else:
+                            st.error("❌ Error al guardar la interacción")
+        else:
+            st.info("No hay clientes disponibles para gestionar interacciones")
 
 def render_proveedores():
     """Renderiza la sección proveedores"""

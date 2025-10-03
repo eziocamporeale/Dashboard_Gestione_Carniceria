@@ -381,6 +381,62 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore eliminando cliente {customer_id}: {e}")
             return False
     
+    # ==================== METODOS CRM ====================
+    
+    def get_customer_interactions(self, customer_id: int) -> List[Dict]:
+        """Obtiene el historial de interacciones de un cliente"""
+        try:
+            manager = self._get_manager()
+            return manager.get_customer_interactions(customer_id)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo interacciones del cliente {customer_id}: {e}")
+            return []
+    
+    def add_customer_interaction(self, interaction_data: Dict[str, Any]) -> bool:
+        """Añade una nueva interacción con el cliente"""
+        try:
+            manager = self._get_manager()
+            return manager.add_customer_interaction(interaction_data)
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo interazione: {e}")
+            return False
+    
+    def get_customer_segments(self) -> List[Dict]:
+        """Obtiene segmentos de clientes"""
+        try:
+            manager = self._get_manager()
+            return manager.get_customer_segments()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo segmenti: {e}")
+            return []
+    
+    def get_customer_analytics(self) -> Dict[str, Any]:
+        """Obtiene analytics de clientes"""
+        try:
+            manager = self._get_manager()
+            return manager.get_customer_analytics()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo analytics: {e}")
+            return {}
+    
+    def get_marketing_campaigns(self) -> List[Dict]:
+        """Obtiene campañas de marketing"""
+        try:
+            manager = self._get_manager()
+            return manager.get_marketing_campaigns()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo campagne: {e}")
+            return []
+    
+    def get_customer_predictions(self) -> List[Dict]:
+        """Obtiene predicciones de clientes"""
+        try:
+            manager = self._get_manager()
+            return manager.get_customer_predictions()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo predizioni: {e}")
+            return []
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:

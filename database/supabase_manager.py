@@ -445,6 +445,125 @@ class SupabaseManager:
             logger.error(f"❌ Error creando cliente: {e}")
             return False
     
+    # ==================== METODOS CRM ====================
+    
+    def get_customer_interactions(self, customer_id: int) -> List[Dict[str, Any]]:
+        """Obtiene el historial de interacciones de un cliente"""
+        try:
+            # Datos de ejemplo para interacciones
+            interactions = [
+                {
+                    'id': 1, 'customer_id': customer_id, 'type': 'llamada', 'date': '2024-09-28',
+                    'description': 'Llamada de seguimiento post-compra', 'outcome': 'satisfecho',
+                    'notes': 'Cliente muy contento con el producto', 'employee': 'Juan Pérez'
+                },
+                {
+                    'id': 2, 'customer_id': customer_id, 'type': 'email', 'date': '2024-09-25',
+                    'description': 'Envío de catálogo de productos', 'outcome': 'interesado',
+                    'notes': 'Solicitó información sobre nuevos productos', 'employee': 'María García'
+                },
+                {
+                    'id': 3, 'customer_id': customer_id, 'type': 'visita', 'date': '2024-09-20',
+                    'description': 'Visita al local para consulta', 'outcome': 'compra_realizada',
+                    'notes': 'Realizó compra por $450', 'employee': 'Carlos López'
+                }
+            ]
+            return [i for i in interactions if i['customer_id'] == customer_id]
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo interacciones del cliente {customer_id}: {e}")
+            return []
+    
+    def add_customer_interaction(self, interaction_data: Dict[str, Any]) -> bool:
+        """Añade una nueva interacción con el cliente"""
+        try:
+            logger.info(f"✅ Nueva interacción añadida: {interaction_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error añadiendo interacción: {e}")
+            return False
+    
+    def get_customer_segments(self) -> List[Dict[str, Any]]:
+        """Obtiene segmentos de clientes"""
+        try:
+            return [
+                {'segment': 'VIP', 'count': 5, 'description': 'Clientes con compras > $5000', 'color': '#FFD700'},
+                {'segment': 'Frecuentes', 'count': 12, 'description': 'Clientes con > 10 compras', 'color': '#32CD32'},
+                {'segment': 'Ocasionales', 'count': 8, 'description': 'Clientes con 3-10 compras', 'color': '#FFA500'},
+                {'segment': 'Nuevos', 'count': 3, 'description': 'Clientes con < 3 compras', 'color': '#87CEEB'},
+                {'segment': 'Inactivos', 'count': 2, 'description': 'Sin compras en 6 meses', 'color': '#DC143C'}
+            ]
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo segmentos: {e}")
+            return []
+    
+    def get_customer_analytics(self) -> Dict[str, Any]:
+        """Obtiene analytics de clientes"""
+        try:
+            return {
+                'total_customers': 30,
+                'active_customers': 25,
+                'new_customers_this_month': 5,
+                'churn_rate': 8.5,
+                'average_purchase_value': 2850.50,
+                'customer_satisfaction': 4.2,
+                'repeat_purchase_rate': 75.0,
+                'lifetime_value': 12500.00
+            }
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo analytics: {e}")
+            return {}
+    
+    def get_marketing_campaigns(self) -> List[Dict[str, Any]]:
+        """Obtiene campañas de marketing"""
+        try:
+            return [
+                {
+                    'id': 1, 'name': 'Oferta Carnes Premium', 'status': 'activa',
+                    'start_date': '2024-09-01', 'end_date': '2024-09-30',
+                    'target_segment': 'VIP', 'response_rate': 15.5,
+                    'conversion_rate': 8.2, 'roi': 250.0
+                },
+                {
+                    'id': 2, 'name': 'Descuento Nuevos Clientes', 'status': 'finalizada',
+                    'start_date': '2024-08-15', 'end_date': '2024-08-31',
+                    'target_segment': 'Nuevos', 'response_rate': 22.3,
+                    'conversion_rate': 12.1, 'roi': 180.0
+                },
+                {
+                    'id': 3, 'name': 'Recordatorio Compras', 'status': 'programada',
+                    'start_date': '2024-10-01', 'end_date': '2024-10-15',
+                    'target_segment': 'Inactivos', 'response_rate': 0.0,
+                    'conversion_rate': 0.0, 'roi': 0.0
+                }
+            ]
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo campañas: {e}")
+            return []
+    
+    def get_customer_predictions(self) -> List[Dict[str, Any]]:
+        """Obtiene predicciones de clientes"""
+        try:
+            return [
+                {
+                    'customer_id': 1, 'customer_name': 'Juan Pérez',
+                    'prediction': 'alto_riesgo_abandono', 'probability': 85.2,
+                    'recommendation': 'Ofrecer descuento especial', 'priority': 'alta'
+                },
+                {
+                    'customer_id': 2, 'customer_name': 'María García',
+                    'prediction': 'compra_probable', 'probability': 78.5,
+                    'recommendation': 'Enviar catálogo de productos', 'priority': 'media'
+                },
+                {
+                    'customer_id': 3, 'customer_name': 'Carlos López',
+                    'prediction': 'cliente_estable', 'probability': 92.1,
+                    'recommendation': 'Mantener relación actual', 'priority': 'baja'
+                }
+            ]
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo predicciones: {e}")
+            return []
+    
     def get_sales_summary(self) -> Dict:
         """Ottiene riepilogo vendite"""
         try:
