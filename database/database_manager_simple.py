@@ -25,6 +25,8 @@ class SimpleDatabaseManager:
         else:
             self.db_path = db_path
         
+        self._deleted_customers = set()  # Traccia clienti eliminati
+        self._customers_cache = None     # Cache per i clienti
         self.init_database()
     
     def init_database(self):
@@ -637,7 +639,7 @@ class SimpleDatabaseManager:
     def get_all_customers(self) -> List[Dict[str, Any]]:
         """Obtiene todos los clientes (versión simplificada)"""
         try:
-            return [
+            all_customers = [
                 {'id': 1, 'name': 'Juan Pérez', 'email': 'juan@email.com', 'phone': '+54 11 1234-5678', 
                  'total_orders': 15, 'total_purchases': 2850.50, 'last_purchase': '2024-09-20', 'is_active': True, 'address': 'Av. Corrientes 1234'},
                 {'id': 2, 'name': 'María García', 'email': 'maria@email.com', 'phone': '+54 11 2345-6789', 
@@ -649,6 +651,10 @@ class SimpleDatabaseManager:
                 {'id': 5, 'name': 'Roberto Silva', 'email': 'roberto@email.com', 'phone': '+54 11 5678-9012', 
                  'total_orders': 6, 'total_purchases': 1850.75, 'last_purchase': '2024-09-21', 'is_active': True, 'address': 'Av. Córdoba 456'}
             ]
+            
+            # Filtra i clienti eliminati
+            active_customers = [c for c in all_customers if c['id'] not in self._deleted_customers]
+            return active_customers
         except Exception as e:
             logger.error(f"❌ Error obteniendo todos los clientes: {e}")
             return []
@@ -666,7 +672,8 @@ class SimpleDatabaseManager:
     def delete_customer(self, customer_id: int) -> bool:
         """Elimina un cliente"""
         try:
-            # En una implementación real, aquí se eliminaría de la base de datos
+            # Aggiungi l'ID alla lista dei clienti eliminati
+            self._deleted_customers.add(customer_id)
             logger.info(f"✅ Cliente {customer_id} eliminado")
             return True
         except Exception as e:

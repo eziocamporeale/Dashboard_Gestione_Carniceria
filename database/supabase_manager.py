@@ -29,6 +29,8 @@ class SupabaseManager:
         """Inizializza il gestore Supabase"""
         self.config = SupabaseConfig()
         self.client = None
+        self._deleted_customers = set()  # Traccia clienti eliminati
+        self._customers_cache = None     # Cache per i clienti
         
         if self.config.is_supabase_configured():
             try:
@@ -372,7 +374,7 @@ class SupabaseManager:
         """Ottiene tutti i clienti"""
         try:
             # Dati di esempio per compatibilità con il dashboard
-            return [
+            all_customers = [
                 {
                     'id': 1, 'name': 'Juan Pérez', 'email': 'juan.perez@email.com',
                     'phone': '+54 11 1234-5678', 'address': 'Av. Corrientes 1234, Buenos Aires',
@@ -404,6 +406,10 @@ class SupabaseManager:
                     'is_active': True, 'created_at': '2024-05-12T11:30:00Z'
                 }
             ]
+            
+            # Filtra i clienti eliminati
+            active_customers = [c for c in all_customers if c['id'] not in self._deleted_customers]
+            return active_customers
         except Exception as e:
             logger.error(f"❌ Errore ottenendo clienti: {e}")
             return []
@@ -421,7 +427,8 @@ class SupabaseManager:
     def delete_customer(self, customer_id: int) -> bool:
         """Elimina un cliente"""
         try:
-            # En una implementación real, aquí se eliminaría de Supabase
+            # Aggiungi l'ID alla lista dei clienti eliminati
+            self._deleted_customers.add(customer_id)
             logger.info(f"✅ Cliente {customer_id} eliminado")
             return True
         except Exception as e:
