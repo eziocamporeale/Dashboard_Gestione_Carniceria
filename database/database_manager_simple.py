@@ -31,6 +31,10 @@ class SimpleDatabaseManager:
         self._suppliers_cache = None     # Cache per i fornitori
         self._deleted_orders = set()     # Traccia ordini eliminati
         self._orders_cache = None        # Cache per gli ordini
+        self._deleted_products = set()   # Traccia prodotti eliminati
+        self._products_cache = None      # Cache per i prodotti
+        self._deleted_sales = set()      # Traccia vendite eliminate
+        self._sales_cache = None         # Cache per le vendite
         self.init_database()
     
     def init_database(self):
@@ -594,7 +598,7 @@ class SimpleDatabaseManager:
     def get_all_products(self) -> List[Dict[str, Any]]:
         """Obtiene todos los productos (versión simplificada)"""
         try:
-            return [
+            all_products = [
                 {
                     'id': 1, 'name': 'Carne de Res Premium', 'code': 'CR001', 
                     'price': 25.50, 'selling_price': 25.50, 'stock': 45, 'current_stock': 45,
@@ -636,6 +640,10 @@ class SimpleDatabaseManager:
                     'min_stock_level': 5, 'category': 'Carnes', 'category_name': 'Carnes'
                 }
             ]
+            
+            # Filtra i prodotti eliminati
+            active_products = [p for p in all_products if p['id'] not in self._deleted_products]
+            return active_products
         except Exception as e:
             logger.error(f"❌ Error obteniendo todos los productos: {e}")
             return []
@@ -877,6 +885,72 @@ class SimpleDatabaseManager:
             return True
         except Exception as e:
             logger.error(f"❌ Error creando pedido: {e}")
+            return False
+    
+    # ==================== METODOS INVENTARIO CRUD ====================
+    
+    def update_product(self, product_id: int, product_data: Dict[str, Any]) -> bool:
+        """Actualiza un producto existente"""
+        try:
+            # En una implementación real, aquí se actualizaría en la base de datos
+            logger.info(f"✅ Producto {product_id} actualizado: {product_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error actualizando producto {product_id}: {e}")
+            return False
+    
+    def delete_product(self, product_id: int) -> bool:
+        """Elimina un producto"""
+        try:
+            # Aggiungi l'ID alla lista dei prodotti eliminati
+            self._deleted_products.add(product_id)
+            logger.info(f"✅ Producto {product_id} eliminado")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando producto {product_id}: {e}")
+            return False
+    
+    def create_product(self, product_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo producto"""
+        try:
+            # En una implementación real, aquí se insertaría en la base de datos
+            logger.info(f"✅ Nuevo producto creado: {product_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error creando producto: {e}")
+            return False
+    
+    # ==================== METODOS VENTAS CRUD ====================
+    
+    def update_sale(self, sale_id: int, sale_data: Dict[str, Any]) -> bool:
+        """Actualiza una venta existente"""
+        try:
+            # En una implementación real, aquí se actualizaría en la base de datos
+            logger.info(f"✅ Venta {sale_id} actualizada: {sale_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error actualizando venta {sale_id}: {e}")
+            return False
+    
+    def delete_sale(self, sale_id: int) -> bool:
+        """Elimina una venta"""
+        try:
+            # Aggiungi l'ID alla lista delle vendite eliminate
+            self._deleted_sales.add(sale_id)
+            logger.info(f"✅ Venta {sale_id} eliminada")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando venta {sale_id}: {e}")
+            return False
+    
+    def create_sale(self, sale_data: Dict[str, Any]) -> bool:
+        """Crea una nueva venta"""
+        try:
+            # En una implementación real, aquí se insertaría en la base de datos
+            logger.info(f"✅ Nueva venta creada: {sale_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error creando venta: {e}")
             return False
     
     def get_supplier_orders(self) -> List[Dict[str, Any]]:

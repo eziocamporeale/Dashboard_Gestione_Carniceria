@@ -504,6 +504,64 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo pedidos de proveedores: {e}")
             return []
     
+    # ==================== METODOS INVENTARIO CRUD ====================
+    
+    def create_product(self, product_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo producto"""
+        try:
+            manager = self._get_manager()
+            return manager.create_product(product_data)
+        except Exception as e:
+            logger.error(f"❌ Errore creando producto: {e}")
+            return False
+    
+    def update_product(self, product_id: int, product_data: Dict[str, Any]) -> bool:
+        """Actualiza un producto existente"""
+        try:
+            manager = self._get_manager()
+            return manager.update_product(product_id, product_data)
+        except Exception as e:
+            logger.error(f"❌ Errore actualizando producto {product_id}: {e}")
+            return False
+    
+    def delete_product(self, product_id: int) -> bool:
+        """Elimina un producto"""
+        try:
+            manager = self._get_manager()
+            return manager.delete_product(product_id)
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando producto {product_id}: {e}")
+            return False
+    
+    # ==================== METODOS VENTAS CRUD ====================
+    
+    def create_sale(self, sale_data: Dict[str, Any]) -> bool:
+        """Crea una nueva venta"""
+        try:
+            manager = self._get_manager()
+            return manager.create_sale(sale_data)
+        except Exception as e:
+            logger.error(f"❌ Errore creando venta: {e}")
+            return False
+    
+    def update_sale(self, sale_id: int, sale_data: Dict[str, Any]) -> bool:
+        """Actualiza una venta existente"""
+        try:
+            manager = self._get_manager()
+            return manager.update_sale(sale_id, sale_data)
+        except Exception as e:
+            logger.error(f"❌ Errore actualizando venta {sale_id}: {e}")
+            return False
+    
+    def delete_sale(self, sale_id: int) -> bool:
+        """Elimina una venta"""
+        try:
+            manager = self._get_manager()
+            return manager.delete_sale(sale_id)
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando venta {sale_id}: {e}")
+            return False
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:

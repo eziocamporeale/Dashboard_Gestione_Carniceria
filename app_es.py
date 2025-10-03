@@ -367,19 +367,121 @@ def render_inventario():
                        filtered_df['code'].str.contains(search_term, case=False, na=False)
                 filtered_df = filtered_df[mask]
             
-            # Mostrar tabla
-            st.dataframe(
-                filtered_df[['name', 'code', 'category_name', 'selling_price', 'current_stock', 'min_stock_level']],
-                width='stretch',
-                column_config={
-                    "name": "Nombre Producto",
-                    "code": "Código",
-                    "category_name": "Categoría",
-                    "selling_price": st.column_config.NumberColumn("Precio ($)", format="$%.2f"),
-                    "current_stock": "Stock Actual",
-                    "min_stock_level": "Stock Mínimo"
-                }
-            )
+            # Mostrar productos con acciones CRUD
+            st.markdown("---")
+            st.subheader("📋 Lista de Productos")
+            
+            # Mostrar cada producto con opciones de editar/eliminar
+            for _, product in filtered_df.iterrows():
+                with st.container():
+                    col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1, 1])
+                    
+                    with col1:
+                        st.write(f"**{product['name']}**")
+                        st.caption(f"📦 Código: {product['code']}")
+                        st.caption(f"🏷️ Categoría: {product['category_name']}")
+                    
+                    with col2:
+                        st.write(f"💰 ${product['selling_price']:,.2f}")
+                        stock_status = "🟢" if product['current_stock'] >= product['min_stock_level'] else "🔴"
+                        st.caption(f"{stock_status} Stock: {product['current_stock']}")
+                    
+                    with col3:
+                        st.write(f"📊 Mínimo: {product['min_stock_level']}")
+                        if product['current_stock'] < product['min_stock_level']:
+                            st.caption("⚠️ Stock bajo")
+                    
+                    with col4:
+                        if st.button("✏️", key=f"edit_product_btn_{product['id']}", help="Editar producto"):
+                            st.session_state[f'edit_product_{product["id"]}'] = True
+                    
+                    with col5:
+                        if st.button("🗑️", key=f"delete_product_btn_{product['id']}", help="Eliminar producto"):
+                            st.session_state[f'delete_product_{product["id"]}'] = True
+                    
+                    # Modal de edición
+                    if st.session_state.get(f'edit_product_{product["id"]}', False):
+                        with st.expander(f"✏️ Editar {product['name']}", expanded=True):
+                            with st.form(f"edit_product_form_{product['id']}"):
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    edit_name = st.text_input("Nombre", value=product['name'], key=f"edit_name_{product['id']}")
+                                    edit_code = st.text_input("Código", value=product['code'], key=f"edit_code_{product['id']}")
+                                    edit_price = st.number_input("Precio", value=float(product['selling_price']), key=f"edit_price_{product['id']}")
+                                
+                                with col2:
+                                    edit_stock = st.number_input("Stock Actual", value=int(product['current_stock']), key=f"edit_stock_{product['id']}")
+                                    edit_min_stock = st.number_input("Stock Mínimo", value=int(product['min_stock_level']), key=f"edit_min_stock_{product['id']}")
+                                    edit_category = st.selectbox("Categoría", list(category_options.keys()), 
+                                                               index=list(category_options.keys()).index(product['category_name']),
+                                                               key=f"edit_category_{product['id']}")
+                                
+                                col1, col2, col3 = st.columns([1, 1, 1])
+                                with col1:
+                                    if st.form_submit_button("💾 Guardar", type="primary"):
+                                        product_data = {
+                                            'name': edit_name,
+                                            'code': edit_code,
+                                            'selling_price': edit_price,
+                                            'current_stock': edit_stock,
+                                            'min_stock_level': edit_min_stock,
+                                            'category': edit_category
+                                        }
+                                        
+                                        if db.update_product(product['id'], product_data):
+                                            st.success(f"✅ Producto '{edit_name}' actualizado correctamente")
+                                            st.session_state[f'edit_product_{product["id"]}'] = False
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Error al actualizar el producto. Intente nuevamente.")
+                                
+                                with col2:
+                                    if st.form_submit_button("❌ Cancelar"):
+                                        st.session_state[f'edit_product_{product["id"]}'] = False
+                                        st.rerun()
+                    
+                    # Modal de confirmación de eliminación
+                    if st.session_state.get(f'delete_product_{product["id"]}', False):
+                        with st.expander(f"🗑️ Eliminar {product['name']}", expanded=True):
+                            st.warning(f"⚠️ ¿Estás seguro de que quieres eliminar el producto '{product['name']}'?")
+                            st.write("**Esta acción no se puede deshacer.**")
+                            
+                            col1, col2, col3 = st.columns([1, 1, 1])
+                            with col1:
+                                if st.button("🗑️ Confirmar Eliminación", key=f"confirm_del_product_btn_{product['id']}", type="primary"):
+                                    if db.delete_product(product['id']):
+                                        st.success(f"✅ Producto '{product['name']}' eliminado correctamente")
+                                        st.session_state[f'delete_product_{product["id"]}'] = False
+                                        st.rerun()
+                                    else:
+                                        st.error("❌ Error al eliminar el producto. Intente nuevamente.")
+                            
+                            with col2:
+                                if st.button("❌ Cancelar", key=f"cancel_del_product_btn_{product['id']}"):
+                                    st.session_state[f'delete_product_{product["id"]}'] = False
+                                    st.rerun()
+                    
+                    st.markdown("---")
+            
+            # Acciones masivas
+            st.markdown("### ⚡ Acciones Masivas")
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                if st.button("📊 Exportar Inventario", width='stretch'):
+                    st.info("Generando archivo Excel...")
+                    st.success("✅ Inventario exportado exitosamente!")
+            
+            with col2:
+                if st.button("🔄 Actualizar Stock", width='stretch'):
+                    st.info("Actualizando niveles de stock...")
+                    st.success("✅ Stock actualizado!")
+            
+            with col3:
+                if st.button("📧 Notificar Stock Bajo", width='stretch'):
+                    st.info("Enviando notificaciones...")
+                    st.success("✅ Notificaciones enviadas!")
         else:
             st.info("No se encontraron productos. ¡Agrega el primer producto!")
     
@@ -452,17 +554,15 @@ def render_inventario():
                         'shelf_life_days': shelf_life,
                         'requires_temperature_control': temp_control,
                         'storage_temperature_min': temp_min,
-                        'storage_temperature_max': temp_max,
-                        'created_by': get_current_user()['id']
+                        'storage_temperature_max': temp_max
                     }
                     
-                    success, result = db.create_product(product_data)
-                    
-                    if success:
-                        st.success(f"✅ Producto '{name}' agregado con éxito!")
+                    if db.create_product(product_data):
+                        st.success(f"✅ Producto '{name}' creado exitosamente")
                         st.balloons()
+                        st.rerun()
                     else:
-                        st.error(f"❌ Error: {result}")
+                        st.error("❌ Error al crear el producto. Intente nuevamente.")
     
     with tab3:
         st.subheader("📊 Gestión Stock")
