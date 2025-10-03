@@ -1161,7 +1161,6 @@ def render_proveedores():
         
         if suppliers:
             # Crear DataFrame para mostrar proveedores
-            import pandas as pd
             df_suppliers = pd.DataFrame(suppliers)
             
             # Mostrar métricas rápidas
@@ -1609,7 +1608,6 @@ def render_personal():
         st.markdown("---")
         
         # Mostrar tabla de empleados con acciones
-        import pandas as pd
         df_employees = pd.DataFrame(filtered_employees)
         
         if len(filtered_employees) > 0:
@@ -2597,8 +2595,6 @@ def render_analytics():
         st.subheader("📈 Reportes de Ventas")
         
         # Datos de ejemplo para ventas
-        import pandas as pd
-        import plotly.express as px
         from datetime import datetime, timedelta
         
         # Generar datos de ventas de los últimos 30 días
@@ -3228,7 +3224,6 @@ def render_configuracion():
         st.markdown("---")
         
         # Tabla de usuarios
-        import pandas as pd
         df_users = pd.DataFrame(users_data)
         st.dataframe(
             df_users[['username', 'name', 'email', 'role', 'status', 'last_login']],
