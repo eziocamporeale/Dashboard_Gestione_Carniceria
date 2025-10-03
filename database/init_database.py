@@ -110,11 +110,9 @@ def main():
         print(f"   📏 Dimensione: {Path(DATABASE_PATH).stat().st_size / 1024:.1f} KB")
         print(f"   🗓️ Creato: {Path(DATABASE_PATH).stat().st_mtime}")
         
-        # Credenziali di default
-        print("\n🔐 Credenziali di Default:")
-        print("   👤 Username: admin")
-        print("   🔑 Password: admin123")
-        print("   ⚠️  IMPORTANTE: Cambia la password dopo il primo accesso!")
+        # Informazioni di accesso
+        print("\n🔐 Accesso al Sistema:")
+        print("   ⚠️  IMPORTANTE: Contatta l'amministratore per le credenziali!")
         
         print("\n🎉 Inizializzazione completata con successo!")
         print("🚀 Puoi ora avviare l'applicazione con: streamlit run app.py")

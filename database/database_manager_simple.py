@@ -147,7 +147,7 @@ class SimpleDatabaseManager:
                 """, role)
             
             # Insertar usuario admin por defecto
-            admin_password = '$2b$12$N7ODldIPrnAg078f8VOOb.XRd.cEHJZ6YYhrDTSAE5BF9r52Km1Qm'  # admin123
+            admin_password = '$2b$12$N7ODldIPrnAg078f8VOOb.XRd.cEHJZ6YYhrDTSAE5BF9r52Km1Qm'  # Password hashed
             cursor.execute("""
                 INSERT OR IGNORE INTO users (username, email, password_hash, first_name, last_name, role_id, is_admin, created_by)
                 VALUES ('admin', 'admin@carniceria.com', ?, 'Admin', 'Sistema', 1, 1, 1)

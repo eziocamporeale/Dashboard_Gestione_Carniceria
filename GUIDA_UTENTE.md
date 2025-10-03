@@ -56,11 +56,8 @@ L'applicazione sarà disponibile su: **http://localhost:8501**
 
 ## 🔐 Primo Accesso
 
-### Credenziali di Default
-- **Username**: `admin`
-- **Password**: `admin123`
-
-⚠️ **IMPORTANTE**: Cambia la password dopo il primo accesso!
+### Accesso al Sistema
+⚠️ **IMPORTANTE**: Contatta l'amministratore per ottenere le credenziali di accesso!
 
 ### Cambio Password
 1. Accedi al sistema

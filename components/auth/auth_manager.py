@@ -538,7 +538,8 @@ if __name__ == "__main__":
     
     # Test login con credenziali di default
     auth_manager = AuthManager()
-    success, message, user = auth_manager.login("admin", "admin123")
+    # Test login - credentials removed for security
+    success, message, user = auth_manager.login("test_user", "test_password")
     
     if success:
         print(f"✅ Login test riuscito: {user['username']}")
