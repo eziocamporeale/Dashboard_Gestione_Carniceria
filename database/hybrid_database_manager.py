@@ -24,7 +24,13 @@ except ImportError as e:
     SUPABASE_AVAILABLE = False
     SupabaseManager = None
 
-from database.database_manager_simple import SimpleDatabaseManager
+try:
+    from database.database_manager_simple import SimpleDatabaseManager
+    SQLITE_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️ SimpleDatabaseManager non disponibile: {e}")
+    SQLITE_AVAILABLE = False
+    SimpleDatabaseManager = None
 
 # Configurazione logging
 logging.basicConfig(level=logging.INFO)
@@ -42,7 +48,12 @@ class HybridDatabaseManager:
             self.supabase_manager = None
             self.use_supabase = False
             
-        self.sqlite_manager = SimpleDatabaseManager()
+        if SQLITE_AVAILABLE and SimpleDatabaseManager:
+            self.sqlite_manager = SimpleDatabaseManager()
+        else:
+            self.sqlite_manager = None
+            logger.error("❌ Nessun gestore di database disponibile!")
+            raise Exception("Impossibile inizializzare alcun gestore di database")
         
         if self.use_supabase:
             logger.info("✅ Usando Supabase come database principale")
