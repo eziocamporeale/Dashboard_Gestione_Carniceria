@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 from datetime import datetime, date, timedelta
 import sys
 from pathlib import Path
+from streamlit_option_menu import option_menu
 import logging
 
 # Assicurati che pandas sia disponibile globalmente
@@ -28,6 +29,16 @@ sys.path.insert(0, str(project_root))
 # Importar módulos del proyecto
 from config_es import APP_NAME, APP_VERSION, APP_AUTHOR
 from database.hybrid_database_manager import get_hybrid_manager
+
+# Importa il menu centrale
+try:
+    from components.layout.central_menu import render_central_menu, render_compact_sidebar
+    CENTRAL_MENU_AVAILABLE = True
+except ImportError as e:
+    print(f"❌ Errore import central_menu: {e}")
+    render_central_menu = None
+    render_compact_sidebar = None
+    CENTRAL_MENU_AVAILABLE = False
 from components.auth.auth_manager import (
     get_auth_manager, require_auth, require_permission, 
     render_login_form, render_user_info, render_permission_denied,
@@ -2760,11 +2771,17 @@ def main():
         render_login_form()
         return
     
-    # Renderizar sidebar
-    render_sidebar()
-    
-    # Obtener página actual
-    current_page = st.session_state.get('current_page', 'dashboard')
+    # Menu centrale sempre visibile (come in DASH_GESTIONE_CPA)
+    if CENTRAL_MENU_AVAILABLE and render_central_menu:
+        # Renderizza sidebar compatta
+        render_compact_sidebar()
+        
+        # Renderizza menu centrale
+        current_page = render_central_menu(st.session_state.get('current_page', 'dashboard'))
+    else:
+        # Fallback al menu originale
+        render_sidebar()
+        current_page = st.session_state.get('current_page', 'dashboard')
     
     # Renderizar contenido principal
     try:
