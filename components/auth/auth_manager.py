@@ -452,20 +452,11 @@ def render_login_form():
             help="Password per l'accesso al sistema"
         )
         
-        col1, col2 = st.columns([1, 1])
-        
-        with col1:
-            login_button = st.form_submit_button("🚀 Accedi", use_container_width=True)
+        # Pulsante login centrato
+        col1, col2, col3 = st.columns([1, 2, 1])
         
         with col2:
-            if st.form_submit_button("❓ Aiuto", use_container_width=True):
-                st.info("""
-                **Credenziali di Default:**
-                - Username: `admin`
-                - Password: `admin123`
-                
-                **Nota:** Cambia la password dopo il primo accesso!
-                """)
+            login_button = st.form_submit_button("🚀 Accedi", use_container_width=True, type="primary")
         
         if login_button:
             if not username or not password:
