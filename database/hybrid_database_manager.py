@@ -354,6 +354,33 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo tutti i clienti: {e}")
             return []
     
+    def create_customer(self, customer_data: Dict[str, Any]) -> bool:
+        """Crea un nuovo cliente"""
+        try:
+            manager = self._get_manager()
+            return manager.create_customer(customer_data)
+        except Exception as e:
+            logger.error(f"❌ Errore creando cliente: {e}")
+            return False
+    
+    def update_customer(self, customer_id: int, customer_data: Dict[str, Any]) -> bool:
+        """Actualiza un cliente existente"""
+        try:
+            manager = self._get_manager()
+            return manager.update_customer(customer_id, customer_data)
+        except Exception as e:
+            logger.error(f"❌ Errore actualizando cliente {customer_id}: {e}")
+            return False
+    
+    def delete_customer(self, customer_id: int) -> bool:
+        """Elimina un cliente"""
+        try:
+            manager = self._get_manager()
+            return manager.delete_customer(customer_id)
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando cliente {customer_id}: {e}")
+            return False
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:
