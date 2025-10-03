@@ -466,6 +466,44 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore eliminando proveedor {supplier_id}: {e}")
             return False
     
+    # ==================== METODOS ORDERS CRUD ====================
+    
+    def create_order(self, order_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo pedido"""
+        try:
+            manager = self._get_manager()
+            return manager.create_order(order_data)
+        except Exception as e:
+            logger.error(f"❌ Errore creando pedido: {e}")
+            return False
+    
+    def update_order(self, order_id: int, order_data: Dict[str, Any]) -> bool:
+        """Actualiza un pedido existente"""
+        try:
+            manager = self._get_manager()
+            return manager.update_order(order_id, order_data)
+        except Exception as e:
+            logger.error(f"❌ Errore actualizando pedido {order_id}: {e}")
+            return False
+    
+    def delete_order(self, order_id: int) -> bool:
+        """Elimina un pedido"""
+        try:
+            manager = self._get_manager()
+            return manager.delete_order(order_id)
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando pedido {order_id}: {e}")
+            return False
+    
+    def get_supplier_orders(self) -> List[Dict]:
+        """Obtiene todos los pedidos de proveedores"""
+        try:
+            manager = self._get_manager()
+            return manager.get_supplier_orders()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo pedidos de proveedores: {e}")
+            return []
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:

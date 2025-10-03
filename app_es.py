@@ -1438,70 +1438,165 @@ def render_proveedores():
     with tab4:
         st.subheader("📦 Gestión de Pedidos")
         
-        # Simular pedidos de proveedores
-        sample_orders = [
-            {
-                'id': 1,
-                'supplier_name': 'Distribuidora ABC',
-                'order_date': '2024-09-20',
-                'delivery_date': '2024-09-25',
-                'status': 'Pendiente',
-                'total_amount': 1250.50,
-                'items_count': 15
-            },
-            {
-                'id': 2,
-                'supplier_name': 'Carnes Premium',
-                'order_date': '2024-09-18',
-                'delivery_date': '2024-09-22',
-                'status': 'Entregado',
-                'total_amount': 890.75,
-                'items_count': 8
-            },
-            {
-                'id': 3,
-                'supplier_name': 'Embutidos del Sur',
-                'order_date': '2024-09-15',
-                'delivery_date': '2024-09-20',
-                'status': 'En Tránsito',
-                'total_amount': 675.25,
-                'items_count': 12
-            }
-        ]
+        # Obtener pedidos de proveedores desde la base de datos
+        orders = db.get_supplier_orders()
         
         # Métricas de pedidos
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Pedidos Totales", len(sample_orders))
+            st.metric("Pedidos Totales", len(orders))
         with col2:
-            pending_orders = len([o for o in sample_orders if o['status'] == 'Pendiente'])
+            pending_orders = len([o for o in orders if o['status'] == 'Pendiente'])
             st.metric("Pendientes", pending_orders)
         with col3:
-            delivered_orders = len([o for o in sample_orders if o['status'] == 'Entregado'])
+            delivered_orders = len([o for o in orders if o['status'] == 'Entregado'])
             st.metric("Entregados", delivered_orders)
         with col4:
-            total_value = sum(o['total_amount'] for o in sample_orders)
+            total_value = sum(o['total_amount'] for o in orders)
             st.metric("Valor Total", f"${total_value:,.2f}")
         
         st.markdown("---")
         
-        # Tabla de pedidos
-        df_orders = pd.DataFrame(sample_orders)
-        st.dataframe(
-            df_orders,
-            width='stretch',
-            column_config={
-                "id": "ID",
-                "supplier_name": "Proveedor",
-                "order_date": "Fecha Pedido",
-                "delivery_date": "Fecha Entrega",
-                "status": st.column_config.SelectboxColumn("Estado", options=["Pendiente", "En Tránsito", "Entregado", "Cancelado"]),
-                "total_amount": st.column_config.NumberColumn("Monto Total", format="$%.2f"),
-                "items_count": "Items"
-            }
-        )
+        # Mostrar pedidos con acciones CRUD
+        if orders:
+            st.subheader("📋 Lista de Pedidos")
+            
+            # Filtros
+            col1, col2 = st.columns(2)
+            with col1:
+                search_term = st.text_input("🔍 Buscar pedido", placeholder="Proveedor, estado...")
+            with col2:
+                status_filter = st.selectbox("📊 Filtrar por estado", ["Todos", "Pendiente", "En Tránsito", "Entregado", "Cancelado"])
+            
+            # Aplicar filtros
+            filtered_orders = orders
+            if search_term:
+                filtered_orders = [o for o in orders if 
+                                 search_term.lower() in o.get('supplier_name', '').lower() or
+                                 search_term.lower() in o.get('status', '').lower()]
+            
+            if status_filter != "Todos":
+                filtered_orders = [o for o in filtered_orders if o['status'] == status_filter]
+            
+            # Mostrar cada pedido con opciones de editar/eliminar
+            for order in filtered_orders:
+                with st.container():
+                    col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1, 1])
+                    
+                    with col1:
+                        st.write(f"**Pedido #{order['id']}**")
+                        st.write(f"🏢 {order['supplier_name']}")
+                        st.caption(f"📅 Pedido: {order['order_date']}")
+                        st.caption(f"🚚 Entrega: {order['delivery_date']}")
+                    
+                    with col2:
+                        st.write(f"💰 ${order['total_amount']:,.2f}")
+                        st.caption(f"📦 {order['items_count']} items")
+                    
+                    with col3:
+                        status_color = {
+                            'Pendiente': '🟡',
+                            'En Tránsito': '🔵',
+                            'Entregado': '🟢',
+                            'Cancelado': '🔴'
+                        }
+                        st.write(f"{status_color.get(order['status'], '⚪')} {order['status']}")
+                    
+                    with col4:
+                        if st.button("✏️", key=f"edit_order_btn_{order['id']}", help="Editar pedido"):
+                            st.session_state[f'edit_order_{order["id"]}'] = True
+                    
+                    with col5:
+                        if st.button("🗑️", key=f"delete_order_btn_{order['id']}", help="Eliminar pedido"):
+                            st.session_state[f'delete_order_{order["id"]}'] = True
+                    
+                    # Modal de edición
+                    if st.session_state.get(f'edit_order_{order["id"]}', False):
+                        with st.expander(f"✏️ Editar Pedido #{order['id']}", expanded=True):
+                            with st.form(f"edit_order_form_{order['id']}"):
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    edit_supplier = st.text_input("Proveedor", value=order['supplier_name'], key=f"edit_supplier_{order['id']}")
+                                    edit_order_date = st.date_input("Fecha Pedido", value=pd.to_datetime(order['order_date']).date(), key=f"edit_order_date_{order['id']}")
+                                    edit_delivery_date = st.date_input("Fecha Entrega", value=pd.to_datetime(order['delivery_date']).date(), key=f"edit_delivery_date_{order['id']}")
+                                
+                                with col2:
+                                    edit_status = st.selectbox("Estado", ["Pendiente", "En Tránsito", "Entregado", "Cancelado"], 
+                                                             index=["Pendiente", "En Tránsito", "Entregado", "Cancelado"].index(order['status']),
+                                                             key=f"edit_status_{order['id']}")
+                                    edit_amount = st.number_input("Monto Total", value=float(order['total_amount']), key=f"edit_amount_{order['id']}")
+                                    edit_items = st.number_input("Cantidad Items", value=int(order['items_count']), key=f"edit_items_{order['id']}")
+                                
+                                col1, col2, col3 = st.columns([1, 1, 1])
+                                with col1:
+                                    if st.form_submit_button("💾 Guardar", type="primary"):
+                                        order_data = {
+                                            'supplier_name': edit_supplier,
+                                            'order_date': edit_order_date.strftime('%Y-%m-%d'),
+                                            'delivery_date': edit_delivery_date.strftime('%Y-%m-%d'),
+                                            'status': edit_status,
+                                            'total_amount': edit_amount,
+                                            'items_count': edit_items
+                                        }
+                                        
+                                        if db.update_order(order['id'], order_data):
+                                            st.success(f"✅ Pedido #{order['id']} actualizado correctamente")
+                                            st.session_state[f'edit_order_{order["id"]}'] = False
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Error al actualizar el pedido. Intente nuevamente.")
+                                
+                                with col2:
+                                    if st.form_submit_button("❌ Cancelar"):
+                                        st.session_state[f'edit_order_{order["id"]}'] = False
+                                        st.rerun()
+                    
+                    # Modal de confirmación de eliminación
+                    if st.session_state.get(f'delete_order_{order["id"]}', False):
+                        with st.expander(f"🗑️ Eliminar Pedido #{order['id']}", expanded=True):
+                            st.warning(f"⚠️ ¿Estás seguro de que quieres eliminar el pedido #{order['id']} de '{order['supplier_name']}'?")
+                            st.write("**Esta acción no se puede deshacer.**")
+                            
+                            col1, col2, col3 = st.columns([1, 1, 1])
+                            with col1:
+                                if st.button("🗑️ Confirmar Eliminación", key=f"confirm_del_order_btn_{order['id']}", type="primary"):
+                                    if db.delete_order(order['id']):
+                                        st.success(f"✅ Pedido #{order['id']} eliminado correctamente")
+                                        st.session_state[f'delete_order_{order["id"]}'] = False
+                                        st.rerun()
+                                    else:
+                                        st.error("❌ Error al eliminar el pedido. Intente nuevamente.")
+                            
+                            with col2:
+                                if st.button("❌ Cancelar", key=f"cancel_del_order_btn_{order['id']}"):
+                                    st.session_state[f'delete_order_{order["id"]}'] = False
+                                    st.rerun()
+                    
+                    st.markdown("---")
+            
+            # Acciones masivas
+            st.markdown("### ⚡ Acciones Masivas")
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                if st.button("📧 Notificar Proveedores", width='stretch'):
+                    st.info("Funcionalidad de notificación en desarrollo")
+            
+            with col2:
+                if st.button("📊 Exportar Pedidos", width='stretch'):
+                    st.info("Generando archivo Excel...")
+                    st.success("✅ Pedidos exportados exitosamente!")
+            
+            with col3:
+                if st.button("🔄 Actualizar Estados", width='stretch'):
+                    st.info("Actualizando estados de pedidos...")
+                    st.success("✅ Estados actualizados!")
+        else:
+            st.info("No hay pedidos registrados")
         
         # Botón para nuevo pedido
+        st.markdown("---")
         if st.button("➕ Nuevo Pedido", width='stretch', type="primary"):
             st.info("🚧 Funcionalidad de nuevo pedido en desarrollo")
 

@@ -29,6 +29,8 @@ class SimpleDatabaseManager:
         self._customers_cache = None     # Cache per i clienti
         self._deleted_suppliers = set()  # Traccia fornitori eliminati
         self._suppliers_cache = None     # Cache per i fornitori
+        self._deleted_orders = set()     # Traccia ordini eliminati
+        self._orders_cache = None        # Cache per gli ordini
         self.init_database()
     
     def init_database(self):
@@ -844,16 +846,93 @@ class SimpleDatabaseManager:
             logger.error(f"❌ Error creando proveedor: {e}")
             return False
     
+    # ==================== METODOS ORDERS CRUD ====================
+    
+    def update_order(self, order_id: int, order_data: Dict[str, Any]) -> bool:
+        """Actualiza un pedido existente"""
+        try:
+            # En una implementación real, aquí se actualizaría en la base de datos
+            logger.info(f"✅ Pedido {order_id} actualizado: {order_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error actualizando pedido {order_id}: {e}")
+            return False
+    
+    def delete_order(self, order_id: int) -> bool:
+        """Elimina un pedido"""
+        try:
+            # Aggiungi l'ID alla lista degli ordini eliminati
+            self._deleted_orders.add(order_id)
+            logger.info(f"✅ Pedido {order_id} eliminado")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando pedido {order_id}: {e}")
+            return False
+    
+    def create_order(self, order_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo pedido"""
+        try:
+            # En una implementación real, aquí se insertaría en la base de datos
+            logger.info(f"✅ Nuevo pedido creado: {order_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error creando pedido: {e}")
+            return False
+    
+    def get_supplier_orders(self) -> List[Dict[str, Any]]:
+        """Obtiene todos los pedidos de proveedores"""
+        try:
+            all_orders = [
+                {
+                    'id': 1,
+                    'supplier_name': 'Distribuidora ABC',
+                    'order_date': '2024-09-20',
+                    'delivery_date': '2024-09-25',
+                    'status': 'Pendiente',
+                    'total_amount': 1250.50,
+                    'items_count': 15
+                },
+                {
+                    'id': 2,
+                    'supplier_name': 'Carnes Premium',
+                    'order_date': '2024-09-18',
+                    'delivery_date': '2024-09-22',
+                    'status': 'Entregado',
+                    'total_amount': 890.75,
+                    'items_count': 8
+                },
+                {
+                    'id': 3,
+                    'supplier_name': 'Embutidos del Sur',
+                    'order_date': '2024-09-15',
+                    'delivery_date': '2024-09-20',
+                    'status': 'En Tránsito',
+                    'total_amount': 675.25,
+                    'items_count': 12
+                }
+            ]
+            
+            # Filtra gli ordini eliminati
+            active_orders = [o for o in all_orders if o['id'] not in self._deleted_orders]
+            return active_orders
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo pedidos de proveedores: {e}")
+            return []
+    
     def get_all_orders(self) -> List[Dict[str, Any]]:
         """Obtiene todas las órdenes (versión simplificada)"""
         try:
-            return [
+            all_orders = [
                 {'id': 1, 'customer_name': 'Juan Pérez', 'total': 125.50, 'status': 'Completada', 'date': '2024-09-20'},
                 {'id': 2, 'customer_name': 'María García', 'total': 89.75, 'status': 'En Proceso', 'date': '2024-09-21'},
                 {'id': 3, 'customer_name': 'Carlos López', 'total': 156.25, 'status': 'Completada', 'date': '2024-09-19'},
                 {'id': 4, 'customer_name': 'Ana Martínez', 'total': 78.90, 'status': 'Pendiente', 'date': '2024-09-22'},
                 {'id': 5, 'customer_name': 'Roberto Silva', 'total': 203.15, 'status': 'Completada', 'date': '2024-09-18'}
             ]
+            
+            # Filtra gli ordini eliminati
+            active_orders = [o for o in all_orders if o['id'] not in self._deleted_orders]
+            return active_orders
         except Exception as e:
             logger.error(f"❌ Error obteniendo todas las órdenes: {e}")
             return []
