@@ -642,12 +642,6 @@ def render_inventario():
         else:
             st.success("✅ Ningún producto próximo a vencer")
 
-def render_ventas():
-    """Renderiza la sección ventas"""
-    require_permission("ventas")
-    
-    st.header("🛒 Gestión Ventas")
-    st.info("🚧 Funcionalidad en desarrollo - Sistema de ventas y POS")
 
 def render_clientes():
     """Renderiza la sección clientes"""

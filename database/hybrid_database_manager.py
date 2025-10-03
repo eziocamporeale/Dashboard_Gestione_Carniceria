@@ -343,6 +343,33 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo tutti i clienti: {e}")
             return []
     
+    def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
+        """Ottiene dati vendite giornaliere"""
+        try:
+            manager = self._get_manager()
+            return manager.get_daily_sales_data(days)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo dati vendite giornaliere: {e}")
+            return []
+    
+    def get_sales_by_category(self) -> List[Dict]:
+        """Ottiene vendite per categoria"""
+        try:
+            manager = self._get_manager()
+            return manager.get_sales_by_category()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo vendite per categoria: {e}")
+            return []
+    
+    def get_top_selling_products(self, limit: int = 10) -> List[Dict]:
+        """Ottiene prodotti più venduti"""
+        try:
+            manager = self._get_manager()
+            return manager.get_top_selling_products(limit)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo prodotti più venduti: {e}")
+            return []
+    
     # ==================== METODI UTILITÀ ====================
     
     def get_database_info(self) -> Dict[str, Any]:
