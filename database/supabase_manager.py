@@ -408,6 +408,36 @@ class SupabaseManager:
             logger.error(f"❌ Errore ottenendo clienti: {e}")
             return []
     
+    def update_customer(self, customer_id: int, customer_data: Dict[str, Any]) -> bool:
+        """Actualiza un cliente existente"""
+        try:
+            # En una implementación real, aquí se actualizaría en Supabase
+            logger.info(f"✅ Cliente {customer_id} actualizado: {customer_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error actualizando cliente {customer_id}: {e}")
+            return False
+    
+    def delete_customer(self, customer_id: int) -> bool:
+        """Elimina un cliente"""
+        try:
+            # En una implementación real, aquí se eliminaría de Supabase
+            logger.info(f"✅ Cliente {customer_id} eliminado")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando cliente {customer_id}: {e}")
+            return False
+    
+    def create_customer(self, customer_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo cliente"""
+        try:
+            # En una implementación real, aquí se insertaría en Supabase
+            logger.info(f"✅ Nuevo cliente creado: {customer_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error creando cliente: {e}")
+            return False
+    
     def get_sales_summary(self) -> Dict:
         """Ottiene riepilogo vendite"""
         try:

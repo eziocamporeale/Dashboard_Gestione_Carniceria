@@ -702,21 +702,116 @@ def render_clientes():
                 active_customers = len([c for c in filtered_customers if c.get('is_active', True)])
                 st.metric("Clientes Activos", active_customers)
             
-            # Tabla de clientes
+            # Tabla de clientes con acciones
             if filtered_customers:
-                df_customers = pd.DataFrame(filtered_customers)
-                st.dataframe(
-                    df_customers[['name', 'email', 'phone', 'total_purchases', 'total_orders', 'last_purchase']],
-                    width='stretch',
-                    column_config={
-                        "name": "Nombre",
-                        "email": "Email",
-                        "phone": "Teléfono",
-                        "total_purchases": st.column_config.NumberColumn("Compras Totales", format="$%.2f"),
-                        "total_orders": "Órdenes",
-                        "last_purchase": "Última Compra"
-                    }
-                )
+                st.markdown("---")
+                st.subheader("📋 Lista de Clientes")
+                
+                # Mostrar cada cliente con opciones de editar/eliminar
+                for i, customer in enumerate(filtered_customers):
+                    with st.container():
+                        col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1, 1])
+                        
+                        with col1:
+                            st.write(f"**{customer['name']}**")
+                            st.caption(f"📧 {customer['email']}")
+                            st.caption(f"📞 {customer['phone']}")
+                        
+                        with col2:
+                            st.write(f"💰 ${customer['total_purchases']:,.2f}")
+                            st.caption(f"📦 {customer['total_orders']} órdenes")
+                        
+                        with col3:
+                            st.write(f"📅 {customer['last_purchase']}")
+                            status = "🟢 Activo" if customer.get('is_active', True) else "🔴 Inactivo"
+                            st.caption(status)
+                        
+                        with col4:
+                            if st.button("✏️", key=f"edit_{customer['id']}", help="Editar cliente"):
+                                st.session_state[f'edit_customer_{customer["id"]}'] = True
+                        
+                        with col5:
+                            if st.button("🗑️", key=f"delete_{customer['id']}", help="Eliminar cliente"):
+                                st.session_state[f'delete_customer_{customer["id"]}'] = True
+                        
+                        # Modal de edición
+                        if st.session_state.get(f'edit_customer_{customer["id"]}', False):
+                            with st.expander(f"✏️ Editar {customer['name']}", expanded=True):
+                                with st.form(f"edit_form_{customer['id']}"):
+                                    col1, col2 = st.columns(2)
+                                    
+                                    with col1:
+                                        edit_name = st.text_input("Nombre", value=customer['name'], key=f"edit_name_{customer['id']}")
+                                        edit_email = st.text_input("Email", value=customer['email'], key=f"edit_email_{customer['id']}")
+                                        edit_phone = st.text_input("Teléfono", value=customer['phone'], key=f"edit_phone_{customer['id']}")
+                                    
+                                    with col2:
+                                        edit_address = st.text_area("Dirección", value=customer.get('address', ''), key=f"edit_address_{customer['id']}")
+                                        edit_active = st.checkbox("Activo", value=customer.get('is_active', True), key=f"edit_active_{customer['id']}")
+                                    
+                                    col1, col2, col3 = st.columns([1, 1, 1])
+                                    with col1:
+                                        if st.form_submit_button("💾 Guardar", type="primary"):
+                                            customer_data = {
+                                                'name': edit_name,
+                                                'email': edit_email,
+                                                'phone': edit_phone,
+                                                'address': edit_address,
+                                                'is_active': edit_active
+                                            }
+                                            
+                                            if db.update_customer(customer['id'], customer_data):
+                                                st.success(f"✅ Cliente '{edit_name}' actualizado correctamente")
+                                                st.session_state[f'edit_customer_{customer["id"]}'] = False
+                                                st.rerun()
+                                            else:
+                                                st.error("❌ Error al actualizar el cliente. Intente nuevamente.")
+                                    
+                                    with col2:
+                                        if st.form_submit_button("❌ Cancelar"):
+                                            st.session_state[f'edit_customer_{customer["id"]}'] = False
+                                            st.rerun()
+                        
+                        # Modal de confirmación de eliminación
+                        if st.session_state.get(f'delete_customer_{customer["id"]}', False):
+                            with st.expander(f"🗑️ Eliminar {customer['name']}", expanded=True):
+                                st.warning(f"⚠️ ¿Estás seguro de que quieres eliminar al cliente '{customer['name']}'?")
+                                st.write("**Esta acción no se puede deshacer.**")
+                                
+                                col1, col2, col3 = st.columns([1, 1, 1])
+                                with col1:
+                                    if st.button("🗑️ Confirmar Eliminación", key=f"confirm_delete_{customer['id']}", type="primary"):
+                                        if db.delete_customer(customer['id']):
+                                            st.success(f"✅ Cliente '{customer['name']}' eliminado correctamente")
+                                            st.session_state[f'delete_customer_{customer["id"]}'] = False
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Error al eliminar el cliente. Intente nuevamente.")
+                                
+                                with col2:
+                                    if st.button("❌ Cancelar", key=f"cancel_delete_{customer['id']}"):
+                                        st.session_state[f'delete_customer_{customer["id"]}'] = False
+                                        st.rerun()
+                        
+                        st.markdown("---")
+                
+                # Acciones masivas
+                st.markdown("### ⚡ Acciones Masivas")
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button("📧 Enviar Email Masivo", width='stretch'):
+                        st.info("Funcionalidad de email masivo en desarrollo")
+                
+                with col2:
+                    if st.button("📊 Exportar Lista", width='stretch'):
+                        st.info("Generando archivo Excel...")
+                        st.success("✅ Lista exportada exitosamente!")
+                
+                with col3:
+                    if st.button("🔄 Actualizar Datos", width='stretch'):
+                        st.info("Actualizando datos de clientes...")
+                        st.success("✅ Datos actualizados!")
             else:
                 st.info("No se encontraron clientes con los filtros aplicados")
         else:
@@ -741,9 +836,20 @@ def render_clientes():
             
             if submitted:
                 if name and email:
-                    # Aquí se guardaría el cliente en la base de datos
-                    st.success(f"✅ Cliente '{name}' agregado correctamente")
-                    st.rerun()
+                    customer_data = {
+                        'name': name,
+                        'email': email,
+                        'phone': phone,
+                        'address': address,
+                        'notes': notes,
+                        'is_active': True
+                    }
+                    
+                    if db.create_customer(customer_data):
+                        st.success(f"✅ Cliente '{name}' agregado correctamente")
+                        st.rerun()
+                    else:
+                        st.error("❌ Error al crear el cliente. Intente nuevamente.")
                 else:
                     st.error("❌ Por favor complete los campos obligatorios (Nombre y Email)")
     

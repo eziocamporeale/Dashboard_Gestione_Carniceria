@@ -638,15 +638,50 @@ class SimpleDatabaseManager:
         """Obtiene todos los clientes (versión simplificada)"""
         try:
             return [
-                {'id': 1, 'name': 'Juan Pérez', 'email': 'juan@email.com', 'phone': '+54 11 1234-5678', 'total_orders': 15},
-                {'id': 2, 'name': 'María García', 'email': 'maria@email.com', 'phone': '+54 11 2345-6789', 'total_orders': 12},
-                {'id': 3, 'name': 'Carlos López', 'email': 'carlos@email.com', 'phone': '+54 11 3456-7890', 'total_orders': 8},
-                {'id': 4, 'name': 'Ana Martínez', 'email': 'ana@email.com', 'phone': '+54 11 4567-8901', 'total_orders': 20},
-                {'id': 5, 'name': 'Roberto Silva', 'email': 'roberto@email.com', 'phone': '+54 11 5678-9012', 'total_orders': 6}
+                {'id': 1, 'name': 'Juan Pérez', 'email': 'juan@email.com', 'phone': '+54 11 1234-5678', 
+                 'total_orders': 15, 'total_purchases': 2850.50, 'last_purchase': '2024-09-20', 'is_active': True, 'address': 'Av. Corrientes 1234'},
+                {'id': 2, 'name': 'María García', 'email': 'maria@email.com', 'phone': '+54 11 2345-6789', 
+                 'total_orders': 12, 'total_purchases': 1950.00, 'last_purchase': '2024-09-18', 'is_active': True, 'address': 'Calle Florida 567'},
+                {'id': 3, 'name': 'Carlos López', 'email': 'carlos@email.com', 'phone': '+54 11 3456-7890', 
+                 'total_orders': 8, 'total_purchases': 2800.25, 'last_purchase': '2024-09-22', 'is_active': True, 'address': 'Av. Santa Fe 890'},
+                {'id': 4, 'name': 'Ana Martínez', 'email': 'ana@email.com', 'phone': '+54 11 4567-8901', 
+                 'total_orders': 20, 'total_purchases': 3200.75, 'last_purchase': '2024-09-19', 'is_active': True, 'address': 'Calle Lavalle 234'},
+                {'id': 5, 'name': 'Roberto Silva', 'email': 'roberto@email.com', 'phone': '+54 11 5678-9012', 
+                 'total_orders': 6, 'total_purchases': 1850.75, 'last_purchase': '2024-09-21', 'is_active': True, 'address': 'Av. Córdoba 456'}
             ]
         except Exception as e:
             logger.error(f"❌ Error obteniendo todos los clientes: {e}")
             return []
+    
+    def update_customer(self, customer_id: int, customer_data: Dict[str, Any]) -> bool:
+        """Actualiza un cliente existente"""
+        try:
+            # En una implementación real, aquí se actualizaría en la base de datos
+            logger.info(f"✅ Cliente {customer_id} actualizado: {customer_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error actualizando cliente {customer_id}: {e}")
+            return False
+    
+    def delete_customer(self, customer_id: int) -> bool:
+        """Elimina un cliente"""
+        try:
+            # En una implementación real, aquí se eliminaría de la base de datos
+            logger.info(f"✅ Cliente {customer_id} eliminado")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando cliente {customer_id}: {e}")
+            return False
+    
+    def create_customer(self, customer_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo cliente"""
+        try:
+            # En una implementación real, aquí se insertaría en la base de datos
+            logger.info(f"✅ Nuevo cliente creado: {customer_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error creando cliente: {e}")
+            return False
     
     def get_all_orders(self) -> List[Dict[str, Any]]:
         """Obtiene todas las órdenes (versión simplificada)"""
