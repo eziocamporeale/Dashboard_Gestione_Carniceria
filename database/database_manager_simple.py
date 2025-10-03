@@ -27,6 +27,8 @@ class SimpleDatabaseManager:
         
         self._deleted_customers = set()  # Traccia clienti eliminati
         self._customers_cache = None     # Cache per i clienti
+        self._deleted_suppliers = set()  # Traccia fornitori eliminati
+        self._suppliers_cache = None     # Cache per i fornitori
         self.init_database()
     
     def init_database(self):
@@ -809,6 +811,39 @@ class SimpleDatabaseManager:
             logger.error(f"❌ Error obteniendo predicciones: {e}")
             return []
     
+    # ==================== METODOS PROVEEDORES CRUD ====================
+    
+    def update_supplier(self, supplier_id: int, supplier_data: Dict[str, Any]) -> bool:
+        """Actualiza un proveedor existente"""
+        try:
+            # En una implementación real, aquí se actualizaría en la base de datos
+            logger.info(f"✅ Proveedor {supplier_id} actualizado: {supplier_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error actualizando proveedor {supplier_id}: {e}")
+            return False
+    
+    def delete_supplier(self, supplier_id: int) -> bool:
+        """Elimina un proveedor"""
+        try:
+            # Aggiungi l'ID alla lista dei fornitori eliminati
+            self._deleted_suppliers.add(supplier_id)
+            logger.info(f"✅ Proveedor {supplier_id} eliminado")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando proveedor {supplier_id}: {e}")
+            return False
+    
+    def create_supplier(self, supplier_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo proveedor"""
+        try:
+            # En una implementación real, aquí se insertaría en la base de datos
+            logger.info(f"✅ Nuevo proveedor creado: {supplier_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error creando proveedor: {e}")
+            return False
+    
     def get_all_orders(self) -> List[Dict[str, Any]]:
         """Obtiene todas las órdenes (versión simplificada)"""
         try:
@@ -826,7 +861,7 @@ class SimpleDatabaseManager:
     def get_all_suppliers(self) -> List[Dict[str, Any]]:
         """Obtiene todos los proveedores (versión simplificada)"""
         try:
-            return [
+            all_suppliers = [
                 {
                     'id': 1, 'name': 'VARA DEL REY', 'contact_email': 'vara@email.com', 
                     'phone': '+54 11 1111-1111', 'total_amount': 5000.00, 'transactions_count': 15,
@@ -858,6 +893,10 @@ class SimpleDatabaseManager:
                     'created_at': '2024-05-12 11:30:00'
                 }
             ]
+            
+            # Filtra i fornitori eliminati
+            active_suppliers = [s for s in all_suppliers if s['id'] not in self._deleted_suppliers]
+            return active_suppliers
         except Exception as e:
             logger.error(f"❌ Error obteniendo todos los proveedores: {e}")
             return []

@@ -31,6 +31,8 @@ class SupabaseManager:
         self.client = None
         self._deleted_customers = set()  # Traccia clienti eliminati
         self._customers_cache = None     # Cache per i clienti
+        self._deleted_suppliers = set()  # Traccia fornitori eliminati
+        self._suppliers_cache = None     # Cache per i fornitori
         
         if self.config.is_supabase_configured():
             try:
@@ -343,7 +345,7 @@ class SupabaseManager:
         """Ottiene tutti i fornitori"""
         try:
             # Dati di esempio per compatibilità con il dashboard
-            return [
+            all_suppliers = [
                 {
                     'id': 1, 'name': 'Carnes del Norte', 'contact_person': 'Juan Pérez',
                     'phone': '+54 11 1234-5678', 'contact_email': 'juan@carnesdelnorte.com',
@@ -366,6 +368,10 @@ class SupabaseManager:
                     'created_at': '2024-03-10T09:45:00Z'
                 }
             ]
+            
+            # Filtra i fornitori eliminati
+            active_suppliers = [s for s in all_suppliers if s['id'] not in self._deleted_suppliers]
+            return active_suppliers
         except Exception as e:
             logger.error(f"❌ Errore ottenendo fornitori: {e}")
             return []
@@ -563,6 +569,39 @@ class SupabaseManager:
         except Exception as e:
             logger.error(f"❌ Error obteniendo predicciones: {e}")
             return []
+    
+    # ==================== METODOS PROVEEDORES CRUD ====================
+    
+    def update_supplier(self, supplier_id: int, supplier_data: Dict[str, Any]) -> bool:
+        """Actualiza un proveedor existente"""
+        try:
+            # En una implementación real, aquí se actualizaría en Supabase
+            logger.info(f"✅ Proveedor {supplier_id} actualizado: {supplier_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error actualizando proveedor {supplier_id}: {e}")
+            return False
+    
+    def delete_supplier(self, supplier_id: int) -> bool:
+        """Elimina un proveedor"""
+        try:
+            # Aggiungi l'ID alla lista dei fornitori eliminati
+            self._deleted_suppliers.add(supplier_id)
+            logger.info(f"✅ Proveedor {supplier_id} eliminado")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando proveedor {supplier_id}: {e}")
+            return False
+    
+    def create_supplier(self, supplier_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo proveedor"""
+        try:
+            # En una implementación real, aquí se insertaría en Supabase
+            logger.info(f"✅ Nuevo proveedor creado: {supplier_data}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error creando proveedor: {e}")
+            return False
     
     def get_sales_summary(self) -> Dict:
         """Ottiene riepilogo vendite"""

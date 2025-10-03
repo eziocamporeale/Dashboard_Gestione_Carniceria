@@ -437,6 +437,35 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo predizioni: {e}")
             return []
     
+    # ==================== METODOS PROVEEDORES CRUD ====================
+    
+    def create_supplier(self, supplier_data: Dict[str, Any]) -> bool:
+        """Crea un nuevo proveedor"""
+        try:
+            manager = self._get_manager()
+            return manager.create_supplier(supplier_data)
+        except Exception as e:
+            logger.error(f"❌ Errore creando proveedor: {e}")
+            return False
+    
+    def update_supplier(self, supplier_id: int, supplier_data: Dict[str, Any]) -> bool:
+        """Actualiza un proveedor existente"""
+        try:
+            manager = self._get_manager()
+            return manager.update_supplier(supplier_id, supplier_data)
+        except Exception as e:
+            logger.error(f"❌ Errore actualizando proveedor {supplier_id}: {e}")
+            return False
+    
+    def delete_supplier(self, supplier_id: int) -> bool:
+        """Elimina un proveedor"""
+        try:
+            manager = self._get_manager()
+            return manager.delete_supplier(supplier_id)
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando proveedor {supplier_id}: {e}")
+            return False
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:

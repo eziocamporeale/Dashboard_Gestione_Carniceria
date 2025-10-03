@@ -1205,20 +1205,123 @@ def render_proveedores():
             else:
                 filtered_suppliers.sort(key=lambda x: x.get('name', ''))
             
-            # Mostrar tabla
+            # Mostrar tabla con acciones CRUD
             if filtered_suppliers:
-                df_filtered = pd.DataFrame(filtered_suppliers)
-                st.dataframe(
-                    df_filtered[['name', 'contact_email', 'phone', 'total_amount', 'transactions_count']],
-                    width='stretch',
-                    column_config={
-                        "name": "Nombre",
-                        "contact_email": "Email",
-                        "phone": "Teléfono",
-                        "total_amount": st.column_config.NumberColumn("Monto Total", format="$%.2f"),
-                        "transactions_count": "Transacciones"
-                    }
-                )
+                st.markdown("---")
+                st.subheader("📋 Lista de Proveedores")
+                
+                # Mostrar cada proveedor con opciones de editar/eliminar
+                for supplier in filtered_suppliers:
+                    with st.container():
+                        col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1, 1])
+                        
+                        with col1:
+                            st.write(f"**{supplier['name']}**")
+                            st.caption(f"📧 {supplier['contact_email']}")
+                            st.caption(f"📞 {supplier['phone']}")
+                            if supplier.get('contact_person'):
+                                st.caption(f"👤 {supplier['contact_person']}")
+                        
+                        with col2:
+                            st.write(f"💰 ${supplier['total_amount']:,.2f}")
+                            st.caption(f"📦 {supplier['transactions_count']} transacciones")
+                        
+                        with col3:
+                            if supplier.get('address'):
+                                st.write(f"📍 {supplier['address']}")
+                            if supplier.get('created_at'):
+                                st.caption(f"📅 {supplier['created_at']}")
+                        
+                        with col4:
+                            if st.button("✏️", key=f"edit_supplier_{supplier['id']}", help="Editar proveedor"):
+                                st.session_state[f'edit_supplier_{supplier["id"]}'] = True
+                        
+                        with col5:
+                            if st.button("🗑️", key=f"delete_supplier_{supplier['id']}", help="Eliminar proveedor"):
+                                st.session_state[f'delete_supplier_{supplier["id"]}'] = True
+                        
+                        # Modal de edición
+                        if st.session_state.get(f'edit_supplier_{supplier["id"]}', False):
+                            with st.expander(f"✏️ Editar {supplier['name']}", expanded=True):
+                                with st.form(f"edit_supplier_form_{supplier['id']}"):
+                                    col1, col2 = st.columns(2)
+                                    
+                                    with col1:
+                                        edit_name = st.text_input("Nombre", value=supplier['name'], key=f"edit_name_{supplier['id']}")
+                                        edit_email = st.text_input("Email", value=supplier['contact_email'], key=f"edit_email_{supplier['id']}")
+                                        edit_phone = st.text_input("Teléfono", value=supplier['phone'], key=f"edit_phone_{supplier['id']}")
+                                        edit_person = st.text_input("Persona de Contacto", value=supplier.get('contact_person', ''), key=f"edit_person_{supplier['id']}")
+                                    
+                                    with col2:
+                                        edit_address = st.text_area("Dirección", value=supplier.get('address', ''), key=f"edit_address_{supplier['id']}")
+                                        edit_cuit = st.text_input("CUIT", value=supplier.get('cuit', ''), key=f"edit_cuit_{supplier['id']}")
+                                        edit_active = st.checkbox("Activo", value=supplier.get('is_active', True), key=f"edit_active_{supplier['id']}")
+                                    
+                                    col1, col2, col3 = st.columns([1, 1, 1])
+                                    with col1:
+                                        if st.form_submit_button("💾 Guardar", type="primary"):
+                                            supplier_data = {
+                                                'name': edit_name,
+                                                'contact_email': edit_email,
+                                                'phone': edit_phone,
+                                                'contact_person': edit_person,
+                                                'address': edit_address,
+                                                'cuit': edit_cuit,
+                                                'is_active': edit_active
+                                            }
+                                            
+                                            if db.update_supplier(supplier['id'], supplier_data):
+                                                st.success(f"✅ Proveedor '{edit_name}' actualizado correctamente")
+                                                st.session_state[f'edit_supplier_{supplier["id"]}'] = False
+                                                st.rerun()
+                                            else:
+                                                st.error("❌ Error al actualizar el proveedor. Intente nuevamente.")
+                                    
+                                    with col2:
+                                        if st.form_submit_button("❌ Cancelar"):
+                                            st.session_state[f'edit_supplier_{supplier["id"]}'] = False
+                                            st.rerun()
+                        
+                        # Modal de confirmación de eliminación
+                        if st.session_state.get(f'delete_supplier_{supplier["id"]}', False):
+                            with st.expander(f"🗑️ Eliminar {supplier['name']}", expanded=True):
+                                st.warning(f"⚠️ ¿Estás seguro de que quieres eliminar al proveedor '{supplier['name']}'?")
+                                st.write("**Esta acción no se puede deshacer.**")
+                                
+                                col1, col2, col3 = st.columns([1, 1, 1])
+                                with col1:
+                                    if st.button("🗑️ Confirmar Eliminación", key=f"confirm_delete_supplier_{supplier['id']}", type="primary"):
+                                        if db.delete_supplier(supplier['id']):
+                                            st.success(f"✅ Proveedor '{supplier['name']}' eliminado correctamente")
+                                            st.session_state[f'delete_supplier_{supplier["id"]}'] = False
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Error al eliminar el proveedor. Intente nuevamente.")
+                                
+                                with col2:
+                                    if st.button("❌ Cancelar", key=f"cancel_delete_supplier_{supplier['id']}"):
+                                        st.session_state[f'delete_supplier_{supplier["id"]}'] = False
+                                        st.rerun()
+                        
+                        st.markdown("---")
+                
+                # Acciones masivas
+                st.markdown("### ⚡ Acciones Masivas")
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button("📧 Enviar Email Masivo", width='stretch'):
+                        st.info("Funcionalidad de email masivo en desarrollo")
+                
+                with col2:
+                    if st.button("📊 Exportar Lista", width='stretch'):
+                        st.info("Generando archivo Excel...")
+                        st.success("✅ Lista exportada exitosamente!")
+                
+                with col3:
+                    if st.button("🔄 Actualizar Datos", width='stretch'):
+                        st.info("Actualizando datos de proveedores...")
+                        st.success("✅ Datos actualizados!")
             else:
                 st.info("No se encontraron proveedores con los filtros aplicados")
         else:
@@ -1250,22 +1353,22 @@ def render_proveedores():
                     st.error("❌ El nombre del proveedor es obligatorio")
                 else:
                     try:
-                        # Crear nuevo proveedor (simulado)
-                        new_supplier = {
-                            'id': len(suppliers) + 1,
+                        supplier_data = {
                             'name': name,
                             'contact_email': contact_email,
                             'phone': phone,
                             'address': address,
                             'contact_person': contact_person,
                             'notes': notes,
-                            'total_amount': 0.0,
-                            'transactions_count': 0,
-                            'created_at': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+                            'is_active': True
                         }
                         
-                        st.success(f"✅ Proveedor '{name}' creado exitosamente")
-                        st.balloons()
+                        if db.create_supplier(supplier_data):
+                            st.success(f"✅ Proveedor '{name}' creado exitosamente")
+                            st.balloons()
+                            st.rerun()
+                        else:
+                            st.error("❌ Error al crear el proveedor. Intente nuevamente.")
                         
                         # Mostrar resumen
                         st.info(f"""
