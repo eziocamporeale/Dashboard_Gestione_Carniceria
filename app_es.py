@@ -727,11 +727,11 @@ def render_clientes():
                             st.caption(status)
                         
                         with col4:
-                            if st.button("✏️", key=f"edit_{customer['id']}", help="Editar cliente"):
+                            if st.button("✏️", key=f"edit_customer_btn_{customer['id']}", help="Editar cliente"):
                                 st.session_state[f'edit_customer_{customer["id"]}'] = True
                         
                         with col5:
-                            if st.button("🗑️", key=f"delete_{customer['id']}", help="Eliminar cliente"):
+                            if st.button("🗑️", key=f"delete_customer_btn_{customer['id']}", help="Eliminar cliente"):
                                 st.session_state[f'delete_customer_{customer["id"]}'] = True
                         
                         # Modal de edición
@@ -780,7 +780,7 @@ def render_clientes():
                                 
                                 col1, col2, col3 = st.columns([1, 1, 1])
                                 with col1:
-                                    if st.button("🗑️ Confirmar Eliminación", key=f"confirm_delete_{customer['id']}", type="primary"):
+                                    if st.button("🗑️ Confirmar Eliminación", key=f"confirm_del_customer_btn_{customer['id']}", type="primary"):
                                         if db.delete_customer(customer['id']):
                                             st.success(f"✅ Cliente '{customer['name']}' eliminado correctamente")
                                             st.session_state[f'delete_customer_{customer["id"]}'] = False
@@ -789,7 +789,7 @@ def render_clientes():
                                             st.error("❌ Error al eliminar el cliente. Intente nuevamente.")
                                 
                                 with col2:
-                                    if st.button("❌ Cancelar", key=f"cancel_delete_{customer['id']}"):
+                                    if st.button("❌ Cancelar", key=f"cancel_del_customer_btn_{customer['id']}"):
                                         st.session_state[f'delete_customer_{customer["id"]}'] = False
                                         st.rerun()
                         
@@ -1233,11 +1233,11 @@ def render_proveedores():
                                 st.caption(f"📅 {supplier['created_at']}")
                         
                         with col4:
-                            if st.button("✏️", key=f"edit_supplier_{supplier['id']}", help="Editar proveedor"):
+                            if st.button("✏️", key=f"edit_btn_{supplier['id']}", help="Editar proveedor"):
                                 st.session_state[f'edit_supplier_{supplier["id"]}'] = True
                         
                         with col5:
-                            if st.button("🗑️", key=f"delete_supplier_{supplier['id']}", help="Eliminar proveedor"):
+                            if st.button("🗑️", key=f"delete_btn_{supplier['id']}", help="Eliminar proveedor"):
                                 st.session_state[f'delete_supplier_{supplier["id"]}'] = True
                         
                         # Modal de edición
@@ -1290,7 +1290,7 @@ def render_proveedores():
                                 
                                 col1, col2, col3 = st.columns([1, 1, 1])
                                 with col1:
-                                    if st.button("🗑️ Confirmar Eliminación", key=f"confirm_delete_supplier_{supplier['id']}", type="primary"):
+                                    if st.button("🗑️ Confirmar Eliminación", key=f"confirm_del_btn_{supplier['id']}", type="primary"):
                                         if db.delete_supplier(supplier['id']):
                                             st.success(f"✅ Proveedor '{supplier['name']}' eliminado correctamente")
                                             st.session_state[f'delete_supplier_{supplier["id"]}'] = False
@@ -1299,7 +1299,7 @@ def render_proveedores():
                                             st.error("❌ Error al eliminar el proveedor. Intente nuevamente.")
                                 
                                 with col2:
-                                    if st.button("❌ Cancelar", key=f"cancel_delete_supplier_{supplier['id']}"):
+                                    if st.button("❌ Cancelar", key=f"cancel_del_btn_{supplier['id']}"):
                                         st.session_state[f'delete_supplier_{supplier["id"]}'] = False
                                         st.rerun()
                         
