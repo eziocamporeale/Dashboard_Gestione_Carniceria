@@ -3356,13 +3356,9 @@ def render_configuracion():
     with tab2:
         st.subheader("👤 Gestión de Usuarios")
         
-        # Lista de usuarios de ejemplo
-        users_data = [
-            {'id': 1, 'username': 'admin', 'name': 'Admin Sistema', 'email': 'admin@carniceria.com', 'role': 'Administrador', 'status': 'Activo', 'last_login': '2024-09-22 10:30:00'},
-            {'id': 2, 'username': 'gerente', 'name': 'Ana Martínez', 'email': 'ana@carniceria.com', 'role': 'Gerente', 'status': 'Activo', 'last_login': '2024-09-21 15:45:00'},
-            {'id': 3, 'username': 'cajero1', 'name': 'María González', 'email': 'maria@carniceria.com', 'role': 'Cajero', 'status': 'Activo', 'last_login': '2024-09-22 09:15:00'},
-            {'id': 4, 'username': 'carnicero1', 'name': 'Juan Pérez', 'email': 'juan@carniceria.com', 'role': 'Carnicero', 'status': 'Inactivo', 'last_login': '2024-09-15 14:20:00'}
-        ]
+        # Ottieni utenti dal database
+        db = get_hybrid_manager()
+        users_data = db.get_all_users()
         
         # Métricas de usuarios
         col1, col2, col3, col4 = st.columns(4)
@@ -3375,29 +3371,171 @@ def render_configuracion():
             admin_users = len([u for u in users_data if u['role'] == 'Administrador'])
             st.metric("Administradores", admin_users)
         with col4:
-            today_logins = len([u for u in users_data if '2024-09-22' in u['last_login']])
+            today_logins = len([u for u in users_data if u.get('last_login') and u['last_login'][:10] == datetime.now().strftime('%Y-%m-%d')])
             st.metric("Logins Hoy", today_logins)
         
-        st.markdown("---")
+        # Filtros y búsqueda
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            search_term = st.text_input("🔍 Buscar usuario", placeholder="Nombre, email, rol...")
+        with col2:
+            status_filter = st.selectbox("📊 Filtrar por estado", ["Todos", "Activo", "Inactivo"])
+        with col3:
+            role_filter = st.selectbox("👑 Filtrar por rol", ["Todos", "Administrador", "Gerente", "Cajero", "Carnicero"])
         
-        # Tabla de usuarios
-        df_users = pd.DataFrame(users_data)
-        st.dataframe(
-            df_users[['username', 'name', 'email', 'role', 'status', 'last_login']],
-            width='stretch',
-            column_config={
-                "username": "Usuario",
-                "name": "Nombre",
-                "email": "Email",
-                "role": "Rol",
-                "status": st.column_config.SelectboxColumn("Estado", options=["Activo", "Inactivo", "Bloqueado"]),
-                "last_login": "Último Login"
-            }
-        )
+        # Aplicar filtros
+        filtered_users = users_data
+        if search_term:
+            filtered_users = [u for u in filtered_users if 
+                             search_term.lower() in u.get('name', '').lower() or
+                             search_term.lower() in u.get('email', '').lower() or
+                             search_term.lower() in u.get('role', '').lower()]
         
-        # Botón para nuevo usuario
-        if st.button("➕ Nuevo Usuario", width='stretch', type="primary"):
-            st.info("🚧 Formulario de nuevo usuario en desarrollo")
+        if status_filter != "Todos":
+            filtered_users = [u for u in filtered_users if u['status'] == status_filter]
+        
+        if role_filter != "Todos":
+            filtered_users = [u for u in filtered_users if u['role'] == role_filter]
+        
+        # Tabla de usuarios con acciones
+        st.subheader("📋 Lista de Usuarios")
+        
+        if filtered_users:
+            for user in filtered_users:
+                with st.container():
+                    col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 1, 1, 1])
+                    
+                    with col1:
+                        st.write(f"**{user['name']}**")
+                        st.caption(f"@{user['username']}")
+                    
+                    with col2:
+                        st.write(user['email'])
+                        st.caption(f"Rol: {user['role']}")
+                    
+                    with col3:
+                        if user['status'] == 'Activo':
+                            st.success("✅ Activo")
+                        else:
+                            st.error("❌ Inactivo")
+                        if user.get('last_login'):
+                            st.caption(f"Último login: {user['last_login'][:10]}")
+                    
+                    with col4:
+                        if st.button("✏️", key=f"edit_{user['id']}", help="Editar usuario"):
+                            st.session_state[f'edit_user_{user["id"]}'] = True
+                    
+                    with col5:
+                        if st.button("🔄", key=f"toggle_{user['id']}", help="Activar/Desactivar"):
+                            new_status = not user.get('is_active', True)
+                            if db.update_user(user['id'], {'is_active': new_status}):
+                                st.success("✅ Estado actualizado")
+                                st.rerun()
+                            else:
+                                st.error("❌ Error actualizando estado")
+                    
+                    with col6:
+                        if st.button("🗑️", key=f"delete_{user['id']}", help="Eliminar usuario"):
+                            if db.delete_user(user['id']):
+                                st.success("✅ Usuario eliminado")
+                                st.rerun()
+                            else:
+                                st.error("❌ Error eliminando usuario")
+                    
+                    st.markdown("---")
+        else:
+            st.info("No hay usuarios que coincidan con los filtros")
+        
+        # Formulario para nuevo usuario
+        st.subheader("➕ Nuevo Usuario")
+        
+        with st.form("nuevo_usuario_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                first_name = st.text_input("Nombre", placeholder="Nombre del usuario")
+                last_name = st.text_input("Apellido", placeholder="Apellido del usuario")
+                email = st.text_input("Email", placeholder="email@carniceria.com")
+            
+            with col2:
+                # Ottieni ruoli dal database
+                roles = db.get_all_roles()
+                role_options = {r['name']: r['id'] for r in roles} if roles else {'Usuario': None}
+                selected_role = st.selectbox("Rol", list(role_options.keys()))
+                role_id = role_options[selected_role]
+                
+                password = st.text_input("Contraseña", type="password", placeholder="Contraseña temporal")
+                is_active = st.checkbox("Usuario Activo", value=True)
+            
+            submitted = st.form_submit_button("💾 Crear Usuario", type="primary")
+            
+            if submitted:
+                if first_name and last_name and email:
+                    user_data = {
+                        'first_name': first_name,
+                        'last_name': last_name,
+                        'email': email,
+                        'role_id': role_id,
+                        'password_hash': password,  # In produzione, hashare la password
+                        'is_active': is_active
+                    }
+                    
+                    result = db.create_user(user_data)
+                    if result:
+                        st.success("✅ Usuario creado exitosamente")
+                        st.rerun()
+                    else:
+                        st.error("❌ Error creando usuario")
+                else:
+                    st.error("❌ Por favor completa todos los campos obligatorios")
+        
+        # Formularios de edición (se mostrano cuando se hace clic en editar)
+        for user in users_data:
+            if st.session_state.get(f'edit_user_{user["id"]}', False):
+                st.subheader(f"✏️ Editar Usuario: {user['name']}")
+                
+                with st.form(f"edit_user_form_{user['id']}"):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        edit_first_name = st.text_input("Nombre", value=user.get('first_name', ''), key=f"edit_first_{user['id']}")
+                        edit_last_name = st.text_input("Apellido", value=user.get('last_name', ''), key=f"edit_last_{user['id']}")
+                        edit_email = st.text_input("Email", value=user['email'], key=f"edit_email_{user['id']}")
+                    
+                    with col2:
+                        # Ottieni ruoli dal database
+                        roles = db.get_all_roles()
+                        role_options = {r['name']: r['id'] for r in roles} if roles else {'Usuario': None}
+                        current_role = user.get('role', 'Usuario')
+                        edit_role = st.selectbox("Rol", list(role_options.keys()), 
+                                               index=list(role_options.keys()).index(current_role) if current_role in role_options else 0,
+                                               key=f"edit_role_{user['id']}")
+                        edit_role_id = role_options[edit_role]
+                        
+                        edit_is_active = st.checkbox("Usuario Activo", value=user['status'] == 'Activo', key=f"edit_active_{user['id']}")
+                    
+                    col1, col2, col3 = st.columns([1, 1, 1])
+                    with col1:
+                        if st.form_submit_button("💾 Guardar Cambios", type="primary"):
+                            update_data = {
+                                'first_name': edit_first_name,
+                                'last_name': edit_last_name,
+                                'email': edit_email,
+                                'role_id': edit_role_id,
+                                'is_active': edit_is_active
+                            }
+                            
+                            if db.update_user(user['id'], update_data):
+                                st.success("✅ Usuario actualizado exitosamente")
+                                st.session_state[f'edit_user_{user["id"]}'] = False
+                                st.rerun()
+                            else:
+                                st.error("❌ Error actualizando usuario")
+                    
+                    with col2:
+                        if st.form_submit_button("❌ Cancelar"):
+                            st.session_state[f'edit_user_{user["id"]}'] = False
+                            st.rerun()
     
     with tab3:
         st.subheader("🔧 Configuración del Sistema")

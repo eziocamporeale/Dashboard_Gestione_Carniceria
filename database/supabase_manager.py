@@ -1096,6 +1096,138 @@ class SupabaseManager:
             logger.error(f"❌ Errore loggando attività: {e}")
             return None
     
+    # ==================== CRUD USUARIOS ====================
+    
+    def get_all_users(self) -> List[Dict]:
+        """Ottiene tutti gli utenti"""
+        try:
+            # Leggi gli utenti dalla tabella users
+            users_data = self.select('users')
+            
+            if not users_data:
+                return []
+            
+            # Leggi anche i ruoli per ottenere i nomi
+            roles_data = self.select('roles', 'id, name')
+            roles_map = {r['id']: r['name'] for r in roles_data}
+            
+            # Converti i dati in formato compatibile con la dashboard
+            all_users = []
+            for user in users_data:
+                user_record = {
+                    'id': user['id'],
+                    'username': user.get('email', '').split('@')[0],  # Usa email come username
+                    'name': f"{user.get('first_name', '')} {user.get('last_name', '')}".strip(),
+                    'email': user.get('email', ''),
+                    'role': roles_map.get(user.get('role_id'), 'Usuario'),
+                    'status': 'Activo' if user.get('is_active', True) else 'Inactivo',
+                    'last_login': user.get('last_login'),
+                    'created_at': user.get('created_at', datetime.now().isoformat())
+                }
+                all_users.append(user_record)
+            
+            return all_users
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo utenti: {e}")
+            return []
+    
+    def create_user(self, user_data: Dict) -> Optional[Dict]:
+        """Crea un nuovo utente"""
+        try:
+            # Prepara i dati per l'inserimento
+            new_user = {
+                'email': user_data['email'],
+                'password_hash': user_data.get('password_hash', ''),
+                'first_name': user_data['first_name'],
+                'last_name': user_data['last_name'],
+                'role_id': user_data.get('role_id'),
+                'is_active': user_data.get('is_active', True),
+                'created_at': datetime.now().isoformat(),
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            result = self.insert('users', new_user)
+            if result:
+                logger.info(f"✅ Utente creato: {user_data['email']}")
+                return result
+            else:
+                logger.error(f"❌ Errore creando utente: {user_data['email']}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Errore creando utente: {e}")
+            return None
+    
+    def update_user(self, user_id: str, user_data: Dict) -> bool:
+        """Aggiorna un utente esistente"""
+        try:
+            # Prepara i dati per l'aggiornamento
+            update_data = {
+                'first_name': user_data.get('first_name'),
+                'last_name': user_data.get('last_name'),
+                'email': user_data.get('email'),
+                'role_id': user_data.get('role_id'),
+                'is_active': user_data.get('is_active', True),
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            # Rimuovi campi None
+            update_data = {k: v for k, v in update_data.items() if v is not None}
+            
+            result = self.update('users', user_id, update_data)
+            if result:
+                logger.info(f"✅ Utente aggiornato: {user_id}")
+                return True
+            else:
+                logger.error(f"❌ Errore aggiornando utente: {user_id}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Errore aggiornando utente: {e}")
+            return False
+    
+    def delete_user(self, user_id: str) -> bool:
+        """Elimina un utente (soft delete)"""
+        try:
+            # Soft delete: imposta is_active = False
+            update_data = {
+                'is_active': False,
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            result = self.update('users', user_id, update_data)
+            if result:
+                logger.info(f"✅ Utente disattivato: {user_id}")
+                return True
+            else:
+                logger.error(f"❌ Errore disattivando utente: {user_id}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Errore disattivando utente: {e}")
+            return False
+    
+    def get_user_by_id(self, user_id: str) -> Optional[Dict]:
+        """Ottiene un utente per ID"""
+        try:
+            users = self.select('users', filters={'id': user_id})
+            if users:
+                return users[0]
+            return None
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo utente {user_id}: {e}")
+            return None
+    
+    def get_all_roles(self) -> List[Dict]:
+        """Ottiene tutti i ruoli"""
+        try:
+            roles_data = self.select('roles')
+            return roles_data if roles_data else []
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo ruoli: {e}")
+            return []
+    
     def rpc(self, function_name: str, params: Dict[str, Any]) -> Any:
         """Chiama una funzione RPC (Remote Procedure Call) su Supabase"""
         if not self.is_connected():
