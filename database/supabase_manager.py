@@ -240,6 +240,7 @@ class SupabaseManager:
                     low_stock.append({
                         'name': category['name'],
                         'current_stock': 0,
+                        'min_stock_level': 10,
                         'icon': category['icon']
                     })
             
@@ -266,6 +267,8 @@ class SupabaseManager:
                     expiring.append({
                         'name': category['name'],
                         'expiry_date': (datetime.now() + timedelta(days=days)).date().isoformat(),
+                        'current_stock': 0,
+                        'min_stock_level': 10,
                         'icon': category['icon']
                     })
             
