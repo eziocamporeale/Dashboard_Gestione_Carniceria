@@ -338,15 +338,8 @@ class SupabaseManager:
     def get_monthly_revenue(self, months: int = 6) -> List[Dict]:
         """Ottiene ricavi mensili"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            return [
-                {'month': '2024-01', 'revenue': 12500.75, 'orders': 45},
-                {'month': '2024-02', 'revenue': 13800.50, 'orders': 52},
-                {'month': '2024-03', 'revenue': 15200.25, 'orders': 58},
-                {'month': '2024-04', 'revenue': 16800.00, 'orders': 65},
-                {'month': '2024-05', 'revenue': 17500.75, 'orders': 68},
-                {'month': '2024-06', 'revenue': 18200.50, 'orders': 72}
-            ][:months]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo ricavi mensili: {e}")
             return []
@@ -354,16 +347,8 @@ class SupabaseManager:
     def get_daily_sales(self, days: int = 7) -> List[Dict]:
         """Ottiene vendite giornaliere"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            return [
-                {'date': '2024-06-01', 'sales': 850.75, 'orders': 12},
-                {'date': '2024-06-02', 'sales': 920.50, 'orders': 15},
-                {'date': '2024-06-03', 'sales': 780.25, 'orders': 10},
-                {'date': '2024-06-04', 'sales': 1100.00, 'orders': 18},
-                {'date': '2024-06-05', 'sales': 950.75, 'orders': 14},
-                {'date': '2024-06-06', 'sales': 1200.50, 'orders': 20},
-                {'date': '2024-06-07', 'sales': 1050.25, 'orders': 16}
-            ][:days]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo vendite giornaliere: {e}")
             return []
@@ -554,25 +539,8 @@ class SupabaseManager:
     def get_customer_interactions(self, customer_id: int) -> List[Dict[str, Any]]:
         """Obtiene el historial de interacciones de un cliente"""
         try:
-            # Datos de ejemplo para interacciones
-            interactions = [
-                {
-                    'id': 1, 'customer_id': customer_id, 'type': 'llamada', 'date': '2024-09-28',
-                    'description': 'Llamada de seguimiento post-compra', 'outcome': 'satisfecho',
-                    'notes': 'Cliente muy contento con el producto', 'employee': 'Juan Pérez'
-                },
-                {
-                    'id': 2, 'customer_id': customer_id, 'type': 'email', 'date': '2024-09-25',
-                    'description': 'Envío de catálogo de productos', 'outcome': 'interesado',
-                    'notes': 'Solicitó información sobre nuevos productos', 'employee': 'María García'
-                },
-                {
-                    'id': 3, 'customer_id': customer_id, 'type': 'visita', 'date': '2024-09-20',
-                    'description': 'Visita al local para consulta', 'outcome': 'compra_realizada',
-                    'notes': 'Realizó compra por $0.00', 'employee': 'Carlos López'
-                }
-            ]
-            return [i for i in interactions if i['customer_id'] == customer_id]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo interacciones del cliente {customer_id}: {e}")
             return []

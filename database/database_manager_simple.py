@@ -287,11 +287,8 @@ class SimpleDatabaseManager:
     def get_products(self) -> List[Dict[str, Any]]:
         """Obtiene productos (versión simplificada)"""
         try:
-            # Retornar productos de ejemplo
-            return [
-                {'id': 1, 'name': 'Carne de Res', 'category': 'Carnes', 'price': 15.50, 'stock': 100},
-                {'id': 2, 'name': 'Pollo', 'category': 'Aves', 'price': 8.75, 'stock': 50}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo productos: {e}")
             return []
@@ -340,15 +337,8 @@ class SimpleDatabaseManager:
     def get_monthly_revenue(self, months: int = 6) -> List[Dict[str, Any]]:
         """Obtiene ingresos mensuales (versión simplificada)"""
         try:
-            # Retornar datos de ejemplo
-            return [
-                {'month': '2024-04', 'revenue': 2500.00},
-                {'month': '2024-05', 'revenue': 3200.50},
-                {'month': '2024-06', 'revenue': 2800.75},
-                {'month': '2024-07', 'revenue': 3500.25},
-                {'month': '2024-08', 'revenue': 2900.00},
-                {'month': '2024-09', 'revenue': 3100.50}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo ingresos mensuales: {e}")
             return []
@@ -356,16 +346,8 @@ class SimpleDatabaseManager:
     def get_daily_sales(self, days: int = 7) -> List[Dict[str, Any]]:
         """Obtiene ventas diarias (versión simplificada)"""
         try:
-            # Retornar datos de ejemplo
-            return [
-                {'date': '2024-09-15', 'sales': 450.75},
-                {'date': '2024-09-16', 'sales': 520.50},
-                {'date': '2024-09-17', 'sales': 380.25},
-                {'date': '2024-09-18', 'sales': 600.00},
-                {'date': '2024-09-19', 'sales': 480.75},
-                {'date': '2024-09-20', 'sales': 550.25},
-                {'date': '2024-09-21', 'sales': 420.50}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo ventas diarias: {e}")
             return []
@@ -655,25 +637,8 @@ class SimpleDatabaseManager:
     def get_customer_interactions(self, customer_id: int) -> List[Dict[str, Any]]:
         """Obtiene el historial de interacciones de un cliente"""
         try:
-            # Datos de ejemplo para interacciones
-            interactions = [
-                {
-                    'id': 1, 'customer_id': customer_id, 'type': 'llamada', 'date': '2024-09-28',
-                    'description': 'Llamada de seguimiento post-compra', 'outcome': 'satisfecho',
-                    'notes': 'Cliente muy contento con el producto', 'employee': 'Juan Pérez'
-                },
-                {
-                    'id': 2, 'customer_id': customer_id, 'type': 'email', 'date': '2024-09-25',
-                    'description': 'Envío de catálogo de productos', 'outcome': 'interesado',
-                    'notes': 'Solicitó información sobre nuevos productos', 'employee': 'María García'
-                },
-                {
-                    'id': 3, 'customer_id': customer_id, 'type': 'visita', 'date': '2024-09-20',
-                    'description': 'Visita al local para consulta', 'outcome': 'compra_realizada',
-                    'notes': 'Realizó compra por $0.00', 'employee': 'Carlos López'
-                }
-            ]
-            return [i for i in interactions if i['customer_id'] == customer_id]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo interacciones del cliente {customer_id}: {e}")
             return []
@@ -956,17 +921,8 @@ class SimpleDatabaseManager:
     def get_all_orders(self) -> List[Dict[str, Any]]:
         """Obtiene todas las órdenes (versión simplificada)"""
         try:
-            all_orders = [
-                {'id': 1, 'customer_name': 'Juan Pérez', 'total': 125.50, 'status': 'Completada', 'date': '2024-09-20'},
-                {'id': 2, 'customer_name': 'María García', 'total': 89.75, 'status': 'En Proceso', 'date': '2024-09-21'},
-                {'id': 3, 'customer_name': 'Carlos López', 'total': 156.25, 'status': 'Completada', 'date': '2024-09-19'},
-                {'id': 4, 'customer_name': 'Ana Martínez', 'total': 78.90, 'status': 'Pendiente', 'date': '2024-09-22'},
-                {'id': 5, 'customer_name': 'Roberto Silva', 'total': 203.15, 'status': 'Completada', 'date': '2024-09-18'}
-            ]
-            
-            # Filtra gli ordini eliminati
-            active_orders = [o for o in all_orders if o['id'] not in self._deleted_orders]
-            return active_orders
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo todas las órdenes: {e}")
             return []
@@ -986,14 +942,8 @@ class SimpleDatabaseManager:
     def get_product_categories(self) -> List[Dict[str, Any]]:
         """Obtiene categorías de productos (versión simplificada)"""
         try:
-            return [
-                {'id': 1, 'name': 'Carnes', 'description': 'Carnes frescas'},
-                {'id': 2, 'name': 'Aves', 'description': 'Pollo y otras aves'},
-                {'id': 3, 'name': 'Embutidos', 'description': 'Embutidos y fiambres'},
-                {'id': 4, 'name': 'Pescados', 'description': 'Pescados frescos'},
-                {'id': 5, 'name': 'Verduras', 'description': 'Verduras frescas'},
-                {'id': 6, 'name': 'Otros', 'description': 'Otros productos'}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo categorías: {e}")
             return []
@@ -1035,24 +985,8 @@ class SimpleDatabaseManager:
     def get_daily_sales_data(self, days: int = 30) -> List[Dict[str, Any]]:
         """Obtiene datos de ventas diarias (versión simplificada)"""
         try:
-            import random
-            from datetime import datetime, timedelta
-            
-            sales_data = []
-            base_date = datetime.now() - timedelta(days=days)
-            
-            for i in range(days):
-                date = base_date + timedelta(days=i)
-                # Generar datos realistas con variación
-                base_sales = 800 + random.randint(-200, 400)
-                sales_data.append({
-                    'date': date.strftime('%Y-%m-%d'),
-                    'sales': round(base_sales, 2),
-                    'transactions': random.randint(15, 35),
-                    'avg_transaction': round(base_sales / random.randint(15, 35), 2)
-                })
-            
-            return sales_data
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo datos de ventas diarias: {e}")
             return []
@@ -1078,25 +1012,8 @@ class SimpleDatabaseManager:
     def get_sales_forecast(self, months: int = 6) -> List[Dict[str, Any]]:
         """Obtiene proyección de ventas (versión simplificada)"""
         try:
-            import random
-            from datetime import datetime, timedelta
-            
-            forecast_data = []
-            base_date = datetime.now()
-            
-            for i in range(months):
-                date = base_date + timedelta(days=30*i)
-                # Generar proyección con tendencia creciente
-                base_sales = 30000 + (i * 2000) + random.randint(-3000, 5000)
-                forecast_data.append({
-                    'month': date.strftime('%Y-%m'),
-                    'predicted_sales': round(base_sales, 2),
-                    'confidence_lower': round(base_sales * 0.85, 2),
-                    'confidence_upper': round(base_sales * 1.15, 2),
-                    'growth_rate': round((i * 5) + random.randint(-2, 8), 1)
-                })
-            
-            return forecast_data
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo proyección de ventas: {e}")
             return []
@@ -1104,13 +1021,8 @@ class SimpleDatabaseManager:
     def get_sales_team_performance(self) -> List[Dict[str, Any]]:
         """Obtiene rendimiento del equipo de ventas (versión simplificada)"""
         try:
-            return [
-                {'employee': 'María González', 'position': 'Vendedora Senior', 'sales': 18500.00, 'transactions': 45, 'commission': 925.00, 'rating': 4.8},
-                {'employee': 'Carlos Rodríguez', 'position': 'Vendedor', 'sales': 16200.00, 'transactions': 38, 'commission': 810.00, 'rating': 4.6},
-                {'employee': 'Ana Martínez', 'position': 'Vendedora', 'sales': 14800.00, 'transactions': 42, 'commission': 740.00, 'rating': 4.5},
-                {'employee': 'Luis Fernández', 'position': 'Vendedor Junior', 'sales': 12500.00, 'transactions': 35, 'commission': 625.00, 'rating': 4.3},
-                {'employee': 'Sofia López', 'position': 'Vendedora', 'sales': 11200.00, 'transactions': 28, 'commission': 560.00, 'rating': 4.2}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo rendimiento del equipo: {e}")
             return []

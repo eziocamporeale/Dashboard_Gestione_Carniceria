@@ -2877,50 +2877,44 @@ def render_analytics():
     with tab1:
         st.subheader("📈 Reportes de Ventas")
         
-        # Datos de ejemplo para ventas
-        from datetime import datetime, timedelta
-        
-        # Generar datos de ventas de los últimos 30 días
-        dates = pd.date_range(start=datetime.now() - timedelta(days=30), end=datetime.now(), freq='D')
+        # Nessun dato fittizio - usa dati reali dal database
         sales_data = []
         
-        for date in dates:
-            base_sales = 1500
-            variation = (hash(str(date)) % 1000) - 500
-            daily_sales = max(500, base_sales + variation)
-            
-            sales_data.append({
-                'fecha': date.strftime('%Y-%m-%d'),
-                'ventas': daily_sales,
-                'clientes': (hash(str(date)) % 50) + 20,
-                'productos_vendidos': (hash(str(date)) % 100) + 50
-            })
-        
-        df_sales = pd.DataFrame(sales_data)
+        if sales_data:
+            df_sales = pd.DataFrame(sales_data)
+        else:
+            # Crea DataFrame vuoto per evitare errori
+            df_sales = pd.DataFrame(columns=['fecha', 'ventas', 'clientes', 'productos_vendidos'])
         
         # Métricas de ventas
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            total_sales = df_sales['ventas'].sum()
-            st.metric("Ventas Totales (30 días)", f"${total_sales:,.2f}")
-        with col2:
-            avg_daily = df_sales['ventas'].mean()
-            st.metric("Promedio Diario", f"${avg_daily:,.2f}")
-        with col3:
-            best_day = df_sales.loc[df_sales['ventas'].idxmax()]
-            st.metric("Mejor Día", f"${best_day['ventas']:,.2f}")
-        with col4:
-            total_customers = df_sales['clientes'].sum()
-            st.metric("Total Clientes", f"{total_customers:,}")
+        if not df_sales.empty:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                total_sales = df_sales['ventas'].sum()
+                st.metric("Ventas Totales (30 días)", f"${total_sales:,.2f}")
+            with col2:
+                avg_daily = df_sales['ventas'].mean()
+                st.metric("Promedio Diario", f"${avg_daily:,.2f}")
+            with col3:
+                best_day = df_sales.loc[df_sales['ventas'].idxmax()]
+                st.metric("Mejor Día", f"${best_day['ventas']:,.2f}")
+            with col4:
+                total_customers = df_sales['clientes'].sum()
+                st.metric("Total Clientes", f"{total_customers:,}")
+        else:
+            st.info("📊 Nessun dato di vendita disponibile. Inserisci dati reali per vedere le metriche.")
         
         # Gráfico de ventas
-        fig_line = px.line(
-            df_sales,
-            x='fecha',
-            y='ventas',
-            title="Ventas Diarias (Últimos 30 días)")
-        fig_line.update_layout(xaxis=dict(tickangle=-45))
-        st.plotly_chart(fig_line, use_container_width=True)
+        if not df_sales.empty:
+            fig_line = px.line(
+                df_sales,
+                x='fecha',
+                y='ventas',
+                title="Ventas Diarias (Últimos 30 días)")
+            fig_line.update_layout(xaxis=dict(tickangle=-45))
+            st.plotly_chart(fig_line, use_container_width=True)
+        else:
+            st.info("📊 Nessun dato disponibile per il grafico delle vendite.")
     
     with tab2:
         st.subheader("💰 Reportes Financieros")
@@ -3803,21 +3797,20 @@ def render_configuracion():
             st.subheader("📊 Estado del Backup")
             
             # Métricas de backup
-            st.metric("Último Backup", "2024-09-22 02:00:00")
-            st.metric("Tamaño del Backup", "15.2 MB")
+            st.metric("Último Backup", "Nessuno")
+            st.metric("Tamaño del Backup", "0 MB")
             st.metric("Backups Disponibles", "0")
-            st.metric("Próximo Backup", "2024-09-23 02:00:00")
+            st.metric("Próximo Backup", "Non programmato")
             
             # Lista de backups disponibles
             st.subheader("📋 Backups Disponibles")
-            backups = [
-                {'fecha': '2024-09-22', 'hora': '02:00:00', 'tamaño': '15.2 MB', 'tipo': 'Automático'},
-                {'fecha': '2024-09-21', 'hora': '02:00:00', 'tamaño': '14.8 MB', 'tipo': 'Automático'},
-                {'fecha': '2024-09-20', 'hora': '02:00:00', 'tamaño': '14.5 MB', 'tipo': 'Automático'},
-                {'fecha': '2024-09-19', 'hora': '15:30:00', 'tamaño': '14.2 MB', 'tipo': 'Manual'}
-            ]
+            backups = []  # Nessun dato fittizio
             
-            df_backups = pd.DataFrame(backups)
+            if backups:
+                df_backups = pd.DataFrame(backups)
+            else:
+                st.info("📊 Nessun backup disponibile.")
+                return
             st.dataframe(
                 df_backups,
                 use_container_width=True,
