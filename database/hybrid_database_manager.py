@@ -562,6 +562,15 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore eliminando venta {sale_id}: {e}")
             return False
     
+    def get_all_sales(self) -> List[Dict]:
+        """Obtiene todas las ventas individuales"""
+        try:
+            manager = self._get_manager()
+            return manager.get_all_sales()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo tutte le vendite: {e}")
+            return []
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:

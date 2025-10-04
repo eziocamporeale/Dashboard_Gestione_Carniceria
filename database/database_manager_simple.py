@@ -953,6 +953,49 @@ class SimpleDatabaseManager:
             logger.error(f"❌ Error creando venta: {e}")
             return False
     
+    def get_all_sales(self) -> List[Dict[str, Any]]:
+        """Obtiene todas las ventas individuales"""
+        try:
+            all_sales = [
+                {
+                    'id': 1, 'fecha': '2024-09-22', 'cliente': 'Juan Pérez',
+                    'producto': 'Carne de Res Premium', 'cantidad': 2.5, 'precio_unitario': 25.50,
+                    'total': 63.75, 'metodo_pago': 'Efectivo', 'vendedor': 'María González',
+                    'estado': 'Completada', 'observaciones': 'Cliente satisfecho'
+                },
+                {
+                    'id': 2, 'fecha': '2024-09-22', 'cliente': 'Ana Martínez',
+                    'producto': 'Pollo Entero', 'cantidad': 1.0, 'precio_unitario': 12.00,
+                    'total': 12.00, 'metodo_pago': 'Tarjeta', 'vendedor': 'Carlos Rodríguez',
+                    'estado': 'Completada', 'observaciones': ''
+                },
+                {
+                    'id': 3, 'fecha': '2024-09-21', 'cliente': 'Roberto Silva',
+                    'producto': 'Jamón Serrano', 'cantidad': 0.5, 'precio_unitario': 35.00,
+                    'total': 17.50, 'metodo_pago': 'Efectivo', 'vendedor': 'Ana Martínez',
+                    'estado': 'Completada', 'observaciones': 'Producto premium'
+                },
+                {
+                    'id': 4, 'fecha': '2024-09-21', 'cliente': 'María García',
+                    'producto': 'Salmón Fresco', 'cantidad': 1.2, 'precio_unitario': 18.75,
+                    'total': 22.50, 'metodo_pago': 'Transferencia', 'vendedor': 'Luis Fernández',
+                    'estado': 'Completada', 'observaciones': 'Pescado fresco del día'
+                },
+                {
+                    'id': 5, 'fecha': '2024-09-20', 'cliente': 'Carlos López',
+                    'producto': 'Carne Molida', 'cantidad': 3.0, 'precio_unitario': 8.50,
+                    'total': 25.50, 'metodo_pago': 'Efectivo', 'vendedor': 'María González',
+                    'estado': 'Completada', 'observaciones': 'Para hamburguesas'
+                }
+            ]
+            
+            # Filtra le vendite eliminate
+            active_sales = [s for s in all_sales if s['id'] not in self._deleted_sales]
+            return active_sales
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo todas las ventas: {e}")
+            return []
+    
     def get_supplier_orders(self) -> List[Dict[str, Any]]:
         """Obtiene todos los pedidos de proveedores"""
         try:

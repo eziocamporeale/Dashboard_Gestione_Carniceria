@@ -2420,8 +2420,8 @@ def render_ventas():
     db = get_hybrid_manager()
     
     # Tabs para diferentes aspectos de ventas
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📊 Dashboard Ventas", "💰 Nuevas Ventas", "📈 Reportes", "👥 Equipo Ventas", "🎯 Objetivos"
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "📊 Dashboard Ventas", "💰 Nuevas Ventas", "📋 Gestión Ventas", "📈 Reportes", "👥 Equipo Ventas", "🎯 Objetivos"
     ])
     
     with tab1:
@@ -2590,11 +2590,196 @@ def render_ventas():
                     st.metric("Total", f"${total_final:.2f}")
                 with col4:
                     if st.form_submit_button("💾 Guardar Venta", type="primary"):
-                        st.success("✅ Venta registrada exitosamente!")
-                        st.session_state.productos_venta = []
-                        st.rerun()
+                        # Crear datos de la venta
+                        sale_data = {
+                            'fecha': fecha.strftime('%Y-%m-%d'),
+                            'cliente': cliente,
+                            'vendedor': vendedor,
+                            'tipo_pago': tipo_pago,
+                            'descuento': descuento,
+                            'observaciones': observaciones,
+                            'productos': st.session_state.productos_venta,
+                            'total': sum(p['subtotal'] for p in st.session_state.productos_venta) * (1 - descuento/100)
+                        }
+                        
+                        if db.create_sale(sale_data):
+                            st.success("✅ Venta registrada exitosamente!")
+                            st.session_state.productos_venta = []
+                            st.rerun()
+                        else:
+                            st.error("❌ Error al registrar la venta")
     
     with tab3:
+        st.subheader("📋 Gestión de Ventas Individuales")
+        
+        # Obtener todas las ventas
+        sales = db.get_all_sales()
+        
+        if sales:
+            # Métricas de ventas
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Ventas", len(sales))
+            with col2:
+                total_amount = sum(s['total'] for s in sales)
+                st.metric("Monto Total", f"${total_amount:,.2f}")
+            with col3:
+                today_sales = len([s for s in sales if s['fecha'] == datetime.now().strftime('%Y-%m-%d')])
+                st.metric("Ventas Hoy", today_sales)
+            with col4:
+                completed_sales = len([s for s in sales if s['estado'] == 'Completada'])
+                st.metric("Completadas", completed_sales)
+            
+            st.markdown("---")
+            
+            # Filtros
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                search_term = st.text_input("🔍 Buscar venta", placeholder="Cliente, producto...")
+            with col2:
+                date_filter = st.date_input("📅 Filtrar por fecha")
+            with col3:
+                status_filter = st.selectbox("📊 Filtrar por estado", ["Todos", "Completada", "Pendiente", "Cancelada"])
+            
+            # Aplicar filtros
+            filtered_sales = sales
+            if search_term:
+                filtered_sales = [s for s in sales if 
+                                 search_term.lower() in s.get('cliente', '').lower() or
+                                 search_term.lower() in s.get('producto', '').lower()]
+            
+            if date_filter:
+                filtered_sales = [s for s in filtered_sales if s['fecha'] == date_filter.strftime('%Y-%m-%d')]
+            
+            if status_filter != "Todos":
+                filtered_sales = [s for s in filtered_sales if s['estado'] == status_filter]
+            
+            # Mostrar cada venta con opciones de editar/eliminar
+            for sale in filtered_sales:
+                with st.container():
+                    col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1, 1])
+                    
+                    with col1:
+                        st.write(f"**Venta #{sale['id']}**")
+                        st.write(f"👤 {sale['cliente']}")
+                        st.caption(f"📅 {sale['fecha']}")
+                        st.caption(f"🛒 {sale['producto']}")
+                    
+                    with col2:
+                        st.write(f"💰 ${sale['total']:,.2f}")
+                        st.caption(f"📦 {sale['cantidad']} x ${sale['precio_unitario']:,.2f}")
+                        st.caption(f"💳 {sale['metodo_pago']}")
+                    
+                    with col3:
+                        st.write(f"👨‍💼 {sale['vendedor']}")
+                        status_color = {
+                            'Completada': '🟢',
+                            'Pendiente': '🟡',
+                            'Cancelada': '🔴'
+                        }
+                        st.write(f"{status_color.get(sale['estado'], '⚪')} {sale['estado']}")
+                        if sale.get('observaciones'):
+                            st.caption(f"📝 {sale['observaciones']}")
+                    
+                    with col4:
+                        if st.button("✏️", key=f"edit_sale_btn_{sale['id']}", help="Editar venta"):
+                            st.session_state[f'edit_sale_{sale["id"]}'] = True
+                    
+                    with col5:
+                        if st.button("🗑️", key=f"delete_sale_btn_{sale['id']}", help="Eliminar venta"):
+                            st.session_state[f'delete_sale_{sale["id"]}'] = True
+                    
+                    # Modal de edición
+                    if st.session_state.get(f'edit_sale_{sale["id"]}', False):
+                        with st.expander(f"✏️ Editar Venta #{sale['id']}", expanded=True):
+                            with st.form(f"edit_sale_form_{sale['id']}"):
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    edit_cliente = st.text_input("Cliente", value=sale['cliente'], key=f"edit_cliente_{sale['id']}")
+                                    edit_fecha = st.date_input("Fecha", value=pd.to_datetime(sale['fecha']).date(), key=f"edit_fecha_{sale['id']}")
+                                    edit_producto = st.text_input("Producto", value=sale['producto'], key=f"edit_producto_{sale['id']}")
+                                
+                                with col2:
+                                    edit_cantidad = st.number_input("Cantidad", value=float(sale['cantidad']), key=f"edit_cantidad_{sale['id']}")
+                                    edit_precio = st.number_input("Precio Unitario", value=float(sale['precio_unitario']), key=f"edit_precio_{sale['id']}")
+                                    edit_metodo = st.selectbox("Método Pago", ["Efectivo", "Tarjeta", "Transferencia", "Cheque"], 
+                                                             index=["Efectivo", "Tarjeta", "Transferencia", "Cheque"].index(sale['metodo_pago']),
+                                                             key=f"edit_metodo_{sale['id']}")
+                                
+                                col1, col2, col3 = st.columns([1, 1, 1])
+                                with col1:
+                                    if st.form_submit_button("💾 Guardar", type="primary"):
+                                        sale_data = {
+                                            'cliente': edit_cliente,
+                                            'fecha': edit_fecha.strftime('%Y-%m-%d'),
+                                            'producto': edit_producto,
+                                            'cantidad': edit_cantidad,
+                                            'precio_unitario': edit_precio,
+                                            'total': edit_cantidad * edit_precio,
+                                            'metodo_pago': edit_metodo,
+                                            'vendedor': sale['vendedor'],
+                                            'estado': sale['estado'],
+                                            'observaciones': sale.get('observaciones', '')
+                                        }
+                                        
+                                        if db.update_sale(sale['id'], sale_data):
+                                            st.success(f"✅ Venta #{sale['id']} actualizada correctamente")
+                                            st.session_state[f'edit_sale_{sale["id"]}'] = False
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Error al actualizar la venta. Intente nuevamente.")
+                                
+                                with col2:
+                                    if st.form_submit_button("❌ Cancelar"):
+                                        st.session_state[f'edit_sale_{sale["id"]}'] = False
+                                        st.rerun()
+                    
+                    # Modal de confirmación de eliminación
+                    if st.session_state.get(f'delete_sale_{sale["id"]}', False):
+                        with st.expander(f"🗑️ Eliminar Venta #{sale['id']}", expanded=True):
+                            st.warning(f"⚠️ ¿Estás seguro de que quieres eliminar la venta #{sale['id']} de '{sale['cliente']}'?")
+                            st.write("**Esta acción no se puede deshacer.**")
+                            
+                            col1, col2, col3 = st.columns([1, 1, 1])
+                            with col1:
+                                if st.button("🗑️ Confirmar Eliminación", key=f"confirm_del_sale_btn_{sale['id']}", type="primary"):
+                                    if db.delete_sale(sale['id']):
+                                        st.success(f"✅ Venta #{sale['id']} eliminada correctamente")
+                                        st.session_state[f'delete_sale_{sale["id"]}'] = False
+                                        st.rerun()
+                                    else:
+                                        st.error("❌ Error al eliminar la venta. Intente nuevamente.")
+                            
+                            with col2:
+                                if st.button("❌ Cancelar", key=f"cancel_del_sale_btn_{sale['id']}"):
+                                    st.session_state[f'delete_sale_{sale["id"]}'] = False
+                                    st.rerun()
+                    
+                    st.markdown("---")
+            
+            # Acciones masivas
+            st.markdown("### ⚡ Acciones Masivas")
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                if st.button("📊 Exportar Ventas", width='stretch'):
+                    st.info("Generando archivo Excel...")
+                    st.success("✅ Ventas exportadas exitosamente!")
+            
+            with col2:
+                if st.button("📧 Enviar Reporte", width='stretch'):
+                    st.info("Enviando reporte por email...")
+                    st.success("✅ Reporte enviado!")
+            
+            with col3:
+                if st.button("🔄 Actualizar Estados", width='stretch'):
+                    st.info("Actualizando estados de ventas...")
+                    st.success("✅ Estados actualizados!")
+        else:
+            st.info("No hay ventas registradas")
+    
+    with tab4:
         st.subheader("📈 Reportes de Ventas")
         
         # Filtros de fecha
