@@ -1156,7 +1156,7 @@ def render_clientes():
                 df_predictions = pd.DataFrame(predictions)
                 fig_prob = px.bar(df_predictions, x='customer_name', y='probability',
                                 title="Probabilidades de Predicción",
-                                color='priority', 'media': 'orange', 'baja': 'green'})
+                                color='priority')
                 fig_prob.update_layout(xaxis=dict(tickangle=45))
                 st.plotly_chart(fig_prob, use_container_width=True)
             else:
