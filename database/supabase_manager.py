@@ -307,15 +307,8 @@ class SupabaseManager:
     def get_top_products(self, limit: int = 10) -> List[Dict]:
         """Ottiene prodotti più venduti"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            # In una implementazione reale, si farebbe una query JOIN con sales
-            return [
-                {'id': 1, 'name': 'Carne de Res', 'total_sales': 150.75, 'total_quantity': 10},
-                {'id': 2, 'name': 'Pollo', 'total_sales': 87.50, 'total_quantity': 8},
-                {'id': 3, 'name': 'Cerdo', 'total_sales': 65.25, 'total_quantity': 5},
-                {'id': 4, 'name': 'Chorizo', 'total_sales': 45.00, 'total_quantity': 6},
-                {'id': 5, 'name': 'Jamón', 'total_sales': 32.50, 'total_quantity': 4}
-            ][:limit]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo top prodotti: {e}")
             return []
