@@ -2938,41 +2938,41 @@ def render_balance():
     db = get_hybrid_manager()
     
     # Tabs para diferentes funcionalidades
-    tab1, tab2, tab3, tab4 = st.tabs(["📝 Inserimento Giornaliero", "📊 Dashboard Giornaliero", "📈 Report Settimanale", "📋 Report Mensile"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📝 Entrada Diaria", "📊 Panel Diario", "📈 Reporte Semanal", "📋 Reporte Mensual"])
     
     with tab1:
-        st.subheader("📝 Inserimento Giornaliero")
+        st.subheader("📝 Entrada Diaria")
         
         # Selettore data
         col1, col2 = st.columns([1, 3])
         with col1:
-            selected_date = st.date_input("📅 Data", value=datetime.now().date())
+            selected_date = st.date_input("📅 Fecha", value=datetime.now().date())
         
         with col2:
-            st.info(f"💡 Inserisci entrate e uscite per il **{selected_date.strftime('%d/%m/%Y')}**")
+            st.info(f"💡 Ingresa ingresos y gastos para el **{selected_date.strftime('%d/%m/%Y')}**")
         
         # Ottieni categorie
         income_categories = db.get_accounting_categories('income')
         expense_categories = db.get_accounting_categories('expense')
         
         # Form per inserimento entrate
-        st.subheader("💰 Aggiungi Entrata")
+        st.subheader("💰 Agregar Ingreso")
         
         with st.form("add_income_form"):
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                income_amount = st.number_input("💰 Importo", min_value=0.01, step=0.01, format="%.2f")
-                income_category = st.selectbox("📂 Categoria", [c['name'] for c in income_categories])
+                income_amount = st.number_input("💰 Monto", min_value=0.01, step=0.01, format="%.2f")
+                income_category = st.selectbox("📂 Categoría", [c['name'] for c in income_categories])
             
             with col2:
-                income_description = st.text_input("📝 Descrizione", placeholder="Descrizione entrata...")
-                income_payment = st.selectbox("💳 Metodo Pagamento", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
+                income_description = st.text_input("📝 Descripción", placeholder="Descripción del ingreso...")
+                income_payment = st.selectbox("💳 Método de Pago", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
             
             with col3:
                 st.write("")  # Spazio
                 st.write("")  # Spazio
-                income_submitted = st.form_submit_button("➕ Aggiungi Entrata", type="primary")
+                income_submitted = st.form_submit_button("➕ Agregar Ingreso", type="primary")
             
             if income_submitted and income_amount > 0:
                 result = db.add_daily_income(
@@ -2992,23 +2992,23 @@ def render_balance():
             st.markdown("---")
             
         # Form per inserimento uscite
-        st.subheader("💸 Aggiungi Uscita")
+        st.subheader("💸 Agregar Gasto")
             
         with st.form("add_expense_form"):
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                expense_amount = st.number_input("💸 Importo", min_value=0.01, step=0.01, format="%.2f")
-                expense_category = st.selectbox("📂 Categoria", [c['name'] for c in expense_categories])
+                expense_amount = st.number_input("💸 Monto", min_value=0.01, step=0.01, format="%.2f")
+                expense_category = st.selectbox("📂 Categoría", [c['name'] for c in expense_categories])
             
             with col2:
-                expense_description = st.text_input("📝 Descrizione", placeholder="Descrizione uscita...")
-                expense_supplier = st.text_input("🏪 Fornitore", placeholder="Nome fornitore...")
+                expense_description = st.text_input("📝 Descripción", placeholder="Descripción del gasto...")
+                expense_supplier = st.text_input("🏪 Proveedor", placeholder="Nombre del proveedor...")
             
             with col3:
-                expense_payment = st.selectbox("💳 Metodo Pagamento", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
+                expense_payment = st.selectbox("💳 Método de Pago", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
                 st.write("")  # Spazio
-                expense_submitted = st.form_submit_button("➖ Aggiungi Uscita", type="secondary")
+                expense_submitted = st.form_submit_button("➖ Agregar Gasto", type="secondary")
             
             if expense_submitted and expense_amount > 0:
                 result = db.add_daily_expense(
@@ -3053,7 +3053,7 @@ def render_balance():
             with st.expander("⚡ Inserimento Rapido - Entrata", expanded=True):
                 col1, col2 = st.columns(2)
                 with col1:
-                    quick_amount = st.number_input("💰 Importo", min_value=0.01, step=0.01, format="%.2f", key="quick_income_amount")
+                    quick_amount = st.number_input("💰 Monto", min_value=0.01, step=0.01, format="%.2f", key="quick_income_amount")
                 with col2:
                     if st.button("✅ Conferma", key="confirm_quick_income"):
                         result = db.add_daily_income(
@@ -3069,10 +3069,10 @@ def render_balance():
         
         if 'quick_expense' in st.session_state:
             quick_data = st.session_state['quick_expense']
-            with st.expander("⚡ Inserimento Rapido - Uscita", expanded=True):
+            with st.expander("⚡ Entrada Rápida - Gasto", expanded=True):
                 col1, col2 = st.columns(2)
                 with col1:
-                    quick_amount = st.number_input("💸 Importo", min_value=0.01, step=0.01, format="%.2f", key="quick_expense_amount")
+                    quick_amount = st.number_input("💸 Monto", min_value=0.01, step=0.01, format="%.2f", key="quick_expense_amount")
                 with col2:
                     if st.button("✅ Conferma", key="confirm_quick_expense"):
                         result = db.add_daily_expense(
@@ -3087,15 +3087,15 @@ def render_balance():
                             st.rerun()
     
     with tab2:
-        st.subheader("📊 Dashboard Giornaliero")
+        st.subheader("📊 Panel Diario")
         
         # Selettore data
         col1, col2 = st.columns([1, 3])
         with col1:
-            dashboard_date = st.date_input("📅 Data", value=datetime.now().date(), key="dashboard_date")
+            dashboard_date = st.date_input("📅 Fecha", value=datetime.now().date(), key="dashboard_date")
         
         with col2:
-            st.info(f"📊 Dashboard per il **{dashboard_date.strftime('%d/%m/%Y')}**")
+            st.info(f"📊 Panel para el **{dashboard_date.strftime('%d/%m/%Y')}**")
         
         # Ottieni dati giornalieri
         daily_entries = db.get_daily_entries(dashboard_date.isoformat())
@@ -3241,7 +3241,7 @@ def render_balance():
             st.info("📝 Nessun dato per questo giorno. Usa la tab 'Inserimento Giornaliero' per aggiungere entrate e uscite.")
     
     with tab3:
-        st.subheader("📈 Report Settimanale")
+        st.subheader("📈 Reporte Semanal")
         
         # Selettore settimana
         col1, col2 = st.columns([1, 3])
@@ -3359,7 +3359,7 @@ def render_balance():
             st.info("Inserisci dati giornalieri per vedere il report settimanale")
     
     with tab4:
-        st.subheader("📋 Report Mensile")
+        st.subheader("📋 Reporte Mensual")
         
         # Selettore mese
         col1, col2 = st.columns([1, 3])
