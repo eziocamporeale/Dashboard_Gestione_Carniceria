@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, date, timedelta
+import datetime as dt
 import sys
 from pathlib import Path
 from streamlit_option_menu import option_menu
@@ -1939,8 +1940,8 @@ def render_personal():
                             'emergency_contact': new_emergency_contact,
                             'emergency_phone': new_emergency_phone,
                             'notes': new_notes,
-                            'created_at': datetime.now().isoformat(),
-                            'updated_at': datetime.now().isoformat()
+                            'created_at': dt.datetime.now().isoformat(),
+                            'updated_at': dt.datetime.now().isoformat()
                         }
                         
                         try:
