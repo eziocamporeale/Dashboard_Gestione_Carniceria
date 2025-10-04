@@ -2854,11 +2854,11 @@ def render_balance():
     
     st.header("💰 Balance y Previsiones")
     
-    # Importar el lector de Excel
+    # Importar el migrador de Excel para Supabase
     try:
-        from components.excel_reader import ExcelReader, analyze_carniceria_excel
+        from components.supabase_excel_migrator import SupabaseExcelMigrator
     except ImportError:
-        st.error("❌ Error importando lector de Excel")
+        st.error("❌ Error importando migrador de Excel")
         return
     
     # Tabs para diferentes funcionalidades
@@ -3133,6 +3133,76 @@ def render_balance():
             help="Sube tu archivo Excel con los datos históricos de la carnicería"
         )
         
+        # Opción para caricare file specifico
+        st.markdown("### 🎯 Carica File Specifico")
+        
+        # Path del file Excel reale
+        excel_path = "/Users/ezio/Downloads/Gestion Carniceria El Tablero .xlsx"
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🚀 Migra Dati Excel a Supabase", width='stretch', type="primary"):
+                try:
+                    with st.spinner("🔄 Migrando dati Excel a Supabase..."):
+                        # Inizializza il migratore
+                        migrator = SupabaseExcelMigrator()
+                        
+                        # Esegui la migrazione
+                        results = migrator.migrate_excel_to_supabase(excel_path)
+                        
+                        if results:
+                            st.success("✅ **Migrazione completata con successo!**")
+                            
+                            # Mostra i risultati
+                            st.markdown("### 📊 Risultati Migrazione:")
+                            
+                            col1, col2, col3, col4 = st.columns(4)
+                            
+                            with col1:
+                                sales_result = results.get('sales', {})
+                                st.metric("Vendite", sales_result.get('migrated_count', 0))
+                            
+                            with col2:
+                                purchases_result = results.get('purchases', {})
+                                st.metric("Acquisti", purchases_result.get('migrated_count', 0))
+                            
+                            with col3:
+                                expenses_result = results.get('expenses', {})
+                                st.metric("Spese", expenses_result.get('migrated_count', 0))
+                            
+                            with col4:
+                                suppliers_result = results.get('suppliers', {})
+                                st.metric("Fornitori", suppliers_result.get('migrated_count', 0))
+                            
+                            # Mostra dettagli
+                            with st.expander("📋 Dettagli Migrazione"):
+                                for category, result in results.items():
+                                    if result.get('status') == 'success':
+                                        st.success(f"✅ {category.upper()}: {result.get('migrated_count', 0)} record migrati")
+                                        if result.get('data'):
+                                            st.json(result['data'][:2])  # Prime 2 per esempio
+                                    else:
+                                        st.error(f"❌ {category.upper()}: {result.get('error', 'Errore sconosciuto')}")
+                            
+                            # Aggiorna session state
+                            st.session_state['excel_migrated'] = True
+                            st.session_state['migration_results'] = results
+                            
+                        else:
+                            st.error("❌ Errore durante la migrazione")
+                            
+                except Exception as e:
+                    st.error(f"❌ Errore: {e}")
+        
+        # Opzione per caricare file personalizzato
+        st.markdown("### 📁 Carica File Personalizzato")
+        
+        uploaded_file = st.file_uploader(
+            "📁 Cargar Archivo Excel con Datos Históricos",
+            type=['xlsx', 'xls'],
+            help="Sube tu archivo Excel con los datos históricos de la carnicería"
+        )
+        
         if uploaded_file is not None:
             # Mostrar información del archivo cargado
             st.info(f"📁 **Archivo cargado:** {uploaded_file.name} ({uploaded_file.size:,} bytes)")
@@ -3141,7 +3211,7 @@ def render_balance():
             col1, col2, col3 = st.columns([1, 2, 1])
             
             with col2:
-                if st.button("🚀 Procesar Archivo Excel", width='stretch', type="primary"):
+                if st.button("🚀 Procesar Archivo Personalizado", width='stretch', type="secondary"):
                     try:
                         # Guardar archivo temporalmente
                         import tempfile
@@ -3152,75 +3222,67 @@ def render_balance():
                             tmp_file_path = tmp_file.name
                         
                         # Procesar el archivo
-                        with st.spinner("🔄 Procesando datos del Excel..."):
-                            analyzer = analyze_carniceria_excel(tmp_file_path)
-                            analysis = analyzer.get_comprehensive_analysis()
+                        with st.spinner("🔄 Procesando archivo personalizado..."):
+                            migrator = SupabaseExcelMigrator()
+                            results = migrator.migrate_excel_to_supabase(tmp_file_path)
                             
-                            # Guardar análisis en session state
-                            st.session_state['carniceria_analysis'] = analysis
-                            st.session_state['excel_processed'] = True
-                            
-                            # Guardar datos en la base de datos
-                            db = get_hybrid_manager()
-                            success = db.save_excel_data(analysis)
-                            
-                            if success:
-                                st.session_state['excel_saved_to_db'] = True
-                                logger.info("✅ Datos Excel guardados en la base de datos")
+                            if results:
+                                st.success("✅ **Archivo personalizado procesado con éxito!**")
+                                
+                                # Mostra i risultati
+                                st.markdown("### 📊 Risultati:")
+                                
+                                col1, col2, col3, col4 = st.columns(4)
+                                
+                                with col1:
+                                    st.metric("Vendite", results.get('sales', {}).get('migrated_count', 0))
+                                with col2:
+                                    st.metric("Acquisti", results.get('purchases', {}).get('migrated_count', 0))
+                                with col3:
+                                    st.metric("Spese", results.get('expenses', {}).get('migrated_count', 0))
+                                with col4:
+                                    st.metric("Fornitori", results.get('suppliers', {}).get('migrated_count', 0))
+                                
+                                # Aggiorna session state
+                                st.session_state['excel_migrated'] = True
+                                st.session_state['migration_results'] = results
+                                
                             else:
-                                st.session_state['excel_saved_to_db'] = False
-                                logger.error("❌ Error guardando datos Excel en la base de datos")
-                            
-                            # Limpiar archivo temporal
-                            os.unlink(tmp_file_path)
+                                st.error("❌ Errore processando archivo personalizado")
                         
-                        st.success(f"✅ Archivo procesado exitosamente: {uploaded_file.name}")
-                        st.balloons()
-                        
-                        # Mostrar resumen del procesamiento
-                        overview = analysis.get('overview', {})
-                        st.info(f"""
-                        **📊 Datos Procesados:**
-                        • {overview.get('total_months', 0)} meses analizados
-                        • {overview.get('total_transactions', 0):,} transacciones procesadas
-                        • ${overview.get('total_sales', 0):,.2f} en ventas totales
-                        • ${overview.get('total_profit', 0):,.2f} en ganancias totales
-                        """)
-                        
-                        # Mostrar botón para ver análisis
-                        st.markdown("---")
-                        st.success("🎉 **¡Datos procesados exitosamente!**")
-                        st.info("💡 **Ahora puedes:**")
-                        st.write("• Ir a **📊 Resumen General** para ver KPIs principales")
-                        st.write("• Ir a **📈 Análisis Mensual** para ver gráficos detallados")
-                        st.write("• Ir a **🔮 Previsiones** para ver proyecciones futuras")
+                        # Limpiar archivo temporal
+                        os.unlink(tmp_file_path)
                         
                     except Exception as e:
-                        st.error(f"❌ Error procesando archivo: {str(e)}")
-                        st.exception(e)
-            
-            # Mostrar información adicional si el archivo está cargado pero no procesado
-            if 'excel_processed' not in st.session_state or not st.session_state['excel_processed']:
-                st.warning("⚠️ **Archivo cargado pero no procesado**")
-                st.info("Haz clic en **'🚀 Procesar Archivo Excel'** para analizar los datos")
+                        st.error(f"❌ Errore: {e}")
         
-        # Botón para resetear datos si están procesados
-        if 'excel_processed' in st.session_state and st.session_state['excel_processed']:
-            st.markdown("---")
-            st.subheader("🔄 Gestión de Datos")
+        # Opzione per rimuovere dati di prova
+        st.markdown("### 🧹 Pulizia Dati")
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🗑️ Rimuovi Dati di Prova", width='stretch', type="secondary"):
+                try:
+                    with st.spinner("🧹 Rimuovendo dati di prova..."):
+                        migrator = SupabaseExcelMigrator()
+                        result = migrator.clear_sample_data()
+                        
+                        if result.get('status') == 'success':
+                            st.success("✅ **Dati di prova rimossi con successo!**")
+                            st.info("Ora puoi caricare i dati reali dal file Excel")
+                        else:
+                            st.error(f"❌ Errore: {result.get('error', 'Errore sconosciuto')}")
+                            
+                except Exception as e:
+                    st.error(f"❌ Errore: {e}")
+        
+        # Mostra stato migrazione
+        if st.session_state.get('excel_migrated', False):
+            st.success("✅ **Dati Excel migrati con successo!**")
+            st.info("I dati sono ora disponibili in tutte le sezioni del dashboard")
             
-            col1, col2, col3 = st.columns([1, 2, 1])
-            
-            with col2:
-                if st.button("🗑️ Limpiar Datos Procesados", width='stretch', type="secondary"):
-                    # Limpiar datos del session state
-                    if 'carniceria_analysis' in st.session_state:
-                        del st.session_state['carniceria_analysis']
-                    if 'excel_processed' in st.session_state:
-                        del st.session_state['excel_processed']
-                    
-                    st.success("✅ Datos limpiados correctamente")
-                    st.rerun()
+            if st.button("🔄 Ricarica Dashboard", type="primary"):
+                st.rerun()
     
     with tab5:
         st.subheader("💾 Datos Guardados en Base de Datos")
