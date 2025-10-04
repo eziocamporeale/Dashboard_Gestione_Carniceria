@@ -1693,7 +1693,11 @@ def render_personal():
     
     # Ottieni dati del personale dal database
     db = get_hybrid_manager()
-    sample_employees = db.get_employees() or []
+    try:
+        sample_employees = db.select('employees') or []
+    except:
+        # Se la tabella non esiste ancora, usa lista vuota
+        sample_employees = []
     
     # Tabs para diferentes funcionalidades
     tab1, tab2, tab3, tab4 = st.tabs(["👥 Lista Empleados", "➕ Nuevo Empleado", "⏰ Turnos", "📊 Estadísticas"])
