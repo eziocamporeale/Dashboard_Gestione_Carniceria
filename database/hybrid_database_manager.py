@@ -627,6 +627,53 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo ruoli: {e}")
             return []
     
+    # ==================== GESTORE CONTABILITÀ ====================
+    
+    def get_financial_summary(self, start_date=None, end_date=None) -> Dict:
+        """Ottiene riepilogo finanziario (entrate e uscite)"""
+        try:
+            manager = self._get_manager()
+            return manager.get_financial_summary(start_date, end_date)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo finanziario: {e}")
+            return {}
+    
+    def get_monthly_financial_data(self, months: int = 12) -> List[Dict]:
+        """Ottiene dati finanziari mensili"""
+        try:
+            manager = self._get_manager()
+            return manager.get_monthly_financial_data(months)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo dati finanziari mensili: {e}")
+            return []
+    
+    def get_expense_categories(self) -> List[Dict]:
+        """Ottiene categorie di spese"""
+        try:
+            manager = self._get_manager()
+            return manager.get_expense_categories()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo categorie spese: {e}")
+            return []
+    
+    def get_income_trends(self, days: int = 30) -> List[Dict]:
+        """Ottiene tendenze delle entrate"""
+        try:
+            manager = self._get_manager()
+            return manager.get_income_trends(days)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo tendenze entrate: {e}")
+            return []
+    
+    def get_financial_forecast(self, months: int = 6) -> List[Dict]:
+        """Ottiene previsioni finanziarie"""
+        try:
+            manager = self._get_manager()
+            return manager.get_financial_forecast(months)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo previsioni finanziarie: {e}")
+            return []
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:

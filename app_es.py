@@ -3036,274 +3036,291 @@ def render_analytics():
         st.info("🚧 Reportes de clientes en desarrollo")
 
 def render_balance():
-    """Renderiza la sección balance y previsiones"""
+    """Renderiza la sección balance y contabilidad"""
     require_permission("balance")
     
-    st.header("💰 Balance y Previsiones")
+    st.header("💰 Balance y Contabilidad")
     
-    # Importar el migrador de Excel para Supabase
-    try:
-        from components.supabase_excel_migrator import SupabaseExcelMigrator
-    except ImportError:
-        st.error("❌ Error importando migrador de Excel")
-        return
+    # Ottieni il database manager
+    db = get_hybrid_manager()
     
     # Tabs para diferentes funcionalidades
-    tab1, tab2, tab3 = st.tabs(["📊 Resumen General", "📈 Análisis Mensual", "🔮 Previsiones"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Resumen General", "📈 Análisis Mensual", "💸 Gastos y Categorías", "🔮 Previsiones"])
     
     with tab1:
         st.subheader("📊 Resumen General")
         
-        # Verificar si hay datos procesados
-        if 'excel_processed' in st.session_state and st.session_state['excel_processed']:
-            st.success("✅ **Datos del Excel procesados correctamente**")
+        # Ottieni riepilogo finanziario
+        financial_summary = db.get_financial_summary()
         
-        # Mostrar resumen si hay datos cargados
-        if 'carniceria_analysis' in st.session_state:
-            analysis = st.session_state['carniceria_analysis']
-            overview = analysis.get('overview', {})
-            
-            # KPIs principales
+        if financial_summary:
+            # Metriche principali
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.metric(
-                    label="💰 Total Ventas",
-                    value=f"${overview.get('total_sales', 0):,.2f}",
-                    delta=f"{overview.get('total_months', 0)} meses"
+                    "💰 Total Ingresos",
+                    f"${financial_summary.get('total_income', 0):,.2f}",
+                    help="Total de ventas en el período"
                 )
             
             with col2:
                 st.metric(
-                    label="💸 Total Gastos",
-                    value=f"${overview.get('total_expenses', 0):,.2f}",
-                    delta="Gastos totales"
+                    "💸 Total Gastos",
+                    f"${financial_summary.get('total_expenses', 0):,.2f}",
+                    help="Total de gastos con proveedores"
                 )
             
             with col3:
+                profit = financial_summary.get('profit', 0)
+                profit_color = "normal" if profit >= 0 else "inverse"
                 st.metric(
-                    label="📈 Ganancia Total",
-                    value=f"${overview.get('total_profit', 0):,.2f}",
-                    delta="Beneficio neto"
+                    "📈 Beneficio",
+                    f"${profit:,.2f}",
+                    delta=f"{financial_summary.get('profit_margin', 0):.1f}%",
+                    delta_color=profit_color,
+                    help="Beneficio neto y margen de ganancia"
                 )
             
             with col4:
                 st.metric(
-                    label="📋 Transacciones",
-                    value=f"{overview.get('total_transactions', 0):,}",
-                    delta="Total operaciones"
+                    "📊 Transacciones",
+                    financial_summary.get('transactions_count', 0),
+                    help="Número de ventas registradas"
                 )
             
-            st.markdown("---")
+            # Grafico de ingresos vs gastos
+            st.subheader("📊 Ingresos vs Gastos")
             
-            # Análisis de tendencias
-            trends = analysis.get('trends', {})
-            st.subheader("📈 Análisis de Tendencias")
+            # Crea grafico a torta
+            import plotly.express as px
             
-            col1, col2, col3 = st.columns(3)
+            categories = ['Ingresos', 'Gastos']
+            values = [financial_summary.get('total_income', 0), financial_summary.get('total_expenses', 0)]
+            colors = ['#00CC96', '#FF6692']
+            
+            fig_pie = px.pie(
+                values=values,
+                names=categories,
+                title="Distribución de Ingresos y Gastos",
+                color_discrete_sequence=colors
+            )
+            fig_pie.update_layout(height=400)
+            st.plotly_chart(fig_pie, use_container_width=True)
+            
+            # Información adicional
+            col1, col2 = st.columns(2)
             
             with col1:
-                trend_icon = "📈" if trends.get('sales_trend') == 'increasing' else "📉" if trends.get('sales_trend') == 'decreasing' else "➡️"
-                st.metric(
-                    label=f"{trend_icon} Tendencia Ventas",
-                    value=trends.get('sales_trend', 'stable').title(),
-                    delta=f"{trends.get('growth_rate', 0):.1f}%"
-                )
+                st.info(f"""
+                **📅 Período:** {financial_summary.get('period', 'N/A')}
+                **📊 Promedio Diario:** ${financial_summary.get('avg_daily_income', 0):,.2f}
+                **🎯 Margen de Ganancia:** {financial_summary.get('profit_margin', 0):.1f}%
+                """)
             
             with col2:
-                trend_icon = "📈" if trends.get('profit_trend') == 'increasing' else "📉" if trends.get('profit_trend') == 'decreasing' else "➡️"
-                st.metric(
-                    label=f"{trend_icon} Tendencia Ganancias",
-                    value=trends.get('profit_trend', 'stable').title(),
-                    delta="Beneficio"
-                )
-            
-            with col3:
-                trend_icon = "📈" if trends.get('expense_trend') == 'increasing' else "📉" if trends.get('expense_trend') == 'decreasing' else "➡️"
-                st.metric(
-                    label=f"{trend_icon} Tendencia Gastos",
-                    value=trends.get('expense_trend', 'stable').title(),
-                    delta="Egresos"
-                )
-            
-            # Análisis de proveedores
-            suppliers_analysis = analysis.get('suppliers_analysis', {})
-            if suppliers_analysis.get('top_suppliers'):
-                st.subheader("🚚 Top Proveedores")
-                
-                suppliers_df = pd.DataFrame(
-                    suppliers_analysis['top_suppliers'], 
-                    columns=['Proveedor', 'Monto Total']
-                )
-                
-                st.dataframe(
-                    suppliers_df,
-                    width='stretch',
-                    column_config={
-                        "Proveedor": "Proveedor",
-                        "Monto Total": st.column_config.NumberColumn("Monto Total ($)", format="$%.2f")
-                    }
-                )
+                if profit > 0:
+                    st.success("✅ **Estado Financiero: Positivo**")
+                    st.write("La carnicería está generando beneficios")
+                else:
+                    st.error("❌ **Estado Financiero: Negativo**")
+                    st.write("Se recomienda revisar gastos y estrategias")
         else:
-            st.info("📁 Carga un archivo Excel para ver el análisis completo")
+            st.warning("⚠️ No hay datos financieros disponibles")
+            st.info("Registra ventas y gastos para ver el análisis financiero")
     
     with tab2:
         st.subheader("📈 Análisis Mensual")
         
-        # Verificar si hay datos procesados
-        if 'excel_processed' in st.session_state and st.session_state['excel_processed']:
-            st.success("✅ **Datos del Excel procesados correctamente**")
+        # Ottieni dati mensili
+        monthly_data = db.get_monthly_financial_data(12)
         
-        if 'carniceria_analysis' in st.session_state:
-            analysis = st.session_state['carniceria_analysis']
-            monthly_breakdown = analysis.get('monthly_breakdown', {})
+        if monthly_data:
+            # Filtro per anno
+            years = list(set([d['year'] for d in monthly_data]))
+            selected_year = st.selectbox("📅 Seleccionar Año", years, index=0)
             
-            if monthly_breakdown:
-                # Crear DataFrame para visualización
-                df_monthly = pd.DataFrame(monthly_breakdown).T
-                df_monthly.index.name = 'Mes'
+            # Filtra dati per anno
+            filtered_data = [d for d in monthly_data if d['year'] == selected_year]
+            
+            if filtered_data:
+                # Crea DataFrame per grafici
+                df_monthly = pd.DataFrame(filtered_data)
                 
-                # Calcola il margine di profitto
-                df_monthly['profit_margin'] = ((df_monthly['sales'] - df_monthly['purchases'] - df_monthly['expenses']) / df_monthly['sales'] * 100).round(2)
-                
-                # Gráfico de tendencia de ventas
-                st.subheader("📊 Tendencia de Ventas Mensuales")
-                fig_sales = px.line(
-                    df_monthly, 
-                    x=df_monthly.index, 
-                    y='sales',
-                    title='Evolución de Ventas por Mes',
-                    labels={'sales': 'Ventas ($)', 'index': 'Mes'}
-                )
-                fig_sales.update_layout(height=400)
-                st.plotly_chart(fig_sales, width='stretch')
-                
-                # Gráfico de margen de ganancia
-                st.subheader("📈 Margen de Ganancia Mensual")
-                fig_profit = px.bar(
+                # Grafico linee per trend mensile
+                fig_line = px.line(
                     df_monthly,
-                    x=df_monthly.index,
-                    y='profit_margin',
-                    title='Margen de Ganancia por Mes (%)',
-                    labels={'profit_margin': 'Margen (%)', 'index': 'Mes'}
+                    x='month',
+                    y=['total_income', 'total_expenses', 'profit'],
+                    title=f"Tendencia Financiera Mensual - {selected_year}",
+                    labels={'value': 'Monto ($)', 'month': 'Mes'},
+                    color_discrete_map={
+                        'total_income': '#00CC96',
+                        'total_expenses': '#FF6692',
+                        'profit': '#636EFA'
+                    }
                 )
-                fig_profit.update_layout(height=400)
-                st.plotly_chart(fig_profit, width='stretch')
+                fig_line.update_layout(height=500)
+                st.plotly_chart(fig_line, use_container_width=True)
                 
                 # Tabla detallada
                 st.subheader("📋 Detalle Mensual")
-                st.dataframe(
-                    df_monthly,
-                    width='stretch',
-                    column_config={
-                        "sales": st.column_config.NumberColumn("Ventas ($)", format="$%.2f"),
-                        "expenses": st.column_config.NumberColumn("Gastos ($)", format="$%.2f"),
-                        "profit": st.column_config.NumberColumn("Ganancia ($)", format="$%.2f"),
-                        "transactions": st.column_config.NumberColumn("Transacciones", format="%d"),
-                        "profit_margin": st.column_config.NumberColumn("Margen (%)", format="%.1f%%")
-                    }
-                )
-            else:
-                st.info("No hay datos mensuales disponibles")
-        else:
-            st.info("📁 Carga un archivo Excel para ver el análisis mensual")
-    
-    with tab3:
-        st.subheader("🔮 Previsiones")
-        
-        # Verificar si hay datos procesados
-        if 'excel_processed' in st.session_state and st.session_state['excel_processed']:
-            st.success("✅ **Datos del Excel procesados correctamente**")
-        
-        if 'carniceria_analysis' in st.session_state:
-            analysis = st.session_state['carniceria_analysis']
-            forecasts = analysis.get('forecasts', {})
-            
-            if forecasts:
-                st.subheader("📊 Previsión Próximo Mes")
                 
+                # Prepara dati per tabella
+                table_data = []
+                for month_data in filtered_data:
+                    table_data.append({
+                        'Mes': month_data['month'],
+                        'Ingresos': f"${month_data['total_income']:,.2f}",
+                        'Gastos': f"${month_data['total_expenses']:,.2f}",
+                        'Beneficio': f"${month_data['profit']:,.2f}",
+                        'Margen %': f"{month_data['profit_margin']:.1f}%",
+                        'Transacciones': month_data['transactions_count']
+                    })
+                
+                df_table = pd.DataFrame(table_data)
+                st.dataframe(df_table, use_container_width=True)
+                
+                # Statistiche
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    st.metric(
-                        label="💰 Ventas Previstas",
-                        value=f"${forecasts.get('next_month_sales', 0):,.2f}",
-                        delta="Previsión"
-                    )
+                    avg_income = sum([d['total_income'] for d in filtered_data]) / len(filtered_data)
+                    st.metric("💰 Ingreso Promedio", f"${avg_income:,.2f}")
                 
                 with col2:
-                    st.metric(
-                        label="💸 Gastos Previstos",
-                        value=f"${forecasts.get('next_month_expenses', 0):,.2f}",
-                        delta="Previsión"
-                    )
+                    best_month = max(filtered_data, key=lambda x: x['profit'])
+                    st.metric("🏆 Mejor Mes", best_month['month'])
                 
                 with col3:
-                    st.metric(
-                        label="📈 Ganancia Prevista",
-                        value=f"${forecasts.get('next_month_profit', 0):,.2f}",
-                        delta="Previsión"
-                    )
-                
-                # Nivel de confianza
-                confidence = forecasts.get('confidence_level', 'medium')
-                confidence_icon = "🟢" if confidence == 'high' else "🟡" if confidence == 'medium' else "🔴"
-                
-                st.info(f"{confidence_icon} **Nivel de Confianza:** {confidence.title()}")
-                
-                # Suposiciones
-                assumptions = forecasts.get('assumptions', [])
-                if assumptions:
-                    st.subheader("📝 Suposiciones del Modelo")
-                    for assumption in assumptions:
-                        st.write(f"• {assumption}")
-                
-                # Gráfico de previsión
-                if 'carniceria_analysis' in st.session_state:
-                    monthly_breakdown = analysis.get('monthly_breakdown', {})
-                    if monthly_breakdown:
-                        st.subheader("📈 Proyección de Ventas")
-                        
-                        # Crear datos para el gráfico
-                        months = list(monthly_breakdown.keys())
-                        sales = [monthly_breakdown[month]['sales'] for month in months]
-                        
-                        # Agregar previsión
-                        months.append("Próximo Mes")
-                        sales.append(forecasts.get('next_month_sales', 0))
-                        
-                        fig_forecast = go.Figure()
-                        
-                        # Datos históricos
-                        fig_forecast.add_trace(go.Scatter(
-                            x=months[:-1],
-                            y=sales[:-1],
-                            mode='lines+markers',
-                            name='Datos Históricos',
-                            line=dict(color='blue')
-                        ))
-                        
-                        # Previsión
-                        fig_forecast.add_trace(go.Scatter(
-                            x=[months[-2], months[-1]],
-                            y=[sales[-2], sales[-1]],
-                            mode='lines+markers',
-                            name='Previsión',
-                            line=dict(color='red', dash='dash')
-                        ))
-                        
-                        fig_forecast.update_layout(
-                            title='Proyección de Ventas',
-                            xaxis_title='Mes',
-                            yaxis_title='Ventas ($)',
-                            height=400
-                        )
-                        
-                        st.plotly_chart(fig_forecast, width='stretch')
+                    total_year = sum([d['profit'] for d in filtered_data])
+                    st.metric("📊 Beneficio Anual", f"${total_year:,.2f}")
             else:
-                st.info("No hay datos suficientes para generar previsiones")
+                st.info(f"No hay datos para el año {selected_year}")
         else:
-            st.info("📁 Carga un archivo Excel para ver las previsiones")
+            st.warning("⚠️ No hay datos mensuales disponibles")
+    
+    with tab3:
+        st.subheader("💸 Gastos y Categorías")
+        
+        # Ottieni categorie di spese
+        expense_categories = db.get_expense_categories()
+        
+        if expense_categories:
+            # Grafico a torta per categorie
+            df_expenses = pd.DataFrame(expense_categories)
+            
+            fig_pie = px.pie(
+                df_expenses,
+                values='amount',
+                names='category',
+                title="Distribución de Gastos por Categoría",
+                color_discrete_sequence=px.colors.qualitative.Set3
+            )
+            fig_pie.update_layout(height=500)
+            st.plotly_chart(fig_pie, use_container_width=True)
+            
+            # Tabla detallada
+            st.subheader("📋 Detalle de Gastos")
+            
+            # Ordina per importo
+            df_expenses_sorted = df_expenses.sort_values('amount', ascending=False)
+            
+            # Crea tabella con formattazione
+            table_data = []
+            for _, row in df_expenses_sorted.iterrows():
+                table_data.append({
+                    'Categoría': row['category'],
+                    'Monto': f"${row['amount']:,.2f}",
+                    'Porcentaje': f"{row['percentage']:.1f}%",
+                    'Transacciones': row['transactions']
+                })
+            
+            df_table = pd.DataFrame(table_data)
+            st.dataframe(df_table, use_container_width=True)
+            
+            # Statistiche
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                total_expenses = sum([c['amount'] for c in expense_categories])
+                st.metric("💸 Total Gastos", f"${total_expenses:,.2f}")
+            
+            with col2:
+                avg_expense = total_expenses / len(expense_categories)
+                st.metric("📊 Promedio por Categoría", f"${avg_expense:,.2f}")
+            
+            with col3:
+                largest_category = max(expense_categories, key=lambda x: x['amount'])
+                st.metric("🏆 Mayor Gasto", largest_category['category'])
+        else:
+            st.warning("⚠️ No hay datos de gastos disponibles")
+            st.info("Registra gastos con proveedores para ver el análisis")
+    
+    with tab4:
+        st.subheader("🔮 Previsiones Financieras")
+        
+        # Ottieni previsioni
+        forecasts = db.get_financial_forecast(6)
+        
+        if forecasts:
+            # Grafico previsioni
+            df_forecasts = pd.DataFrame(forecasts)
+            
+            fig_forecast = px.line(
+                df_forecasts,
+                x='month',
+                y=['predicted_income', 'predicted_expenses', 'predicted_profit'],
+                title="Previsiones Financieras - Próximos 6 Meses",
+                labels={'value': 'Monto ($)', 'month': 'Mes'},
+                color_discrete_map={
+                    'predicted_income': '#00CC96',
+                    'predicted_expenses': '#FF6692',
+                    'predicted_profit': '#636EFA'
+                }
+            )
+            fig_forecast.update_layout(height=500)
+            st.plotly_chart(fig_forecast, use_container_width=True)
+            
+            # Tabla previsioni
+            st.subheader("📋 Previsiones Detalladas")
+            
+            table_data = []
+            for forecast in forecasts:
+                table_data.append({
+                    'Mes': forecast['month'],
+                    'Ingresos Previstos': f"${forecast['predicted_income']:,.2f}",
+                    'Gastos Previstos': f"${forecast['predicted_expenses']:,.2f}",
+                    'Beneficio Previsto': f"${forecast['predicted_profit']:,.2f}",
+                    'Tasa de Crecimiento': f"{forecast['growth_rate']:.1f}%",
+                    'Confianza': f"{forecast['confidence']:.0f}%"
+                })
+            
+            df_forecast_table = pd.DataFrame(table_data)
+            st.dataframe(df_forecast_table, use_container_width=True)
+            
+            # Informazioni aggiuntive
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.info("""
+                **📊 Metodología:**
+                - Basado en tendencias históricas
+                - Crecimiento promedio calculado
+                - Gastos estimados al 70% de ingresos
+                """)
+            
+            with col2:
+                avg_growth = sum([f['growth_rate'] for f in forecasts]) / len(forecasts)
+                st.metric("📈 Crecimiento Promedio", f"{avg_growth:.1f}%")
+                
+                if avg_growth > 0:
+                    st.success("✅ Tendencia positiva")
+                else:
+                    st.warning("⚠️ Tendencia negativa")
+        else:
+            st.warning("⚠️ No hay suficientes datos para generar previsiones")
+            st.info("Necesitas al menos 6 meses de datos históricos")
 
 def render_configuracion():
     """Renderiza la sección configuración"""

@@ -1228,6 +1228,168 @@ class SupabaseManager:
             logger.error(f"❌ Errore ottenendo ruoli: {e}")
             return []
     
+    # ==================== GESTORE CONTABILITÀ ====================
+    
+    def get_financial_summary(self, start_date=None, end_date=None) -> Dict:
+        """Ottiene riepilogo finanziario (entrate e uscite)"""
+        try:
+            # Se non specificate, usa l'ultimo mese
+            if not start_date:
+                start_date = (datetime.now() - timedelta(days=30)).date().isoformat()
+            if not end_date:
+                end_date = datetime.now().date().isoformat()
+            
+            # Ottieni vendite (entrate)
+            sales_data = self.select('sales', 'sale_date, final_amount')
+            sales_in_period = [s for s in sales_data if start_date <= s['sale_date'][:10] <= end_date]
+            total_income = sum([s['final_amount'] for s in sales_in_period])
+            
+            # Ottieni acquisti (uscite) - usando i dati dei fornitori
+            suppliers_data = self.select('suppliers', 'total_amount, transactions_count')
+            total_expenses = sum([s['total_amount'] for s in suppliers_data])
+            
+            # Calcola profitto
+            profit = total_income - total_expenses
+            profit_margin = (profit / total_income * 100) if total_income > 0 else 0
+            
+            return {
+                'period': f"{start_date} - {end_date}",
+                'total_income': total_income,
+                'total_expenses': total_expenses,
+                'profit': profit,
+                'profit_margin': profit_margin,
+                'transactions_count': len(sales_in_period),
+                'avg_daily_income': total_income / 30 if total_income > 0 else 0
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo finanziario: {e}")
+            return {}
+    
+    def get_monthly_financial_data(self, months: int = 12) -> List[Dict]:
+        """Ottiene dati finanziari mensili"""
+        try:
+            monthly_data = []
+            
+            for i in range(months):
+                # Calcola il mese
+                month_date = datetime.now() - timedelta(days=30 * i)
+                month_start = month_date.replace(day=1).date().isoformat()
+                month_end = (month_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+                month_end = month_end.date().isoformat()
+                
+                # Ottieni dati per il mese
+                summary = self.get_financial_summary(month_start, month_end)
+                summary['month'] = month_date.strftime('%B %Y')
+                summary['month_number'] = month_date.month
+                summary['year'] = month_date.year
+                
+                monthly_data.append(summary)
+            
+            return monthly_data
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo dati finanziari mensili: {e}")
+            return []
+    
+    def get_expense_categories(self) -> List[Dict]:
+        """Ottiene categorie di spese"""
+        try:
+            # Usa i fornitori come categorie di spese
+            suppliers_data = self.select('suppliers', 'name, total_amount, transactions_count')
+            
+            categories = []
+            for supplier in suppliers_data:
+                categories.append({
+                    'category': supplier['name'],
+                    'amount': supplier['total_amount'],
+                    'transactions': supplier['transactions_count'],
+                    'percentage': 0  # Calcolato dopo
+                })
+            
+            # Calcola percentuali
+            total_expenses = sum([c['amount'] for c in categories])
+            for category in categories:
+                category['percentage'] = (category['amount'] / total_expenses * 100) if total_expenses > 0 else 0
+            
+            return categories
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo categorie spese: {e}")
+            return []
+    
+    def get_income_trends(self, days: int = 30) -> List[Dict]:
+        """Ottiene tendenze delle entrate"""
+        try:
+            # Ottieni vendite degli ultimi giorni
+            sales_data = self.select('sales', 'sale_date, final_amount')
+            
+            # Raggruppa per giorno
+            daily_income = {}
+            for sale in sales_data:
+                sale_date = sale['sale_date'][:10]
+                if sale_date not in daily_income:
+                    daily_income[sale_date] = 0
+                daily_income[sale_date] += sale['final_amount']
+            
+            # Crea lista ordinata per data
+            trends = []
+            for i in range(days):
+                date = (datetime.now() - timedelta(days=i)).date().isoformat()
+                trends.append({
+                    'date': date,
+                    'income': daily_income.get(date, 0),
+                    'day_name': (datetime.now() - timedelta(days=i)).strftime('%A')
+                })
+            
+            return sorted(trends, key=lambda x: x['date'])
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo tendenze entrate: {e}")
+            return []
+    
+    def get_financial_forecast(self, months: int = 6) -> List[Dict]:
+        """Ottiene previsioni finanziarie"""
+        try:
+            # Ottieni dati storici
+            historical_data = self.get_monthly_financial_data(6)  # Ultimi 6 mesi
+            
+            if not historical_data:
+                return []
+            
+            # Calcola crescita media
+            if len(historical_data) >= 2:
+                recent_avg = sum([d['total_income'] for d in historical_data[:3]]) / 3
+                older_avg = sum([d['total_income'] for d in historical_data[3:]]) / 3
+                growth_rate = ((recent_avg - older_avg) / older_avg * 100) if older_avg > 0 else 0
+            else:
+                growth_rate = 0
+            
+            # Genera previsioni
+            forecasts = []
+            base_income = historical_data[0]['total_income'] if historical_data else 0
+            
+            for i in range(1, months + 1):
+                forecast_date = datetime.now() + timedelta(days=30 * i)
+                forecast_income = base_income * (1 + growth_rate / 100) ** i
+                forecast_expenses = forecast_income * 0.7  # Stima spese al 70% delle entrate
+                forecast_profit = forecast_income - forecast_expenses
+                
+                forecasts.append({
+                    'month': forecast_date.strftime('%B %Y'),
+                    'predicted_income': forecast_income,
+                    'predicted_expenses': forecast_expenses,
+                    'predicted_profit': forecast_profit,
+                    'growth_rate': growth_rate,
+                    'confidence': max(0, 100 - (i * 10))  # Diminuisce con il tempo
+                })
+            
+            return forecasts
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo previsioni finanziarie: {e}")
+            return []
+    
     def rpc(self, function_name: str, params: Dict[str, Any]) -> Any:
         """Chiama una funzione RPC (Remote Procedure Call) su Supabase"""
         if not self.is_connected():
