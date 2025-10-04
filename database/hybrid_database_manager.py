@@ -571,6 +571,62 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo tutte le vendite: {e}")
             return []
     
+    # ==================== CRUD USUARIOS ====================
+    
+    def get_all_users(self) -> List[Dict]:
+        """Ottiene tutti gli utenti"""
+        try:
+            manager = self._get_manager()
+            return manager.get_all_users()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo utenti: {e}")
+            return []
+    
+    def create_user(self, user_data: Dict) -> Optional[Dict]:
+        """Crea un nuovo utente"""
+        try:
+            manager = self._get_manager()
+            return manager.create_user(user_data)
+        except Exception as e:
+            logger.error(f"❌ Errore creando utente: {e}")
+            return None
+    
+    def update_user(self, user_id: str, user_data: Dict) -> bool:
+        """Aggiorna un utente esistente"""
+        try:
+            manager = self._get_manager()
+            return manager.update_user(user_id, user_data)
+        except Exception as e:
+            logger.error(f"❌ Errore aggiornando utente: {e}")
+            return False
+    
+    def delete_user(self, user_id: str) -> bool:
+        """Elimina un utente (soft delete)"""
+        try:
+            manager = self._get_manager()
+            return manager.delete_user(user_id)
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando utente: {e}")
+            return False
+    
+    def get_user_by_id(self, user_id: str) -> Optional[Dict]:
+        """Ottiene un utente per ID"""
+        try:
+            manager = self._get_manager()
+            return manager.get_user_by_id(user_id)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo utente {user_id}: {e}")
+            return None
+    
+    def get_all_roles(self) -> List[Dict]:
+        """Ottiene tutti i ruoli"""
+        try:
+            manager = self._get_manager()
+            return manager.get_all_roles()
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo ruoli: {e}")
+            return []
+    
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:
