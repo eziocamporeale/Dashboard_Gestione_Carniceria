@@ -3014,7 +3014,7 @@ def render_balance():
                 if result:
                     st.success(f"✅ Uscita di ${expense_amount:,.2f} aggiunta!")
                     st.rerun()
-        else:
+                else:
                     st.error("❌ Errore aggiungendo uscita")
         
         # Azioni rapide
