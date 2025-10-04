@@ -972,7 +972,7 @@ def render_clientes():
             # Métricas adicionales
             col1, col2, col3 = st.columns(3)
             with col1:
-                avg_orders = sum(c.get('total_orders', 0) for c in customers) / len(customers)
+                avg_orders = sum(c.get('total_orders', 0) for c in customers) / len(customers) if customers else 0
                 st.metric("Promedio de Órdenes", f"{avg_orders:.1f}")
             with col2:
                 max_purchase = max(c.get('total_purchases', 0) for c in customers)
@@ -1082,7 +1082,8 @@ def render_clientes():
                 
                 active_campaigns = len([c for c in campaigns if c['status'] == 'activa'])
                 completed_campaigns = len([c for c in campaigns if c['status'] == 'finalizada'])
-                avg_roi = sum(c['roi'] for c in campaigns if c['roi'] > 0) / len([c for c in campaigns if c['roi'] > 0])
+                campaigns_with_roi = [c for c in campaigns if c['roi'] > 0]
+                avg_roi = sum(c['roi'] for c in campaigns_with_roi) / len(campaigns_with_roi) if campaigns_with_roi else 0
                 
                 with col1:
                     st.metric("Campañas Activas", active_campaigns)
@@ -1710,7 +1711,7 @@ def render_personal():
             total_salary = sum(e['salary'] for e in sample_employees)
             st.metric("Nómina Total", f"${total_salary:,.2f}")
         with col4:
-            avg_salary = total_salary / len(sample_employees)
+            avg_salary = total_salary / len(sample_employees) if sample_employees else 0
             st.metric("Salario Promedio", f"${avg_salary:,.2f}")
         
         st.markdown("---")
@@ -2167,7 +2168,7 @@ def render_personal():
             total_salary = sum(e['salary'] for e in sample_employees)
             st.metric("Nómina Total", f"${total_salary:,.2f}")
         with col4:
-            avg_salary = total_salary / len(sample_employees)
+            avg_salary = total_salary / len(sample_employees) if sample_employees else 0
             st.metric("Salario Promedio", f"${avg_salary:,.2f}")
         
         st.markdown("---")
@@ -2727,7 +2728,7 @@ def render_ventas():
                 
                 total_team_sales = sum([emp['sales'] for emp in team_performance])
                 total_team_transactions = sum([emp['transactions'] for emp in team_performance])
-                avg_rating = sum([emp['rating'] for emp in team_performance]) / len(team_performance)
+                avg_rating = sum([emp['rating'] for emp in team_performance]) / len(team_performance) if team_performance else 0
                 
                 with col1:
                     st.metric("Ventas Totales Equipo", f"${total_team_sales:,.2f}")
@@ -3331,7 +3332,7 @@ def render_balance():
                 st.caption(f"Profitto: ${best_day['net_profit']:,.2f}")
             
             with col2:
-                avg_daily_profit = total_profit / len(weekly_data)
+                avg_daily_profit = total_profit / len(weekly_data) if weekly_data else 0
                 st.metric("📊 Profitto Medio Giornaliero", f"${avg_daily_profit:,.2f}")
             
             with col3:
