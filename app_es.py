@@ -989,7 +989,7 @@ def render_clientes():
                 max_purchase = max(c.get('total_purchases', 0) for c in customers)
                 st.metric("Mayor Compra", f"${max_purchase:,.2f}")
             with col3:
-                recent_customers = len([c for c in customers if c.get('last_purchase', '') >= '2024-09-01'])
+                recent_customers = len([c for c in customers if c.get('last_purchase') and c.get('last_purchase') >= '2024-09-01'])
                 st.metric("Clientes Recientes", recent_customers)
         else:
             st.info("No hay datos de clientes para mostrar estadísticas")
