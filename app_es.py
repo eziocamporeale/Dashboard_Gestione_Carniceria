@@ -3252,24 +3252,24 @@ def render_balance():
             total_expenses = sum([d['total_expenses'] for d in weekly_data])
             total_profit = sum([d['net_profit'] for d in weekly_data])
             total_transactions = sum([d['transactions_count'] for d in weekly_data])
-                            
-                            col1, col2, col3, col4 = st.columns(4)
-                            
-                            with col1:
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
                 st.metric(
                     "💰 Entrate Settimanali",
                     f"${total_income:,.2f}",
                     help="Total entrate della settimana"
                 )
-                            
-                            with col2:
+            
+            with col2:
                 st.metric(
                     "💸 Uscite Settimanali",
                     f"${total_expenses:,.2f}",
                     help="Total uscite della settimana"
                 )
-                            
-                            with col3:
+            
+            with col3:
                 profit_color = "normal" if total_profit >= 0 else "inverse"
                 profit_margin = (total_profit / total_income * 100) if total_income > 0 else 0
                 st.metric(
@@ -3279,8 +3279,8 @@ def render_balance():
                     delta_color=profit_color,
                     help="Profitto netto della settimana"
                 )
-                            
-                            with col4:
+            
+            with col4:
                 st.metric(
                     "📊 Transazioni Totali",
                     total_transactions,
@@ -3298,11 +3298,7 @@ def render_balance():
                 df_weekly,
                 x='day_name',
                 y=['total_income', 'total_expenses', 'net_profit'],
-                title="Trend Finanziario Settimanale",
-                ,
-                    'total_expenses': '#FF6692',
-                    'net_profit': '#636EFA'
-                }
+                title="Trend Finanziario Settimanale"
             )
             fig_weekly.update_layout(height=400)
             st.plotly_chart(fig_weekly, use_container_width=True)
@@ -3367,23 +3363,23 @@ def render_balance():
         
         if monthly_data and monthly_data['days_with_data'] > 0:
             # Metriche mensili
-                                col1, col2, col3, col4 = st.columns(4)
-                                
-                                with col1:
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
                 st.metric(
                     "💰 Entrate Mensili",
                     f"${monthly_data['total_income']:,.2f}",
                     help="Total entrate del mese"
                 )
             
-                                with col2:
+            with col2:
                 st.metric(
                     "💸 Uscite Mensili",
                     f"${monthly_data['total_expenses']:,.2f}",
                     help="Total uscite del mese"
                 )
             
-                                with col3:
+            with col3:
                 profit_color = "normal" if monthly_data['total_profit'] >= 0 else "inverse"
                 st.metric(
                     "📈 Profitto Mensile",
@@ -3393,7 +3389,7 @@ def render_balance():
                     help="Profitto netto del mese"
                 )
             
-                                with col4:
+            with col4:
                 st.metric(
                     "📊 Transazioni Totali",
                     monthly_data['total_transactions'],
