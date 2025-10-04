@@ -1691,8 +1691,9 @@ def render_personal():
     
     st.header("👨‍💼 Gestión Personal")
     
-    # Ottieni dati del personale dal database (vuoto per ora)
-    sample_employees = []
+    # Ottieni dati del personale dal database
+    db = get_hybrid_manager()
+    sample_employees = db.get_employees() or []
     
     # Tabs para diferentes funcionalidades
     tab1, tab2, tab3, tab4 = st.tabs(["👥 Lista Empleados", "➕ Nuevo Empleado", "⏰ Turnos", "📊 Estadísticas"])
