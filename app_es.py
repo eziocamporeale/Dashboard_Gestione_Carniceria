@@ -3741,6 +3741,180 @@ def render_configuracion():
             if st.button("💾 Guardar Configuraciones de Backup", width='stretch'):
                 st.success("✅ Configuraciones de backup guardadas")
 
+def render_sistema():
+    """Renderiza la sección sistema"""
+    st.header("🔧 Sistema")
+    
+    # Tabs para diferentes aspectos del sistema
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Estado del Sistema", "📝 Logs", "🔧 Configuración", "🛠️ Mantenimiento"])
+    
+    with tab1:
+        st.subheader("📊 Estado del Sistema")
+        
+        # Información del sistema
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("🖥️ CPU", "45%", "↓ 5%")
+            st.metric("💾 Memoria", "2.1 GB", "↑ 0.2 GB")
+        
+        with col2:
+            st.metric("💿 Disco", "78%", "↑ 2%")
+            st.metric("🌐 Red", "Activa", "✅")
+        
+        with col3:
+            st.metric("🗄️ Base de Datos", "Conectada", "✅")
+            st.metric("⏱️ Uptime", "15 días", "✅")
+        
+        # Estado de servicios
+        st.subheader("🔧 Servicios del Sistema")
+        
+        services = [
+            {"name": "Servidor Web", "status": "Activo", "uptime": "15 días"},
+            {"name": "Base de Datos", "status": "Activo", "uptime": "15 días"},
+            {"name": "Servicio de Backup", "status": "Activo", "uptime": "15 días"},
+            {"name": "Servicio de Logs", "status": "Activo", "uptime": "15 días"}
+        ]
+        
+        for service in services:
+            col1, col2, col3 = st.columns([2, 1, 1])
+            with col1:
+                st.write(f"🔧 {service['name']}")
+            with col2:
+                if service['status'] == 'Activo':
+                    st.success("✅ Activo")
+                else:
+                    st.error("❌ Inactivo")
+            with col3:
+                st.caption(f"⏱️ {service['uptime']}")
+    
+    with tab2:
+        st.subheader("📝 Logs del Sistema")
+        
+        # Filtros para logs
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            log_level = st.selectbox("Nivel de Log", ["Todos", "ERROR", "WARNING", "INFO", "DEBUG"])
+        with col2:
+            log_date = st.date_input("Fecha", value=datetime.now().date())
+        with col3:
+            if st.button("🔄 Actualizar Logs"):
+                st.rerun()
+        
+        # Logs de ejemplo
+        st.subheader("📋 Logs Recientes")
+        
+        logs = [
+            {"timestamp": "2024-10-04 10:30:15", "level": "INFO", "message": "Usuario admin inició sesión"},
+            {"timestamp": "2024-10-04 10:25:42", "level": "INFO", "message": "Backup automático completado exitosamente"},
+            {"timestamp": "2024-10-04 10:20:18", "level": "WARNING", "message": "Stock bajo detectado en producto: Carne de Res"},
+            {"timestamp": "2024-10-04 10:15:33", "level": "INFO", "message": "Nueva venta registrada: $125.50"},
+            {"timestamp": "2024-10-04 10:10:07", "level": "ERROR", "message": "Error de conexión a base de datos - reintentando..."},
+        ]
+        
+        for log in logs:
+            col1, col2, col3 = st.columns([2, 1, 3])
+            with col1:
+                st.caption(log['timestamp'])
+            with col2:
+                if log['level'] == 'ERROR':
+                    st.error(log['level'])
+                elif log['level'] == 'WARNING':
+                    st.warning(log['level'])
+                else:
+                    st.info(log['level'])
+            with col3:
+                st.write(log['message'])
+    
+    with tab3:
+        st.subheader("🔧 Configuración del Sistema")
+        
+        # Configuraciones generales
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("⚙️ Configuraciones Generales")
+            
+            # Configuraciones de la aplicación
+            app_name = st.text_input("Nombre de la Aplicación", value="Dashboard Gestión Carnicería")
+            app_version = st.text_input("Versión", value="1.0.0")
+            debug_mode = st.checkbox("Modo Debug", value=False)
+            maintenance_mode = st.checkbox("Modo Mantenimiento", value=False)
+            
+            # Configuraciones de base de datos
+            st.subheader("🗄️ Base de Datos")
+            db_host = st.text_input("Host", value="localhost")
+            db_port = st.number_input("Puerto", value=5432)
+            db_name = st.text_input("Nombre de BD", value="carniceria_db")
+        
+        with col2:
+            st.subheader("🔐 Seguridad")
+            
+            # Configuraciones de seguridad
+            session_timeout = st.number_input("Timeout de Sesión (minutos)", value=60)
+            max_login_attempts = st.number_input("Máximo Intentos de Login", value=5)
+            password_min_length = st.number_input("Longitud Mínima Contraseña", value=8)
+            
+            # Configuraciones de backup
+            st.subheader("💾 Backup")
+            auto_backup = st.checkbox("Backup Automático", value=True)
+            backup_frequency = st.selectbox("Frecuencia", ["Diario", "Semanal", "Mensual"])
+            backup_retention = st.slider("Retención (días)", 7, 365, 30)
+        
+        # Botón para guardar configuraciones
+        if st.button("💾 Guardar Configuraciones", type="primary"):
+            st.success("✅ Configuraciones guardadas exitosamente")
+    
+    with tab4:
+        st.subheader("🛠️ Mantenimiento del Sistema")
+        
+        # Herramientas de mantenimiento
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("🧹 Limpieza")
+            
+            if st.button("🗑️ Limpiar Logs Antiguos"):
+                st.success("✅ Logs antiguos eliminados")
+            
+            if st.button("🗑️ Limpiar Cache"):
+                st.success("✅ Cache limpiado")
+            
+            if st.button("🗑️ Optimizar Base de Datos"):
+                st.success("✅ Base de datos optimizada")
+        
+        with col2:
+            st.subheader("🔄 Mantenimiento")
+            
+            if st.button("🔄 Reiniciar Servicios"):
+                st.success("✅ Servicios reiniciados")
+            
+            if st.button("🔄 Actualizar Sistema"):
+                st.success("✅ Sistema actualizado")
+            
+            if st.button("🔄 Verificar Integridad"):
+                st.success("✅ Integridad verificada")
+        
+        # Información del sistema
+        st.subheader("ℹ️ Información del Sistema")
+        
+        system_info = {
+            "Versión de Python": "3.9.0",
+            "Versión de Streamlit": "1.28.0",
+            "Versión de PostgreSQL": "13.0",
+            "Sistema Operativo": "Linux",
+            "Arquitectura": "x86_64",
+            "Memoria Total": "4 GB",
+            "Espacio en Disco": "50 GB"
+        }
+        
+        for key, value in system_info.items():
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.write(f"**{key}:**")
+            with col2:
+                st.write(value)
+
 # ===== FUNCIÓN PRINCIPAL =====
 
 def main():
@@ -3780,6 +3954,8 @@ def main():
             render_proveedores()
         elif current_page == 'personal':
             render_personal()
+        elif current_page == 'sistema':
+            render_sistema()
         elif current_page == 'analytics':
             render_analytics()
         elif current_page == 'balance':
