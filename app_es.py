@@ -3036,7 +3036,7 @@ def render_analytics():
         st.info("🚧 Reportes de clientes en desarrollo")
 
 def render_balance():
-    """Renderiza la sección balance y contabilidad"""
+    """Renderiza la sección balance y contabilidad giornaliera"""
     require_permission("balance")
     
     st.header("💰 Balance y Contabilidad")
@@ -3045,282 +3045,591 @@ def render_balance():
     db = get_hybrid_manager()
     
     # Tabs para diferentes funcionalidades
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Resumen General", "📈 Análisis Mensual", "💸 Gastos y Categorías", "🔮 Previsiones"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📝 Inserimento Giornaliero", "📊 Dashboard Giornaliero", "📈 Report Settimanale", "📋 Report Mensile"])
     
     with tab1:
-        st.subheader("📊 Resumen General")
+        st.subheader("📝 Inserimento Giornaliero")
         
-        # Ottieni riepilogo finanziario
-        financial_summary = db.get_financial_summary()
+        # Selettore data
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            selected_date = st.date_input("📅 Data", value=datetime.now().date())
         
-        if financial_summary:
-            # Metriche principali
+        with col2:
+            st.info(f"💡 Inserisci entrate e uscite per il **{selected_date.strftime('%d/%m/%Y')}**")
+        
+        # Ottieni categorie
+        income_categories = db.get_accounting_categories('income')
+        expense_categories = db.get_accounting_categories('expense')
+        
+        # Form per inserimento entrate
+        st.subheader("💰 Aggiungi Entrata")
+        
+        with st.form("add_income_form"):
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                income_amount = st.number_input("💰 Importo", min_value=0.01, step=0.01, format="%.2f")
+                income_category = st.selectbox("📂 Categoria", [c['name'] for c in income_categories])
+            
+            with col2:
+                income_description = st.text_input("📝 Descrizione", placeholder="Descrizione entrata...")
+                income_payment = st.selectbox("💳 Metodo Pagamento", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
+            
+            with col3:
+                st.write("")  # Spazio
+                st.write("")  # Spazio
+                income_submitted = st.form_submit_button("➕ Aggiungi Entrata", type="primary")
+            
+            if income_submitted and income_amount > 0:
+                result = db.add_daily_income(
+                    amount=income_amount,
+                    category=income_category,
+                    description=income_description,
+                    payment_method=income_payment,
+                    date=selected_date.isoformat()
+                )
+                
+                if result:
+                    st.success(f"✅ Entrata di ${income_amount:,.2f} aggiunta!")
+                    st.rerun()
+                else:
+                    st.error("❌ Errore aggiungendo entrata")
+        
+        st.markdown("---")
+        
+        # Form per inserimento uscite
+        st.subheader("💸 Aggiungi Uscita")
+        
+        with st.form("add_expense_form"):
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                expense_amount = st.number_input("💸 Importo", min_value=0.01, step=0.01, format="%.2f")
+                expense_category = st.selectbox("📂 Categoria", [c['name'] for c in expense_categories])
+            
+            with col2:
+                expense_description = st.text_input("📝 Descrizione", placeholder="Descrizione uscita...")
+                expense_supplier = st.text_input("🏪 Fornitore", placeholder="Nome fornitore...")
+            
+            with col3:
+                expense_payment = st.selectbox("💳 Metodo Pagamento", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
+                st.write("")  # Spazio
+                expense_submitted = st.form_submit_button("➖ Aggiungi Uscita", type="secondary")
+            
+            if expense_submitted and expense_amount > 0:
+                result = db.add_daily_expense(
+                    amount=expense_amount,
+                    category=expense_category,
+                    description=expense_description,
+                    supplier=expense_supplier,
+                    payment_method=expense_payment,
+                    date=selected_date.isoformat()
+                )
+                
+                if result:
+                    st.success(f"✅ Uscita di ${expense_amount:,.2f} aggiunta!")
+                    st.rerun()
+                else:
+                    st.error("❌ Errore aggiungendo uscita")
+        
+        # Azioni rapide
+        st.subheader("⚡ Azioni Rapide")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            if st.button("🥩 Venta Carnes", help="Aggiungi vendita carni"):
+                st.session_state['quick_income'] = {'category': 'Ventas Carnes', 'description': 'Venta de carnes'}
+        
+        with col2:
+            if st.button("🌭 Venta Embutidos", help="Aggiungi vendita embutidos"):
+                st.session_state['quick_income'] = {'category': 'Ventas Embutidos', 'description': 'Venta de embutidos'}
+        
+        with col3:
+            if st.button("⚙️ Gastos Operativos", help="Aggiungi gastos operativos"):
+                st.session_state['quick_expense'] = {'category': 'Gastos Operativos', 'description': 'Gastos operativos del día'}
+        
+        with col4:
+            if st.button("💡 Servicios Públicos", help="Aggiungi servicios públicos"):
+                st.session_state['quick_expense'] = {'category': 'Servicios Públicos', 'description': 'Pago de servicios públicos'}
+        
+        # Gestione azioni rapide
+        if 'quick_income' in st.session_state:
+            quick_data = st.session_state['quick_income']
+            with st.expander("⚡ Inserimento Rapido - Entrata", expanded=True):
+                col1, col2 = st.columns(2)
+                with col1:
+                    quick_amount = st.number_input("💰 Importo", min_value=0.01, step=0.01, format="%.2f", key="quick_income_amount")
+                with col2:
+                    if st.button("✅ Conferma", key="confirm_quick_income"):
+                        result = db.add_daily_income(
+                            amount=quick_amount,
+                            category=quick_data['category'],
+                            description=quick_data['description'],
+                            date=selected_date.isoformat()
+                        )
+                        if result:
+                            st.success("✅ Entrata rapida aggiunta!")
+                            del st.session_state['quick_income']
+                            st.rerun()
+        
+        if 'quick_expense' in st.session_state:
+            quick_data = st.session_state['quick_expense']
+            with st.expander("⚡ Inserimento Rapido - Uscita", expanded=True):
+                col1, col2 = st.columns(2)
+                with col1:
+                    quick_amount = st.number_input("💸 Importo", min_value=0.01, step=0.01, format="%.2f", key="quick_expense_amount")
+                with col2:
+                    if st.button("✅ Conferma", key="confirm_quick_expense"):
+                        result = db.add_daily_expense(
+                            amount=quick_amount,
+                            category=quick_data['category'],
+                            description=quick_data['description'],
+                            date=selected_date.isoformat()
+                        )
+                        if result:
+                            st.success("✅ Uscita rapida aggiunta!")
+                            del st.session_state['quick_expense']
+                            st.rerun()
+    
+    with tab2:
+        st.subheader("📊 Dashboard Giornaliero")
+        
+        # Selettore data
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            dashboard_date = st.date_input("📅 Data", value=datetime.now().date(), key="dashboard_date")
+        
+        with col2:
+            st.info(f"📊 Dashboard per il **{dashboard_date.strftime('%d/%m/%Y')}**")
+        
+        # Ottieni dati giornalieri
+        daily_entries = db.get_daily_entries(dashboard_date.isoformat())
+        daily_report = db.get_daily_report(dashboard_date.isoformat())
+        
+        # Metriche principali
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                "💰 Entrate",
+                f"${daily_entries['total_income']:,.2f}",
+                help="Total entrate del giorno"
+            )
+        
+        with col2:
+            st.metric(
+                "💸 Uscite",
+                f"${daily_entries['total_expenses']:,.2f}",
+                help="Total uscite del giorno"
+            )
+        
+        with col3:
+            net_profit = daily_entries['total_income'] - daily_entries['total_expenses']
+            profit_color = "normal" if net_profit >= 0 else "inverse"
+            st.metric(
+                "📈 Profitto",
+                f"${net_profit:,.2f}",
+                delta=f"{daily_report.get('profit_margin', 0):.1f}%" if daily_report else "0%",
+                delta_color=profit_color,
+                help="Profitto netto del giorno"
+            )
+        
+        with col4:
+            total_transactions = len(daily_entries['income']) + len(daily_entries['expenses'])
+            st.metric(
+                "📊 Transazioni",
+                total_transactions,
+                help="Numero totale di transazioni"
+            )
+        
+        # Indicatori visivi
+        st.subheader("🎯 Indicatori di Performance")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if net_profit > 0:
+                st.success("✅ **Giornata Positiva**")
+                st.write("Profitto generato")
+            else:
+                st.error("❌ **Giornata Negativa**")
+                st.write("Perdita registrata")
+        
+        with col2:
+            if daily_entries['total_income'] > 0:
+                efficiency = (net_profit / daily_entries['total_income']) * 100
+                if efficiency > 20:
+                    st.success("🚀 **Alta Efficienza**")
+                elif efficiency > 10:
+                    st.warning("⚠️ **Efficienza Media**")
+                else:
+                    st.error("📉 **Bassa Efficienza**")
+                st.write(f"Efficienza: {efficiency:.1f}%")
+            else:
+                st.info("📊 Nessun dato")
+        
+        with col3:
+            if total_transactions > 10:
+                st.success("🔥 **Alta Attività**")
+            elif total_transactions > 5:
+                st.warning("📊 **Attività Media**")
+            else:
+                st.info("😴 **Bassa Attività**")
+            st.write(f"Transazioni: {total_transactions}")
+        
+        # Lista dettagliata entrate
+        if daily_entries['income']:
+            st.subheader("💰 Entrate del Giorno")
+            
+            for income in daily_entries['income']:
+                with st.container():
+                    col1, col2, col3, col4, col5 = st.columns([2, 2, 1, 1, 1])
+                    
+                    with col1:
+                        st.write(f"**{income['category']}**")
+                        if income['description']:
+                            st.caption(income['description'])
+                    
+                    with col2:
+                        st.write(f"💳 {income['payment_method']}")
+                        st.caption(f"💰 ${income['amount']:,.2f}")
+                    
+                    with col3:
+                        st.write("")
+                    
+                    with col4:
+                        st.write("")
+                    
+                    with col5:
+                        if st.button("🗑️", key=f"delete_income_{income['id']}", help="Elimina"):
+                            if db.delete_daily_entry('income', income['id']):
+                                st.success("✅ Eliminato")
+                                st.rerun()
+                    
+                    st.markdown("---")
+        
+        # Lista dettagliata uscite
+        if daily_entries['expenses']:
+            st.subheader("💸 Uscite del Giorno")
+            
+            for expense in daily_entries['expenses']:
+                with st.container():
+                    col1, col2, col3, col4, col5 = st.columns([2, 2, 1, 1, 1])
+                    
+                    with col1:
+                        st.write(f"**{expense['category']}**")
+                        if expense['description']:
+                            st.caption(expense['description'])
+                        if expense['supplier']:
+                            st.caption(f"🏪 {expense['supplier']}")
+                    
+                    with col2:
+                        st.write(f"💳 {expense['payment_method']}")
+                        st.caption(f"💸 ${expense['amount']:,.2f}")
+                    
+                    with col3:
+                        st.write("")
+                    
+                    with col4:
+                        st.write("")
+                    
+                    with col5:
+                        if st.button("🗑️", key=f"delete_expense_{expense['id']}", help="Elimina"):
+                            if db.delete_daily_entry('expense', expense['id']):
+                                st.success("✅ Eliminato")
+                                st.rerun()
+                    
+                    st.markdown("---")
+        
+        # Se non ci sono dati
+        if not daily_entries['income'] and not daily_entries['expenses']:
+            st.info("📝 Nessun dato per questo giorno. Usa la tab 'Inserimento Giornaliero' per aggiungere entrate e uscite.")
+    
+    with tab3:
+        st.subheader("📈 Report Settimanale")
+        
+        # Selettore settimana
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            week_start = st.date_input("📅 Inizio Settimana", value=datetime.now().date() - timedelta(days=7))
+        
+        with col2:
+            week_end = week_start + timedelta(days=6)
+            st.info(f"📊 Report settimana: **{week_start.strftime('%d/%m')} - {week_end.strftime('%d/%m/%Y')}**")
+        
+        # Ottieni dati settimanali
+        weekly_data = db.get_weekly_summary(week_start.isoformat())
+        
+        if weekly_data:
+            # Metriche settimanali
+            total_income = sum([d['total_income'] for d in weekly_data])
+            total_expenses = sum([d['total_expenses'] for d in weekly_data])
+            total_profit = sum([d['net_profit'] for d in weekly_data])
+            total_transactions = sum([d['transactions_count'] for d in weekly_data])
+            
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.metric(
-                    "💰 Total Ingresos",
-                    f"${financial_summary.get('total_income', 0):,.2f}",
-                    help="Total de ventas en el período"
+                    "💰 Entrate Settimanali",
+                    f"${total_income:,.2f}",
+                    help="Total entrate della settimana"
                 )
             
             with col2:
                 st.metric(
-                    "💸 Total Gastos",
-                    f"${financial_summary.get('total_expenses', 0):,.2f}",
-                    help="Total de gastos con proveedores"
+                    "💸 Uscite Settimanali",
+                    f"${total_expenses:,.2f}",
+                    help="Total uscite della settimana"
                 )
             
             with col3:
-                profit = financial_summary.get('profit', 0)
-                profit_color = "normal" if profit >= 0 else "inverse"
+                profit_color = "normal" if total_profit >= 0 else "inverse"
+                profit_margin = (total_profit / total_income * 100) if total_income > 0 else 0
                 st.metric(
-                    "📈 Beneficio",
-                    f"${profit:,.2f}",
-                    delta=f"{financial_summary.get('profit_margin', 0):.1f}%",
+                    "📈 Profitto Settimanale",
+                    f"${total_profit:,.2f}",
+                    delta=f"{profit_margin:.1f}%",
                     delta_color=profit_color,
-                    help="Beneficio neto y margen de ganancia"
+                    help="Profitto netto della settimana"
                 )
             
             with col4:
                 st.metric(
-                    "📊 Transacciones",
-                    financial_summary.get('transactions_count', 0),
-                    help="Número de ventas registradas"
+                    "📊 Transazioni Totali",
+                    total_transactions,
+                    help="Numero totale di transazioni"
                 )
             
-            # Grafico de ingresos vs gastos
-            st.subheader("📊 Ingresos vs Gastos")
+            # Grafico trend giornaliero
+            st.subheader("📊 Trend Giornaliero")
             
-            # Crea grafico a torta
-            import plotly.express as px
+            df_weekly = pd.DataFrame(weekly_data)
+            df_weekly['date'] = pd.to_datetime(df_weekly['date'])
+            df_weekly['day_name'] = df_weekly['date'].dt.strftime('%A')
             
-            categories = ['Ingresos', 'Gastos']
-            values = [financial_summary.get('total_income', 0), financial_summary.get('total_expenses', 0)]
-            colors = ['#00CC96', '#FF6692']
-            
-            fig_pie = px.pie(
-                values=values,
-                names=categories,
-                title="Distribución de Ingresos y Gastos",
-                color_discrete_sequence=colors
+            fig_weekly = px.line(
+                df_weekly,
+                x='day_name',
+                y=['total_income', 'total_expenses', 'net_profit'],
+                title="Trend Finanziario Settimanale",
+                labels={'value': 'Importo ($)', 'day_name': 'Giorno'},
+                color_discrete_map={
+                    'total_income': '#00CC96',
+                    'total_expenses': '#FF6692',
+                    'net_profit': '#636EFA'
+                }
             )
-            fig_pie.update_layout(height=400)
-            st.plotly_chart(fig_pie, use_container_width=True)
+            fig_weekly.update_layout(height=400)
+            st.plotly_chart(fig_weekly, use_container_width=True)
             
-            # Información adicional
-            col1, col2 = st.columns(2)
+            # Tabella dettagliata
+            st.subheader("📋 Dettaglio Giornaliero")
             
-            with col1:
-                st.info(f"""
-                **📅 Período:** {financial_summary.get('period', 'N/A')}
-                **📊 Promedio Diario:** ${financial_summary.get('avg_daily_income', 0):,.2f}
-                **🎯 Margen de Ganancia:** {financial_summary.get('profit_margin', 0):.1f}%
-                """)
-            
-            with col2:
-                if profit > 0:
-                    st.success("✅ **Estado Financiero: Positivo**")
-                    st.write("La carnicería está generando beneficios")
-                else:
-                    st.error("❌ **Estado Financiero: Negativo**")
-                    st.write("Se recomienda revisar gastos y estrategias")
-        else:
-            st.warning("⚠️ No hay datos financieros disponibles")
-            st.info("Registra ventas y gastos para ver el análisis financiero")
-    
-    with tab2:
-        st.subheader("📈 Análisis Mensual")
-        
-        # Ottieni dati mensili
-        monthly_data = db.get_monthly_financial_data(12)
-        
-        if monthly_data:
-            # Filtro per anno
-            years = list(set([d['year'] for d in monthly_data]))
-            selected_year = st.selectbox("📅 Seleccionar Año", years, index=0)
-            
-            # Filtra dati per anno
-            filtered_data = [d for d in monthly_data if d['year'] == selected_year]
-            
-            if filtered_data:
-                # Crea DataFrame per grafici
-                df_monthly = pd.DataFrame(filtered_data)
-                
-                # Grafico linee per trend mensile
-                fig_line = px.line(
-                    df_monthly,
-                    x='month',
-                    y=['total_income', 'total_expenses', 'profit'],
-                    title=f"Tendencia Financiera Mensual - {selected_year}",
-                    labels={'value': 'Monto ($)', 'month': 'Mes'},
-                    color_discrete_map={
-                        'total_income': '#00CC96',
-                        'total_expenses': '#FF6692',
-                        'profit': '#636EFA'
-                    }
-                )
-                fig_line.update_layout(height=500)
-                st.plotly_chart(fig_line, use_container_width=True)
-                
-                # Tabla detallada
-                st.subheader("📋 Detalle Mensual")
-                
-                # Prepara dati per tabella
-                table_data = []
-                for month_data in filtered_data:
-                    table_data.append({
-                        'Mes': month_data['month'],
-                        'Ingresos': f"${month_data['total_income']:,.2f}",
-                        'Gastos': f"${month_data['total_expenses']:,.2f}",
-                        'Beneficio': f"${month_data['profit']:,.2f}",
-                        'Margen %': f"{month_data['profit_margin']:.1f}%",
-                        'Transacciones': month_data['transactions_count']
-                    })
-                
-                df_table = pd.DataFrame(table_data)
-                st.dataframe(df_table, use_container_width=True)
-                
-                # Statistiche
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    avg_income = sum([d['total_income'] for d in filtered_data]) / len(filtered_data)
-                    st.metric("💰 Ingreso Promedio", f"${avg_income:,.2f}")
-                
-                with col2:
-                    best_month = max(filtered_data, key=lambda x: x['profit'])
-                    st.metric("🏆 Mejor Mes", best_month['month'])
-                
-                with col3:
-                    total_year = sum([d['profit'] for d in filtered_data])
-                    st.metric("📊 Beneficio Anual", f"${total_year:,.2f}")
-            else:
-                st.info(f"No hay datos para el año {selected_year}")
-        else:
-            st.warning("⚠️ No hay datos mensuales disponibles")
-    
-    with tab3:
-        st.subheader("💸 Gastos y Categorías")
-        
-        # Ottieni categorie di spese
-        expense_categories = db.get_expense_categories()
-        
-        if expense_categories:
-            # Grafico a torta per categorie
-            df_expenses = pd.DataFrame(expense_categories)
-            
-            fig_pie = px.pie(
-                df_expenses,
-                values='amount',
-                names='category',
-                title="Distribución de Gastos por Categoría",
-                color_discrete_sequence=px.colors.qualitative.Set3
-            )
-            fig_pie.update_layout(height=500)
-            st.plotly_chart(fig_pie, use_container_width=True)
-            
-            # Tabla detallada
-            st.subheader("📋 Detalle de Gastos")
-            
-            # Ordina per importo
-            df_expenses_sorted = df_expenses.sort_values('amount', ascending=False)
-            
-            # Crea tabella con formattazione
             table_data = []
-            for _, row in df_expenses_sorted.iterrows():
+            for day_data in weekly_data:
                 table_data.append({
-                    'Categoría': row['category'],
-                    'Monto': f"${row['amount']:,.2f}",
-                    'Porcentaje': f"{row['percentage']:.1f}%",
-                    'Transacciones': row['transactions']
+                    'Data': day_data['date'][:10],
+                    'Entrate': f"${day_data['total_income']:,.2f}",
+                    'Uscite': f"${day_data['total_expenses']:,.2f}",
+                    'Profitto': f"${day_data['net_profit']:,.2f}",
+                    'Margine %': f"{day_data['profit_margin']:.1f}%",
+                    'Transazioni': day_data['transactions_count']
                 })
             
             df_table = pd.DataFrame(table_data)
             st.dataframe(df_table, use_container_width=True)
             
-            # Statistiche
+            # Analisi performance
+            st.subheader("🎯 Analisi Performance")
+            
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                total_expenses = sum([c['amount'] for c in expense_categories])
-                st.metric("💸 Total Gastos", f"${total_expenses:,.2f}")
+                best_day = max(weekly_data, key=lambda x: x['net_profit'])
+                st.metric("🏆 Miglior Giorno", best_day['date'][:10])
+                st.caption(f"Profitto: ${best_day['net_profit']:,.2f}")
             
             with col2:
-                avg_expense = total_expenses / len(expense_categories)
-                st.metric("📊 Promedio por Categoría", f"${avg_expense:,.2f}")
+                avg_daily_profit = total_profit / len(weekly_data)
+                st.metric("📊 Profitto Medio Giornaliero", f"${avg_daily_profit:,.2f}")
             
             with col3:
-                largest_category = max(expense_categories, key=lambda x: x['amount'])
-                st.metric("🏆 Mayor Gasto", largest_category['category'])
+                if total_profit > 0:
+                    st.success("✅ **Settimana Positiva**")
+                    st.write("Profitto generato")
+                else:
+                    st.error("❌ **Settimana Negativa**")
+                    st.write("Perdita registrata")
         else:
-            st.warning("⚠️ No hay datos de gastos disponibles")
-            st.info("Registra gastos con proveedores para ver el análisis")
+            st.warning("⚠️ Nessun dato per questa settimana")
+            st.info("Inserisci dati giornalieri per vedere il report settimanale")
     
     with tab4:
-        st.subheader("🔮 Previsiones Financieras")
+        st.subheader("📋 Report Mensile")
         
-        # Ottieni previsioni
-        forecasts = db.get_financial_forecast(6)
+        # Selettore mese
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            selected_month = st.selectbox("📅 Mese", range(1, 13), index=datetime.now().month - 1)
+            selected_year = st.selectbox("📅 Anno", range(2020, 2030), index=datetime.now().year - 2020)
         
-        if forecasts:
-            # Grafico previsioni
-            df_forecasts = pd.DataFrame(forecasts)
+        with col2:
+            month_name = datetime(selected_year, selected_month, 1).strftime('%B %Y')
+            st.info(f"📊 Report mensile: **{month_name}**")
+        
+        # Ottieni dati mensili
+        monthly_data = db.get_monthly_summary(selected_year, selected_month)
+        
+        if monthly_data and monthly_data['days_with_data'] > 0:
+            # Metriche mensili
+            col1, col2, col3, col4 = st.columns(4)
             
-            fig_forecast = px.line(
-                df_forecasts,
-                x='month',
-                y=['predicted_income', 'predicted_expenses', 'predicted_profit'],
-                title="Previsiones Financieras - Próximos 6 Meses",
-                labels={'value': 'Monto ($)', 'month': 'Mes'},
-                color_discrete_map={
-                    'predicted_income': '#00CC96',
-                    'predicted_expenses': '#FF6692',
-                    'predicted_profit': '#636EFA'
-                }
-            )
-            fig_forecast.update_layout(height=500)
-            st.plotly_chart(fig_forecast, use_container_width=True)
+            with col1:
+                st.metric(
+                    "💰 Entrate Mensili",
+                    f"${monthly_data['total_income']:,.2f}",
+                    help="Total entrate del mese"
+                )
             
-            # Tabla previsioni
-            st.subheader("📋 Previsiones Detalladas")
+            with col2:
+                st.metric(
+                    "💸 Uscite Mensili",
+                    f"${monthly_data['total_expenses']:,.2f}",
+                    help="Total uscite del mese"
+                )
             
-            table_data = []
-            for forecast in forecasts:
-                table_data.append({
-                    'Mes': forecast['month'],
-                    'Ingresos Previstos': f"${forecast['predicted_income']:,.2f}",
-                    'Gastos Previstos': f"${forecast['predicted_expenses']:,.2f}",
-                    'Beneficio Previsto': f"${forecast['predicted_profit']:,.2f}",
-                    'Tasa de Crecimiento': f"{forecast['growth_rate']:.1f}%",
-                    'Confianza': f"{forecast['confidence']:.0f}%"
-                })
+            with col3:
+                profit_color = "normal" if monthly_data['total_profit'] >= 0 else "inverse"
+                st.metric(
+                    "📈 Profitto Mensile",
+                    f"${monthly_data['total_profit']:,.2f}",
+                    delta=f"{monthly_data['profit_margin']:.1f}%",
+                    delta_color=profit_color,
+                    help="Profitto netto del mese"
+                )
             
-            df_forecast_table = pd.DataFrame(table_data)
-            st.dataframe(df_forecast_table, use_container_width=True)
+            with col4:
+                st.metric(
+                    "📊 Transazioni Totali",
+                    monthly_data['total_transactions'],
+                    help="Numero totale di transazioni"
+                )
             
-            # Informazioni aggiuntive
+            # Indicatori di performance
+            st.subheader("🎯 Indicatori di Performance")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                if monthly_data['total_profit'] > 0:
+                    st.success("✅ **Mese Positivo**")
+                    st.write("Profitto generato")
+                else:
+                    st.error("❌ **Mese Negativo**")
+                    st.write("Perdita registrata")
+            
+            with col2:
+                avg_daily_profit = monthly_data['total_profit'] / monthly_data['days_with_data']
+                st.metric("📊 Profitto Medio Giornaliero", f"${avg_daily_profit:,.2f}")
+                st.caption(f"Su {monthly_data['days_with_data']} giorni con dati")
+            
+            with col3:
+                efficiency = monthly_data['profit_margin']
+                if efficiency > 20:
+                    st.success("🚀 **Alta Efficienza**")
+                elif efficiency > 10:
+                    st.warning("⚠️ **Efficienza Media**")
+                else:
+                    st.error("📉 **Bassa Efficienza**")
+                st.write(f"Efficienza: {efficiency:.1f}%")
+            
+            # Analisi categorie
+            st.subheader("📊 Analisi per Categoria")
+            
+            # Ottieni tutte le entrate e uscite del mese per analisi categorie
+            start_date = f"{selected_year}-{selected_month:02d}-01"
+            if selected_month == 12:
+                end_date = f"{selected_year + 1}-01-01"
+            else:
+                end_date = f"{selected_year}-{selected_month + 1:02d}-01"
+            
+            # Analisi entrate per categoria
+            income_categories = db.get_accounting_categories('income')
+            expense_categories = db.get_accounting_categories('expense')
+            
             col1, col2 = st.columns(2)
             
             with col1:
-                st.info("""
-                **📊 Metodología:**
-                - Basado en tendencias históricas
-                - Crecimiento promedio calculado
-                - Gastos estimados al 70% de ingresos
-                """)
+                st.write("**💰 Top Categorie Entrate**")
+                # Qui potresti aggiungere un'analisi delle categorie più redditizie
+                for category in income_categories[:5]:
+                    st.write(f"• {category['icon']} {category['name']}")
             
             with col2:
-                avg_growth = sum([f['growth_rate'] for f in forecasts]) / len(forecasts)
-                st.metric("📈 Crecimiento Promedio", f"{avg_growth:.1f}%")
+                st.write("**💸 Top Categorie Uscite**")
+                # Qui potresti aggiungere un'analisi delle categorie più costose
+                for category in expense_categories[:5]:
+                    st.write(f"• {category['icon']} {category['name']}")
+            
+            # Confronto con mese precedente
+            st.subheader("📈 Confronto Mese Precedente")
+            
+            prev_month = selected_month - 1 if selected_month > 1 else 12
+            prev_year = selected_year if selected_month > 1 else selected_year - 1
+            
+            prev_monthly_data = db.get_monthly_summary(prev_year, prev_month)
+            
+            if prev_monthly_data and prev_monthly_data['days_with_data'] > 0:
+                col1, col2, col3 = st.columns(3)
                 
-                if avg_growth > 0:
-                    st.success("✅ Tendencia positiva")
-                else:
-                    st.warning("⚠️ Tendencia negativa")
+                with col1:
+                    income_change = ((monthly_data['total_income'] - prev_monthly_data['total_income']) / prev_monthly_data['total_income'] * 100) if prev_monthly_data['total_income'] > 0 else 0
+                    st.metric(
+                        "💰 Variazione Entrate",
+                        f"{income_change:+.1f}%",
+                        help="Rispetto al mese precedente"
+                    )
+                
+                with col2:
+                    expense_change = ((monthly_data['total_expenses'] - prev_monthly_data['total_expenses']) / prev_monthly_data['total_expenses'] * 100) if prev_monthly_data['total_expenses'] > 0 else 0
+                    st.metric(
+                        "💸 Variazione Uscite",
+                        f"{expense_change:+.1f}%",
+                        help="Rispetto al mese precedente"
+                    )
+                
+                with col3:
+                    profit_change = ((monthly_data['total_profit'] - prev_monthly_data['total_profit']) / abs(prev_monthly_data['total_profit']) * 100) if prev_monthly_data['total_profit'] != 0 else 0
+                    st.metric(
+                        "📈 Variazione Profitto",
+                        f"{profit_change:+.1f}%",
+                        help="Rispetto al mese precedente"
+                    )
+            else:
+                st.info("📊 Nessun dato disponibile per il mese precedente")
+            
+            # Esportazione report
+            st.subheader("📤 Esportazione Report")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                if st.button("📄 Esporta PDF", help="Esporta report in PDF"):
+                    st.info("🚧 Funzionalità in sviluppo")
+            
+            with col2:
+                if st.button("📊 Esporta Excel", help="Esporta report in Excel"):
+                    st.info("🚧 Funzionalità in sviluppo")
+            
+            with col3:
+                if st.button("📧 Invia Email", help="Invia report via email"):
+                    st.info("🚧 Funzionalità in sviluppo")
         else:
-            st.warning("⚠️ No hay suficientes datos para generar previsiones")
-            st.info("Necesitas al menos 6 meses de datos históricos")
+            st.warning("⚠️ Nessun dato per questo mese")
+            st.info("Inserisci dati giornalieri per vedere il report mensile")
 
 def render_configuracion():
     """Renderiza la sección configuración"""

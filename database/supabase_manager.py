@@ -1228,7 +1228,220 @@ class SupabaseManager:
             logger.error(f"❌ Errore ottenendo ruoli: {e}")
             return []
     
-    # ==================== GESTORE CONTABILITÀ ====================
+    # ==================== GESTORE CONTABILITÀ GIORNALIERA ====================
+    
+    def add_daily_income(self, amount: float, category: str, description: str = "", payment_method: str = "Efectivo", date: str = None) -> Optional[Dict]:
+        """Aggiunge un'entrata giornaliera"""
+        try:
+            if not date:
+                date = datetime.now().date().isoformat()
+            
+            income_data = {
+                'date': date,
+                'amount': amount,
+                'category': category,
+                'description': description,
+                'payment_method': payment_method
+            }
+            
+            result = self.insert('daily_income', income_data)
+            if result:
+                logger.info(f"✅ Entrata aggiunta: ${amount} - {category}")
+                return result
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo entrata: {e}")
+            return None
+    
+    def add_daily_expense(self, amount: float, category: str, description: str = "", supplier: str = "", payment_method: str = "Efectivo", date: str = None) -> Optional[Dict]:
+        """Aggiunge un'uscita giornaliera"""
+        try:
+            if not date:
+                date = datetime.now().date().isoformat()
+            
+            expense_data = {
+                'date': date,
+                'amount': amount,
+                'category': category,
+                'description': description,
+                'supplier': supplier,
+                'payment_method': payment_method
+            }
+            
+            result = self.insert('daily_expenses', expense_data)
+            if result:
+                logger.info(f"✅ Uscita aggiunta: ${amount} - {category}")
+                return result
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo uscita: {e}")
+            return None
+    
+    def get_daily_entries(self, date: str = None) -> Dict:
+        """Ottiene tutte le entrate e uscite di un giorno"""
+        try:
+            if not date:
+                date = datetime.now().date().isoformat()
+            
+            # Ottieni entrate del giorno
+            income_data = self.select('daily_income', filters={'date': date})
+            
+            # Ottieni uscite del giorno
+            expense_data = self.select('daily_expenses', filters={'date': date})
+            
+            return {
+                'date': date,
+                'income': income_data if income_data else [],
+                'expenses': expense_data if expense_data else [],
+                'total_income': sum([i['amount'] for i in income_data]) if income_data else 0,
+                'total_expenses': sum([e['amount'] for e in expense_data]) if expense_data else 0
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo entrate giornaliere: {e}")
+            return {'date': date, 'income': [], 'expenses': [], 'total_income': 0, 'total_expenses': 0}
+    
+    def get_daily_report(self, date: str = None) -> Dict:
+        """Ottiene il report giornaliero calcolato"""
+        try:
+            if not date:
+                date = datetime.now().date().isoformat()
+            
+            report_data = self.select('daily_reports', filters={'date': date})
+            
+            if report_data:
+                return report_data[0]
+            else:
+                # Se non esiste, calcola manualmente
+                daily_entries = self.get_daily_entries(date)
+                total_income = daily_entries['total_income']
+                total_expenses = daily_entries['total_expenses']
+                net_profit = total_income - total_expenses
+                profit_margin = (net_profit / total_income * 100) if total_income > 0 else 0
+                
+                return {
+                    'date': date,
+                    'total_income': total_income,
+                    'total_expenses': total_expenses,
+                    'net_profit': net_profit,
+                    'profit_margin': profit_margin,
+                    'transactions_count': len(daily_entries['income']) + len(daily_entries['expenses'])
+                }
+                
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo report giornaliero: {e}")
+            return {}
+    
+    def get_accounting_categories(self, category_type: str = None) -> List[Dict]:
+        """Ottiene le categorie di contabilità"""
+        try:
+            filters = {'is_active': True}
+            if category_type:
+                filters['type'] = category_type
+            
+            categories = self.select('accounting_categories', filters=filters)
+            return categories if categories else []
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo categorie: {e}")
+            return []
+    
+    def add_accounting_category(self, name: str, category_type: str, color: str = "#636EFA", icon: str = "💰") -> Optional[Dict]:
+        """Aggiunge una nuova categoria"""
+        try:
+            category_data = {
+                'name': name,
+                'type': category_type,
+                'color': color,
+                'icon': icon
+            }
+            
+            result = self.insert('accounting_categories', category_data)
+            if result:
+                logger.info(f"✅ Categoria aggiunta: {name} ({category_type})")
+                return result
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo categoria: {e}")
+            return None
+    
+    def get_weekly_summary(self, start_date: str = None) -> List[Dict]:
+        """Ottiene riepilogo settimanale"""
+        try:
+            if not start_date:
+                start_date = (datetime.now() - timedelta(days=7)).date().isoformat()
+            
+            end_date = datetime.now().date().isoformat()
+            
+            # Ottieni report giornalieri della settimana
+            reports = self.select('daily_reports', filters={'date__gte': start_date, 'date__lte': end_date})
+            
+            return reports if reports else []
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo settimanale: {e}")
+            return []
+    
+    def get_monthly_summary(self, year: int = None, month: int = None) -> Dict:
+        """Ottiene riepilogo mensile"""
+        try:
+            if not year:
+                year = datetime.now().year
+            if not month:
+                month = datetime.now().month
+            
+            # Calcola inizio e fine mese
+            start_date = f"{year}-{month:02d}-01"
+            if month == 12:
+                end_date = f"{year + 1}-01-01"
+            else:
+                end_date = f"{year}-{month + 1:02d}-01"
+            
+            # Ottieni tutti i report del mese
+            reports = self.select('daily_reports', filters={'date__gte': start_date, 'date__lt': end_date})
+            
+            if reports:
+                total_income = sum([r['total_income'] for r in reports])
+                total_expenses = sum([r['total_expenses'] for r in reports])
+                total_profit = sum([r['net_profit'] for r in reports])
+                total_transactions = sum([r['transactions_count'] for r in reports])
+                
+                return {
+                    'year': year,
+                    'month': month,
+                    'total_income': total_income,
+                    'total_expenses': total_expenses,
+                    'total_profit': total_profit,
+                    'profit_margin': (total_profit / total_income * 100) if total_income > 0 else 0,
+                    'total_transactions': total_transactions,
+                    'days_with_data': len(reports)
+                }
+            
+            return {'year': year, 'month': month, 'total_income': 0, 'total_expenses': 0, 'total_profit': 0, 'profit_margin': 0, 'total_transactions': 0, 'days_with_data': 0}
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo mensile: {e}")
+            return {}
+    
+    def delete_daily_entry(self, entry_type: str, entry_id: str) -> bool:
+        """Elimina un'entrata o uscita giornaliera"""
+        try:
+            table = 'daily_income' if entry_type == 'income' else 'daily_expenses'
+            result = self.delete(table, entry_id)
+            
+            if result:
+                logger.info(f"✅ {entry_type} eliminato: {entry_id}")
+                return True
+            return False
+            
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando {entry_type}: {e}")
+            return False
+    
+    # ==================== GESTORE CONTABILITÀ (LEGACY) ====================
     
     def get_financial_summary(self, start_date=None, end_date=None) -> Dict:
         """Ottiene riepilogo finanziario (entrate e uscite)"""

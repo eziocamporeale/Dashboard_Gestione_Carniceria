@@ -627,7 +627,90 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo ruoli: {e}")
             return []
     
-    # ==================== GESTORE CONTABILITÀ ====================
+    # ==================== GESTORE CONTABILITÀ GIORNALIERA ====================
+    
+    def add_daily_income(self, amount: float, category: str, description: str = "", payment_method: str = "Efectivo", date: str = None) -> Optional[Dict]:
+        """Aggiunge un'entrata giornaliera"""
+        try:
+            manager = self._get_manager()
+            return manager.add_daily_income(amount, category, description, payment_method, date)
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo entrata: {e}")
+            return None
+    
+    def add_daily_expense(self, amount: float, category: str, description: str = "", supplier: str = "", payment_method: str = "Efectivo", date: str = None) -> Optional[Dict]:
+        """Aggiunge un'uscita giornaliera"""
+        try:
+            manager = self._get_manager()
+            return manager.add_daily_expense(amount, category, description, supplier, payment_method, date)
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo uscita: {e}")
+            return None
+    
+    def get_daily_entries(self, date: str = None) -> Dict:
+        """Ottiene tutte le entrate e uscite di un giorno"""
+        try:
+            manager = self._get_manager()
+            return manager.get_daily_entries(date)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo entrate giornaliere: {e}")
+            return {'date': date, 'income': [], 'expenses': [], 'total_income': 0, 'total_expenses': 0}
+    
+    def get_daily_report(self, date: str = None) -> Dict:
+        """Ottiene il report giornaliero calcolato"""
+        try:
+            manager = self._get_manager()
+            return manager.get_daily_report(date)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo report giornaliero: {e}")
+            return {}
+    
+    def get_accounting_categories(self, category_type: str = None) -> List[Dict]:
+        """Ottiene le categorie di contabilità"""
+        try:
+            manager = self._get_manager()
+            return manager.get_accounting_categories(category_type)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo categorie: {e}")
+            return []
+    
+    def add_accounting_category(self, name: str, category_type: str, color: str = "#636EFA", icon: str = "💰") -> Optional[Dict]:
+        """Aggiunge una nuova categoria"""
+        try:
+            manager = self._get_manager()
+            return manager.add_accounting_category(name, category_type, color, icon)
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo categoria: {e}")
+            return None
+    
+    def get_weekly_summary(self, start_date: str = None) -> List[Dict]:
+        """Ottiene riepilogo settimanale"""
+        try:
+            manager = self._get_manager()
+            return manager.get_weekly_summary(start_date)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo settimanale: {e}")
+            return []
+    
+    def get_monthly_summary(self, year: int = None, month: int = None) -> Dict:
+        """Ottiene riepilogo mensile"""
+        try:
+            manager = self._get_manager()
+            return manager.get_monthly_summary(year, month)
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo mensile: {e}")
+            return {}
+    
+    def delete_daily_entry(self, entry_type: str, entry_id: str) -> bool:
+        """Elimina un'entrata o uscita giornaliera"""
+        try:
+            manager = self._get_manager()
+            return manager.delete_daily_entry(entry_type, entry_id)
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando {entry_type}: {e}")
+            return False
+    
+    # ==================== GESTORE CONTABILITÀ (LEGACY) ====================
     
     def get_financial_summary(self, start_date=None, end_date=None) -> Dict:
         """Ottiene riepilogo finanziario (entrate e uscite)"""
