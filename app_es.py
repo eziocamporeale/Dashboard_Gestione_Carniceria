@@ -3094,25 +3094,25 @@ def render_balance():
         
         # Metriche principali
         col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric(
+        
+        with col1:
+            st.metric(
                 "💰 Entrate",
                 f"${daily_entries['total_income']:,.2f}",
                 help="Total entrate del giorno"
-                    )
-                
-                with col2:
-                    st.metric(
+            )
+        
+        with col2:
+            st.metric(
                 "💸 Uscite",
                 f"${daily_entries['total_expenses']:,.2f}",
                 help="Total uscite del giorno"
-                    )
-                
-                with col3:
+            )
+        
+        with col3:
             net_profit = daily_entries['total_income'] - daily_entries['total_expenses']
             profit_color = "normal" if net_profit >= 0 else "inverse"
-                    st.metric(
+            st.metric(
                 "📈 Profitto",
                 f"${net_profit:,.2f}",
                 delta=f"{daily_report.get('profit_margin', 0):.1f}%" if daily_report else "0%",
