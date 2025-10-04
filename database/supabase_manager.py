@@ -838,7 +838,7 @@ class SupabaseManager:
             sales_data = self.select('sales', 'sale_date, final_amount')
             
             if not sales_data:
-            return {
+                return {
                     'total_sales_today': 0,
                     'total_sales_week': 0,
                     'total_sales_month': 0,
