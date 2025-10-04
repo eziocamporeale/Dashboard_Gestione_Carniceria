@@ -975,7 +975,7 @@ def render_clientes():
                 avg_orders = sum(c.get('total_orders', 0) for c in customers) / len(customers) if customers else 0
                 st.metric("Promedio de Órdenes", f"{avg_orders:.1f}")
             with col2:
-                max_purchase = max(c.get('total_purchases', 0) for c in customers)
+                max_purchase = max(c.get('total_purchases', 0) for c in customers) if customers else 0
                 st.metric("Mayor Compra", f"${max_purchase:,.2f}")
             with col3:
                 recent_customers = len([c for c in customers if c.get('last_purchase') and c.get('last_purchase') >= '2024-09-01'])
@@ -2238,8 +2238,8 @@ def render_personal():
             # Mostrar estadísticas
             for dept, stats in dept_stats.items():
                 avg_dept_salary = stats['total_salary'] / stats['count']
-                min_salary = min(stats['salaries'])
-                max_salary = max(stats['salaries'])
+                min_salary = min(stats['salaries']) if stats['salaries'] else 0
+                max_salary = max(stats['salaries']) if stats['salaries'] else 0
                 
                 st.write(f"**{dept}:**")
                 st.write(f"• Empleados: {stats['count']}")
@@ -2294,16 +2294,21 @@ def render_personal():
         col1, col2, col3 = st.columns(3)
         
         with col1:
+            max_salary = max(e['salary'] for e in sample_employees) if sample_employees else 0
             st.metric("Empleado con Mayor Salario", 
-                     f"${max(e['salary'] for e in sample_employees):,.2f}")
+                     f"${max_salary:,.2f}")
         
         with col2:
+            min_salary = min(e['salary'] for e in sample_employees) if sample_employees else 0
             st.metric("Empleado con Menor Salario", 
-                     f"${min(e['salary'] for e in sample_employees):,.2f}")
+                     f"${min_salary:,.2f}")
         
         with col3:
-            st.metric("Departamento con Más Empleados", 
-                     max(dept_counts, key=dept_counts.get))
+            if dept_counts:
+                max_dept = max(dept_counts, key=dept_counts.get)
+                st.metric("Departamento con Más Empleados", max_dept)
+            else:
+                st.metric("Departamento con Más Empleados", "N/A")
         
         # Información adicional
         st.markdown("---")
@@ -3336,9 +3341,13 @@ def render_balance():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                best_day = max(weekly_data, key=lambda x: x['net_profit'])
-                st.metric("🏆 Miglior Giorno", best_day['date'][:10])
-                st.caption(f"Profitto: ${best_day['net_profit']:,.2f}")
+                if weekly_data:
+                    best_day = max(weekly_data, key=lambda x: x['net_profit'])
+                    st.metric("🏆 Miglior Giorno", best_day['date'][:10])
+                    st.caption(f"Profitto: ${best_day['net_profit']:,.2f}")
+                else:
+                    st.metric("🏆 Miglior Giorno", "N/A")
+                    st.caption("Nessun dato disponibile")
             
             with col2:
                 avg_daily_profit = total_profit / len(weekly_data) if weekly_data else 0
