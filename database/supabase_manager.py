@@ -1135,7 +1135,7 @@ class SupabaseManager:
                 # Verifica password con bcrypt
                 import bcrypt
                 password_hash = user.get('password_hash')
-                if password_hash and bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
+                if password_hash and bcrypt.checkpw(password.encode('utf-8'), password_hash):
                     return user
             return None
         except Exception as e:
