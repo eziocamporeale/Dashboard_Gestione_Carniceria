@@ -907,6 +907,72 @@ class HybridDatabaseManager:
         except Exception as e:
             logger.error(f"❌ Errore esecuzione SQL: {e}")
             return False
+    
+    # ==================== METODOS EMPLEADOS CRUD ====================
+    
+    def add_employee(self, employee_data: Dict[str, Any]) -> bool:
+        """Aggiunge un nuovo impiegato"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                response = self.supabase_manager.client.table('employees').insert(employee_data).execute()
+                return response.data is not None
+            else:
+                if hasattr(self.sqlite_manager, 'add_employee'):
+                    return self.sqlite_manager.add_employee(employee_data)
+                else:
+                    logger.error("❌ Metodo add_employee non disponibile per SQLite")
+                    return False
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo impiegato: {e}")
+            return False
+    
+    def update_employee(self, employee_id: str, employee_data: Dict[str, Any]) -> bool:
+        """Aggiorna un impiegato esistente"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                response = self.supabase_manager.client.table('employees').update(employee_data).eq('id', employee_id).execute()
+                return response.data is not None
+            else:
+                if hasattr(self.sqlite_manager, 'update_employee'):
+                    return self.sqlite_manager.update_employee(employee_id, employee_data)
+                else:
+                    logger.error("❌ Metodo update_employee non disponibile per SQLite")
+                    return False
+        except Exception as e:
+            logger.error(f"❌ Errore aggiornando impiegato: {e}")
+            return False
+    
+    def delete_employee(self, employee_id: str) -> bool:
+        """Elimina un impiegato"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                response = self.supabase_manager.client.table('employees').delete().eq('id', employee_id).execute()
+                return True  # Supabase restituisce sempre successo anche se non trova il record
+            else:
+                if hasattr(self.sqlite_manager, 'delete_employee'):
+                    return self.sqlite_manager.delete_employee(employee_id)
+                else:
+                    logger.error("❌ Metodo delete_employee non disponibile per SQLite")
+                    return False
+        except Exception as e:
+            logger.error(f"❌ Errore eliminando impiegato: {e}")
+            return False
+    
+    def get_employee(self, employee_id: str) -> Dict[str, Any]:
+        """Ottiene un impiegato specifico"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                response = self.supabase_manager.client.table('employees').select('*').eq('id', employee_id).execute()
+                return response.data[0] if response.data else {}
+            else:
+                if hasattr(self.sqlite_manager, 'get_employee'):
+                    return self.sqlite_manager.get_employee(employee_id)
+                else:
+                    logger.error("❌ Metodo get_employee non disponibile per SQLite")
+                    return {}
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo impiegato: {e}")
+            return {}
 
 # Istanza globale
 

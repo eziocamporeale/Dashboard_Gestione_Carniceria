@@ -1844,8 +1844,30 @@ def render_personal():
                 col1, col2, col3 = st.columns([1, 1, 1])
                 with col1:
                     if st.form_submit_button("💾 Guardar Cambios", width='stretch', type="primary"):
-                        # Aquí se guardarían los cambios en la base de datos
-                        st.success("✅ Empleado actualizado exitosamente")
+                        # Guardar los cambios en la base de datos
+                        try:
+                            # Preparar los datos actualizados
+                            updated_data = {
+                                'name': new_name,
+                                'first_name': new_name.split()[0] if new_name else '',
+                                'last_name': ' '.join(new_name.split()[1:]) if len(new_name.split()) > 1 else '',
+                                'email': new_email,
+                                'phone': new_phone,
+                                'position': new_position,
+                                'department': new_department,
+                                'salary': float(new_salary),
+                                'hire_date': new_hire_date.isoformat(),
+                                'status': new_status,
+                                'updated_at': dt.datetime.now().isoformat()
+                            }
+                            
+                            if db.update_employee(emp['id'], updated_data):
+                                st.success("✅ Empleado actualizado exitosamente")
+                            else:
+                                st.error("❌ Error al actualizar el empleado")
+                        except Exception as e:
+                            st.error(f"❌ Error al actualizar el empleado: {e}")
+                        
                         del st.session_state['editing_employee']
                         st.rerun()
                 
@@ -1867,8 +1889,18 @@ def render_personal():
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 if st.button("✅ Confirmar Eliminación", width='stretch', type="primary"):
-                    # Aquí se eliminaría el empleado de la base de datos
-                    st.success("✅ Empleado eliminado exitosamente")
+                    # Eliminar el empleado de la base de datos
+                    try:
+                        if db.delete_employee(emp['id']):
+                            st.success("✅ Empleado eliminado exitosamente")
+                            # Limpiar el estado de edición si era el mismo empleado
+                            if 'editing_employee' in st.session_state and st.session_state['editing_employee']['id'] == emp['id']:
+                                del st.session_state['editing_employee']
+                        else:
+                            st.error("❌ Error al eliminar el empleado")
+                    except Exception as e:
+                        st.error(f"❌ Error al eliminar el empleado: {e}")
+                    
                     del st.session_state['deleting_employee']
                     st.rerun()
             
