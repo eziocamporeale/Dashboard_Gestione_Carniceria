@@ -3301,7 +3301,7 @@ def render_balance():
             st.info("📁 Carga un archivo Excel para ver las previsiones")
     
     with tab4:
-        st.subheader("📁 Cargar Datos Históricos")
+        st.subheader("📁 Cargar Datos desde Archivo Excel")
         
         # Información sobre el formato esperado
         st.info("""
@@ -3311,83 +3311,12 @@ def render_balance():
         • Datos de ventas diarias y pagos a proveedores
         """)
         
-        # Botón para cargar datos Excel
+        # File uploader per caricare dati Excel
         uploaded_file = st.file_uploader(
             "📁 Cargar Archivo Excel con Datos Históricos",
             type=['xlsx', 'xls'],
             help="Sube tu archivo Excel con los datos históricos de la carnicería",
-            key="balance_historical_file_uploader"
-        )
-        
-        # Opción para caricare file specifico
-        st.markdown("### 🎯 Carica File Specifico")
-        
-        # Path del file Excel reale
-        excel_path = "/Users/ezio/Downloads/Gestion Carniceria El Tablero .xlsx"
-        
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("🚀 Migra Dati Excel a Supabase", width='stretch', type="primary"):
-                try:
-                    with st.spinner("🔄 Migrando dati Excel a Supabase..."):
-                        # Inizializza il migratore
-                        migrator = SupabaseExcelMigrator()
-                        
-                        # Esegui la migrazione
-                        results = migrator.migrate_excel_to_supabase(excel_path)
-                        
-                        if results:
-                            st.success("✅ **Migrazione completata con successo!**")
-                            
-                            # Mostra i risultati
-                            st.markdown("### 📊 Risultati Migrazione:")
-                            
-                            col1, col2, col3, col4 = st.columns(4)
-                            
-                            with col1:
-                                sales_result = results.get('sales', {})
-                                st.metric("Vendite", sales_result.get('migrated_count', 0))
-                            
-                            with col2:
-                                purchases_result = results.get('purchases', {})
-                                st.metric("Acquisti", purchases_result.get('migrated_count', 0))
-                            
-                            with col3:
-                                expenses_result = results.get('expenses', {})
-                                st.metric("Spese", expenses_result.get('migrated_count', 0))
-                            
-                            with col4:
-                                suppliers_result = results.get('suppliers', {})
-                                st.metric("Fornitori", suppliers_result.get('migrated_count', 0))
-                            
-                            # Mostra dettagli
-                            with st.expander("📋 Dettagli Migrazione"):
-                                for category, result in results.items():
-                                    if result.get('status') == 'success':
-                                        st.success(f"✅ {category.upper()}: {result.get('migrated_count', 0)} record migrati")
-                                        if result.get('data'):
-                                            st.json(result['data'][:2])  # Prime 2 per esempio
-                                    else:
-                                        st.error(f"❌ {category.upper()}: {result.get('error', 'Errore sconosciuto')}")
-                            
-                            # Aggiorna session state
-                            st.session_state['excel_migrated'] = True
-                            st.session_state['migration_results'] = results
-                            
-                        else:
-                            st.error("❌ Errore durante la migrazione")
-                            
-                except Exception as e:
-                    st.error(f"❌ Errore: {e}")
-        
-        # Opzione per caricare file personalizzato
-        st.markdown("### 📁 Carica File Personalizzato")
-        
-        uploaded_file = st.file_uploader(
-            "📁 Cargar Archivo Excel con Datos Históricos",
-            type=['xlsx', 'xls'],
-            help="Sube tu archivo Excel con los datos históricos de la carnicería",
-            key="balance_custom_file_uploader"
+            key="balance_excel_file_uploader"
         )
         
         if uploaded_file is not None:
