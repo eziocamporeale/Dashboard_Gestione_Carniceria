@@ -178,17 +178,17 @@ def render_sidebar():
             st.subheader("⚡ Acciones Rápidas")
             
             if has_permission("ventas"):
-                if st.button("💰 Nueva Venta", use_container_width=True):
+                if st.button("💰 Nueva Venta", width='stretch'):
                     st.session_state['current_page'] = 'ventas'
                     st.rerun()
             
             if has_permission("inventario"):
-                if st.button("📦 Agregar Producto", use_container_width=True):
+                if st.button("📦 Agregar Producto", width='stretch'):
                     st.session_state['current_page'] = 'inventario'
                     st.rerun()
             
             if has_permission("clientes"):
-                if st.button("👥 Nuevo Cliente", use_container_width=True):
+                if st.button("👥 Nuevo Cliente", width='stretch'):
                     st.session_state['current_page'] = 'clientes'
                     st.rerun()
             
@@ -299,7 +299,7 @@ def render_dashboard():
                 y='total_revenue',
                 title="Tendencia Ventas")
             fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("No hay datos de ventas disponibles para el período seleccionado")
     
@@ -317,7 +317,7 @@ def render_dashboard():
                 y='name',
                 title="Top 5 Productos")
             fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("No hay datos de ventas disponibles")
 
@@ -465,17 +465,17 @@ def render_inventario():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("📊 Exportar Inventario", use_container_width=True):
+                if st.button("📊 Exportar Inventario", width='stretch'):
                     st.info("Generando archivo Excel...")
                     st.success("✅ Inventario exportado exitosamente!")
             
             with col2:
-                if st.button("🔄 Actualizar Stock", use_container_width=True):
+                if st.button("🔄 Actualizar Stock", width='stretch'):
                     st.info("Actualizando niveles de stock...")
                     st.success("✅ Stock actualizado!")
             
             with col3:
-                if st.button("📧 Notificar Stock Bajo", use_container_width=True):
+                if st.button("📧 Notificar Stock Bajo", width='stretch'):
                     st.info("Enviando notificaciones...")
                     st.success("✅ Notificaciones enviadas!")
         else:
@@ -530,7 +530,7 @@ def render_inventario():
                     temp_min = temp_max = None
             
             # Botón submit
-            if st.form_submit_button("➕ Agregar Producto", use_container_width=True):
+            if st.form_submit_button("➕ Agregar Producto", width='stretch'):
                 if not name or not selling_price:
                     st.error("⚠️ Completa todos los campos obligatorios")
                 else:
@@ -651,7 +651,7 @@ def render_inventario():
                 
                 st.dataframe(
                     filtered_df[['name', 'code', 'category_name', 'current_stock', 'min_stock_level', 'estado', 'selling_price', 'valor_total']],
-                    use_container_width=True,
+                    width='stretch',
                     column_config={
                         "name": "Producto",
                         "code": "Código",
@@ -679,7 +679,7 @@ def render_inventario():
                         y='current_stock',
                         title="Stock por Categoría")
                     fig_category.update_layout(xaxis=dict(tickangle=-45))
-                    st.plotly_chart(fig_category, use_container_width=True)
+                    st.plotly_chart(fig_category, width='stretch')
                 
                 with col2:
                     # Gráfico de estado de stock
@@ -689,7 +689,7 @@ def render_inventario():
                         names=status_counts.index,
                         title="Distribución de Estados de Stock"
                     )
-                    st.plotly_chart(fig_status, use_container_width=True)
+                    st.plotly_chart(fig_status, width='stretch')
                 
                 # Acciones de stock
                 st.markdown("---")
@@ -698,16 +698,16 @@ def render_inventario():
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    if st.button("📦 Actualizar Stock", use_container_width=True):
+                    if st.button("📦 Actualizar Stock", width='stretch'):
                         st.info("Funcionalidad de actualización de stock en desarrollo")
                 
                 with col2:
-                    if st.button("📋 Generar Reporte", use_container_width=True):
+                    if st.button("📋 Generar Reporte", width='stretch'):
                         st.info("Generando reporte de stock...")
                         st.success("✅ Reporte generado exitosamente!")
                 
                 with col3:
-                    if st.button("🔄 Sincronizar", use_container_width=True):
+                    if st.button("🔄 Sincronizar", width='stretch'):
                         st.info("Sincronizando datos de stock...")
                         st.success("✅ Sincronización completada!")
             else:
@@ -894,16 +894,16 @@ def render_clientes():
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    if st.button("📧 Enviar Email Masivo", use_container_width=True):
+                    if st.button("📧 Enviar Email Masivo", width='stretch'):
                         st.info("Funcionalidad de email masivo en desarrollo")
                 
                 with col2:
-                    if st.button("📊 Exportar Lista", use_container_width=True):
+                    if st.button("📊 Exportar Lista", width='stretch'):
                         st.info("Generando archivo Excel...")
                         st.success("✅ Lista exportada exitosamente!")
                 
                 with col3:
-                    if st.button("🔄 Actualizar Datos", use_container_width=True):
+                    if st.button("🔄 Actualizar Datos", width='stretch'):
                         st.info("Actualizando datos de clientes...")
                         st.success("✅ Datos actualizados!")
             else:
@@ -926,7 +926,7 @@ def render_clientes():
                 address = st.text_area("Dirección", placeholder="Av. Corrientes 1234, Buenos Aires")
                 notes = st.text_area("Notas", placeholder="Información adicional del cliente")
             
-            submitted = st.form_submit_button("💾 Guardar Cliente", use_container_width=True, type="primary")
+            submitted = st.form_submit_button("💾 Guardar Cliente", width='stretch', type="primary")
             
             if submitted:
                 if name and email:
@@ -960,7 +960,7 @@ def render_clientes():
                 y='total_purchases',
                 title="Top 10 Clientes por Compras")
             fig_customers.update_layout(xaxis=dict(tickangle=-45))
-            st.plotly_chart(fig_customers, use_container_width=True)
+            st.plotly_chart(fig_customers, width='stretch')
             
             # Gráfico de distribución de órdenes
             orders_data = [c.get('total_orders', 0) for c in customers]
@@ -968,7 +968,7 @@ def render_clientes():
                 pd.DataFrame({'orders': orders_data}),
                 x='orders',
                 title="Distribución de Órdenes por Cliente")
-            st.plotly_chart(fig_orders, use_container_width=True)
+            st.plotly_chart(fig_orders, width='stretch')
             
             # Métricas adicionales
             col1, col2, col3 = st.columns(3)
@@ -1034,7 +1034,7 @@ def render_clientes():
                 df_satisfaction = pd.DataFrame(satisfaction_data)
                 fig_satisfaction = px.line(df_satisfaction, x='Meses', y='Satisfacción', 
                                          title="Evolución de la Satisfacción del Cliente")
-                st.plotly_chart(fig_satisfaction, use_container_width=True)
+                st.plotly_chart(fig_satisfaction, width='stretch')
             else:
                 st.info("No hay datos de analytics disponibles")
         
@@ -1049,7 +1049,7 @@ def render_clientes():
                     df_segments = pd.DataFrame(segments)
                     fig_segments = px.pie(df_segments, values='count', names='segment', 
                                         title="Distribución de Segmentos de Clientes")
-                    st.plotly_chart(fig_segments, use_container_width=True)
+                    st.plotly_chart(fig_segments, width='stretch')
                 
                 with col2:
                     st.subheader("📋 Detalles de Segmentos")
@@ -1064,7 +1064,7 @@ def render_clientes():
                 df_segments_table = pd.DataFrame(segments)
                 st.dataframe(
                     df_segments_table[['segment', 'count', 'description']],
-                    use_container_width=True,
+                    width='stretch',
                     column_config={
                         "segment": "Segmento",
                         "count": "Cantidad",
@@ -1115,7 +1115,7 @@ def render_clientes():
                 fig_roi = px.bar(df_campaigns, x='name', y='roi', 
                                title="ROI por Campaña")
                 fig_roi.update_layout(xaxis=dict(tickangle=45))
-                st.plotly_chart(fig_roi, use_container_width=True)
+                st.plotly_chart(fig_roi, width='stretch')
             else:
                 st.info("No hay campañas de marketing disponibles")
         
@@ -1160,7 +1160,7 @@ def render_clientes():
                                 title="Probabilidades de Predicción",
                                 color='priority')
                 fig_prob.update_layout(xaxis=dict(tickangle=45))
-                st.plotly_chart(fig_prob, use_container_width=True)
+                st.plotly_chart(fig_prob, width='stretch')
             else:
                 st.info("No hay predicciones disponibles")
         
@@ -1397,16 +1397,16 @@ def render_proveedores():
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    if st.button("📧 Enviar Email Masivo", use_container_width=True):
+                    if st.button("📧 Enviar Email Masivo", width='stretch'):
                         st.info("Funcionalidad de email masivo en desarrollo")
                 
                 with col2:
-                    if st.button("📊 Exportar Lista", use_container_width=True):
+                    if st.button("📊 Exportar Lista", width='stretch'):
                         st.info("Generando archivo Excel...")
                         st.success("✅ Lista exportada exitosamente!")
                 
                 with col3:
-                    if st.button("🔄 Actualizar Datos", use_container_width=True):
+                    if st.button("🔄 Actualizar Datos", width='stretch'):
                         st.info("Actualizando datos de proveedores...")
                         st.success("✅ Datos actualizados!")
             else:
@@ -1433,7 +1433,7 @@ def render_proveedores():
             # Botones
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                submitted = st.form_submit_button("💾 Guardar Proveedor", use_container_width=True, type="primary")
+                submitted = st.form_submit_button("💾 Guardar Proveedor", width='stretch', type="primary")
             
             if submitted:
                 if not name:
@@ -1491,7 +1491,7 @@ def render_proveedores():
                         y='total_amount',
                         title="Top 5 Proveedores por Monto")
                     fig_bar.update_layout(xaxis=dict(tickangle=-45))
-                    st.plotly_chart(fig_bar, use_container_width=True)
+                    st.plotly_chart(fig_bar, width='stretch')
                 
                 with col2:
                     # Gráfico de pastel - Distribución de montos
@@ -1501,14 +1501,14 @@ def render_proveedores():
                         names='name',
                         title="Distribución de Montos por Proveedor"
                     )
-                    st.plotly_chart(fig_pie, use_container_width=True)
+                    st.plotly_chart(fig_pie, width='stretch')
                 
                 # Tabla detallada
                 st.subheader("📋 Detalles de Top Proveedores")
                 df_top = pd.DataFrame(top_suppliers)
                 st.dataframe(
                     df_top[['name', 'total_amount', 'transactions_count', 'contact_email']],
-                    use_container_width=True,
+                    width='stretch',
                     column_config={
                         "name": "Proveedor",
                         "total_amount": st.column_config.NumberColumn("Monto Total", format="$%.2f"),
@@ -1666,16 +1666,16 @@ def render_proveedores():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("📧 Notificar Proveedores", use_container_width=True):
+                if st.button("📧 Notificar Proveedores", width='stretch'):
                     st.info("Funcionalidad de notificación en desarrollo")
             
             with col2:
-                if st.button("📊 Exportar Pedidos", use_container_width=True):
+                if st.button("📊 Exportar Pedidos", width='stretch'):
                     st.info("Generando archivo Excel...")
                     st.success("✅ Pedidos exportados exitosamente!")
             
             with col3:
-                if st.button("🔄 Actualizar Estados", use_container_width=True):
+                if st.button("🔄 Actualizar Estados", width='stretch'):
                     st.info("Actualizando estados de pedidos...")
                     st.success("✅ Estados actualizados!")
         else:
@@ -1683,7 +1683,7 @@ def render_proveedores():
         
         # Botón para nuevo pedido
         st.markdown("---")
-        if st.button("➕ Nuevo Pedido", use_container_width=True, type="primary"):
+        if st.button("➕ Nuevo Pedido", width='stretch', type="primary"):
             st.info("🚧 Funcionalidad de nuevo pedido en desarrollo")
 
 def render_personal():
@@ -1758,7 +1758,7 @@ def render_personal():
             with col1:
                 st.dataframe(
                     df_employees[['name', 'position', 'department', 'hire_date', 'salary', 'status', 'phone']],
-                    use_container_width=True,
+                    width='stretch',
                     column_config={
                         "name": "Nombre",
                         "position": "Posición",
@@ -1789,12 +1789,12 @@ def render_personal():
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            if st.button("✏️ Editar", use_container_width=True, type="primary"):
+                            if st.button("✏️ Editar", width='stretch', type="primary"):
                                 st.session_state['editing_employee'] = selected_emp
                                 st.rerun()
                         
                         with col2:
-                            if st.button("🗑️ Eliminar", use_container_width=True, type="secondary"):
+                            if st.button("🗑️ Eliminar", width='stretch', type="secondary"):
                                 st.session_state['deleting_employee'] = selected_emp
                                 st.rerun()
                         
@@ -1843,14 +1843,14 @@ def render_personal():
                 
                 col1, col2, col3 = st.columns([1, 1, 1])
                 with col1:
-                    if st.form_submit_button("💾 Guardar Cambios", use_container_width=True, type="primary"):
+                    if st.form_submit_button("💾 Guardar Cambios", width='stretch', type="primary"):
                         # Aquí se guardarían los cambios en la base de datos
                         st.success("✅ Empleado actualizado exitosamente")
                         del st.session_state['editing_employee']
                         st.rerun()
                 
                 with col2:
-                    if st.form_submit_button("❌ Cancelar", use_container_width=True, type="secondary"):
+                    if st.form_submit_button("❌ Cancelar", width='stretch', type="secondary"):
                         del st.session_state['editing_employee']
                         st.rerun()
         
@@ -1866,14 +1866,14 @@ def render_personal():
             
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
-                if st.button("✅ Confirmar Eliminación", use_container_width=True, type="primary"):
+                if st.button("✅ Confirmar Eliminación", width='stretch', type="primary"):
                     # Aquí se eliminaría el empleado de la base de datos
                     st.success("✅ Empleado eliminado exitosamente")
                     del st.session_state['deleting_employee']
                     st.rerun()
             
             with col2:
-                if st.button("❌ Cancelar", use_container_width=True, type="secondary"):
+                if st.button("❌ Cancelar", width='stretch', type="secondary"):
                     del st.session_state['deleting_employee']
                     st.rerun()
     
@@ -1920,7 +1920,7 @@ def render_personal():
             col1, col2, col3 = st.columns([1, 1, 1])
             
             with col1:
-                if st.form_submit_button("💾 Guardar Empleado", use_container_width=True, type="primary"):
+                if st.form_submit_button("💾 Guardar Empleado", width='stretch', type="primary"):
                     # Validar campos obligatorios
                     if not all([new_name, new_email, new_phone, new_position, new_department]):
                         st.error("❌ Por favor completa todos los campos obligatorios (*)")
@@ -1968,14 +1968,18 @@ def render_personal():
                             else:
                                 st.error("❌ Error al crear el empleado en la base de datos")
                         except Exception as e:
-                            st.error(f"❌ Error al crear el empleado: {str(e)}")
+                            error_msg = str(e)
+                            if "duplicate key value violates unique constraint" in error_msg and "employees_email_key" in error_msg:
+                                st.error("❌ Error: Ya existe un empleado con esta dirección de email. Por favor usa un email diferente.")
+                            else:
+                                st.error(f"❌ Error al crear el empleado: {error_msg}")
             
             with col2:
-                if st.form_submit_button("🔄 Limpiar Formulario", use_container_width=True, type="secondary"):
+                if st.form_submit_button("🔄 Limpiar Formulario", width='stretch', type="secondary"):
                     st.rerun()
             
             with col3:
-                if st.form_submit_button("❌ Cancelar", use_container_width=True, type="secondary"):
+                if st.form_submit_button("❌ Cancelar", width='stretch', type="secondary"):
                     st.rerun()
         
         # Información sobre el formulario
@@ -2040,7 +2044,7 @@ def render_personal():
                     df_shifts = pd.DataFrame(filtered_shifts)
                     st.dataframe(
                         df_shifts[['employee_name', 'shift_type', 'start_time', 'end_time', 'hours', 'status', 'notes']],
-                    use_container_width=True,
+                    width='stretch',
                     column_config={
                         "employee_name": "Empleado",
                         "shift_type": "Tipo de Turno",
@@ -2074,12 +2078,12 @@ def render_personal():
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            if st.button("✏️ Editar Turno", use_container_width=True, type="primary"):
+                            if st.button("✏️ Editar Turno", width='stretch', type="primary"):
                                 st.session_state['editing_shift'] = selected_shift_obj
                                 st.rerun()
                         
                         with col2:
-                            if st.button("🗑️ Cancelar Turno", use_container_width=True, type="secondary"):
+                            if st.button("🗑️ Cancelar Turno", width='stretch', type="secondary"):
                                 st.session_state['canceling_shift'] = selected_shift_obj
                                 st.rerun()
                         
@@ -2128,13 +2132,13 @@ def render_personal():
                 
                 col1, col2, col3 = st.columns([1, 1, 1])
                 with col1:
-                    if st.form_submit_button("💾 Guardar Cambios", use_container_width=True, type="primary"):
+                    if st.form_submit_button("💾 Guardar Cambios", width='stretch', type="primary"):
                         st.success("✅ Turno actualizado exitosamente")
                         del st.session_state['editing_shift']
                         st.rerun()
                 
                 with col2:
-                    if st.form_submit_button("❌ Cancelar", use_container_width=True, type="secondary"):
+                    if st.form_submit_button("❌ Cancelar", width='stretch', type="secondary"):
                         del st.session_state['editing_shift']
                         st.rerun()
         
@@ -2150,13 +2154,13 @@ def render_personal():
             
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
-                if st.button("✅ Confirmar Cancelación", use_container_width=True, type="primary"):
+                if st.button("✅ Confirmar Cancelación", width='stretch', type="primary"):
                     st.success("✅ Turno cancelado exitosamente")
                     del st.session_state['canceling_shift']
                     st.rerun()
             
             with col2:
-                if st.button("❌ Cancelar", use_container_width=True, type="secondary"):
+                if st.button("❌ Cancelar", width='stretch', type="secondary"):
                     del st.session_state['canceling_shift']
                     st.rerun()
         
@@ -2180,16 +2184,16 @@ def render_personal():
             
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
-                if st.form_submit_button("💾 Crear Turno", use_container_width=True, type="primary"):
+                if st.form_submit_button("💾 Crear Turno", width='stretch', type="primary"):
                     st.success("✅ Nuevo turno creado exitosamente")
                     st.balloons()
             
             with col2:
-                if st.form_submit_button("🔄 Limpiar", use_container_width=True, type="secondary"):
+                if st.form_submit_button("🔄 Limpiar", width='stretch', type="secondary"):
                     st.rerun()
             
             with col3:
-                if st.form_submit_button("❌ Cancelar", use_container_width=True, type="secondary"):
+                if st.form_submit_button("❌ Cancelar", width='stretch', type="secondary"):
                     st.rerun()
     
     with tab4:
@@ -2232,7 +2236,7 @@ def render_personal():
                                 title="Empleados por Departamento",
                                 color='Cantidad',
                                 color_continuous_scale='Blues')
-                st.plotly_chart(fig_dept, use_container_width=True)
+                st.plotly_chart(fig_dept, width='stretch')
             else:
                 st.info("📊 Nessun dato disponibile per il grafico dei dipartimenti")
         
@@ -2249,7 +2253,7 @@ def render_personal():
                     xaxis_title="Salario ($)",
                     yaxis_title="Número de Empleados"
                 )
-                st.plotly_chart(fig_salaries, use_container_width=True)
+                st.plotly_chart(fig_salaries, width='stretch')
             else:
                 st.info("📊 Nessun dato disponibile per il grafico dei salari")
         
@@ -2419,7 +2423,7 @@ def render_ventas():
                         fig_daily = px.line(df_daily, x='date', y='sales',
                                           title="Ventas Diarias (Últimos 30 días)")
                         fig_daily.update_layout(xaxis_title="Fecha", yaxis_title="Ventas ($)")
-                        st.plotly_chart(fig_daily, use_container_width=True)
+                        st.plotly_chart(fig_daily, width='stretch')
                 
                 with col2:
                     st.subheader("🏷️ Ventas por Categoría")
@@ -2428,7 +2432,7 @@ def render_ventas():
                         df_category = pd.DataFrame(sales_by_category)
                         fig_category = px.pie(df_category, values='sales', names='category',
                                             title="Distribución de Ventas por Categoría")
-                        st.plotly_chart(fig_category, use_container_width=True)
+                        st.plotly_chart(fig_category, width='stretch')
                 
                 # Top productos más vendidos
                 st.subheader("🏆 Productos Más Vendidos")
@@ -2443,13 +2447,13 @@ def render_ventas():
                         fig_products = px.bar(df_products, x='product', y='sales',
                                             title="Top 10 Productos por Ventas")
                         fig_products.update_layout(xaxis=dict(tickangle=45))
-                        st.plotly_chart(fig_products, use_container_width=True)
+                        st.plotly_chart(fig_products, width='stretch')
                     
                     with col2:
                         # Tabla de productos
                         st.dataframe(
                             df_products[['product', 'category', 'sales', 'quantity', 'profit']],
-                            use_container_width=True,
+                            width='stretch',
                             column_config={
                                 "sales": st.column_config.NumberColumn("Ventas ($)", format="$%.2f"),
                                 "profit": st.column_config.NumberColumn("Ganancia ($)", format="$%.2f")
@@ -2516,7 +2520,7 @@ def render_ventas():
             if st.session_state.productos_venta:
                 st.subheader("📋 Productos Agregados")
                 df_productos = pd.DataFrame(st.session_state.productos_venta)
-                st.dataframe(df_productos, use_container_width=True)
+                st.dataframe(df_productos, width='stretch')
                 
                 # Totales
                 total_productos = sum([p['subtotal'] for p in st.session_state.productos_venta])
@@ -2705,17 +2709,17 @@ def render_ventas():
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("📊 Exportar Ventas", use_container_width=True):
+                if st.button("📊 Exportar Ventas", width='stretch'):
                     st.info("Generando archivo Excel...")
                     st.success("✅ Ventas exportadas exitosamente!")
             
             with col2:
-                if st.button("📧 Enviar Reporte", use_container_width=True):
+                if st.button("📧 Enviar Reporte", width='stretch'):
                     st.info("Enviando reporte por email...")
                     st.success("✅ Reporte enviado!")
             
             with col3:
-                if st.button("🔄 Actualizar Estados", use_container_width=True):
+                if st.button("🔄 Actualizar Estados", width='stretch'):
                     st.info("Actualizando estados de ventas...")
                     st.success("✅ Estados actualizados!")
         else:
@@ -2755,7 +2759,7 @@ def render_ventas():
                 fig_trend = px.line(x=['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
                                    y=[1200, 1350, 1100, 1450, 1600, 1800, 1650],
                                    title="Ventas por Día de la Semana")
-                st.plotly_chart(fig_trend, use_container_width=True)
+                st.plotly_chart(fig_trend, width='stretch')
                 
                 # Exportar reporte
                 col1, col2, col3 = st.columns(3)
@@ -2794,7 +2798,7 @@ def render_ventas():
                 df_team = pd.DataFrame(team_performance)
                 st.dataframe(
                     df_team,
-                    use_container_width=True,
+                    width='stretch',
                     column_config={
                         "sales": st.column_config.NumberColumn("Ventas ($)", format="$%.2f"),
                         "commission": st.column_config.NumberColumn("Comisión ($)", format="$%.2f"),
@@ -2809,13 +2813,13 @@ def render_ventas():
                     fig_sales = px.bar(df_team, x='employee', y='sales',
                                      title="Ventas por Vendedor")
                     fig_sales.update_layout(xaxis=dict(tickangle=45))
-                    st.plotly_chart(fig_sales, use_container_width=True)
+                    st.plotly_chart(fig_sales, width='stretch')
                 
                 with col2:
                     fig_rating = px.bar(df_team, x='employee', y='rating',
                                       title="Rating por Vendedor")
                     fig_rating.update_layout(xaxis=dict(tickangle=45))
-                    st.plotly_chart(fig_rating, use_container_width=True)
+                    st.plotly_chart(fig_rating, width='stretch')
             
             else:
                 st.warning("⚠️ No hay datos del equipo de ventas disponibles")
@@ -2888,7 +2892,7 @@ def render_ventas():
                 yaxis_title='Ventas ($)'
             )
             
-            st.plotly_chart(fig_forecast, use_container_width=True)
+            st.plotly_chart(fig_forecast, width='stretch')
         
         # Acciones recomendadas
         st.subheader("💡 Acciones Recomendadas")
@@ -2948,7 +2952,7 @@ def render_analytics():
                 y='ventas',
                 title="Ventas Diarias (Últimos 30 días)")
             fig_line.update_layout(xaxis=dict(tickangle=-45))
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, width='stretch')
         else:
             st.info("📊 Nessun dato disponibile per il grafico delle vendite.")
     
@@ -3346,7 +3350,7 @@ def render_balance():
                 title="Trend Finanziario Settimanale"
             )
             fig_weekly.update_layout(height=400)
-            st.plotly_chart(fig_weekly, use_container_width=True)
+            st.plotly_chart(fig_weekly, width='stretch')
             
             # Tabella dettagliata
             st.subheader("📋 Dettaglio Giornaliero")
@@ -3363,7 +3367,7 @@ def render_balance():
                 })
             
             df_table = pd.DataFrame(table_data)
-            st.dataframe(df_table, use_container_width=True)
+            st.dataframe(df_table, width='stretch')
             
             # Analisi performance
             st.subheader("🎯 Analisi Performance")
@@ -3599,7 +3603,7 @@ def render_configuracion():
             # Botones
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                submitted = st.form_submit_button("💾 Guardar Configuración", use_container_width=True, type="primary")
+                submitted = st.form_submit_button("💾 Guardar Configuración", width='stretch', type="primary")
             
             if submitted:
                 st.success("✅ Configuración de empresa guardada exitosamente")
@@ -3820,7 +3824,7 @@ def render_configuracion():
             log_retention = st.slider("🗑️ Retención de Logs (días)", min_value=7, max_value=90, value=30)
         
         # Botón para guardar configuraciones
-        if st.button("💾 Guardar Configuraciones del Sistema", use_container_width=True, type="primary"):
+        if st.button("💾 Guardar Configuraciones del Sistema", width='stretch', type="primary"):
             st.success("✅ Configuraciones del sistema guardadas exitosamente")
     
     with tab4:
@@ -3849,7 +3853,7 @@ def render_configuracion():
                 return
             st.dataframe(
                 df_backups,
-                use_container_width=True,
+                width='stretch',
                 column_config={
                     "fecha": "Fecha",
                     "hora": "Hora",
@@ -3862,14 +3866,14 @@ def render_configuracion():
             st.subheader("🔧 Acciones de Backup")
             
             # Botones de acción
-            if st.button("💾 Crear Backup Manual", use_container_width=True, type="primary"):
+            if st.button("💾 Crear Backup Manual", width='stretch', type="primary"):
                 st.success("✅ Backup manual creado exitosamente")
                 st.info("📁 Ubicación: /backups/backup_manual_20240922_143000.db")
             
-            if st.button("📥 Restaurar desde Backup", use_container_width=True, type="secondary"):
+            if st.button("📥 Restaurar desde Backup", width='stretch', type="secondary"):
                 st.warning("⚠️ Función de restauración en desarrollo")
             
-            if st.button("🗑️ Limpiar Backups Antiguos", use_container_width=True, type="secondary"):
+            if st.button("🗑️ Limpiar Backups Antiguos", width='stretch', type="secondary"):
                 st.info("🧹 Limpieza de backups antiguos programada")
             
             # Configuraciones de backup
@@ -3879,7 +3883,7 @@ def render_configuracion():
             compression = st.checkbox("🗜️ Comprimir Backups", value=True)
             encryption = st.checkbox("🔐 Encriptar Backups", value=False)
             
-            if st.button("💾 Guardar Configuraciones de Backup", use_container_width=True):
+            if st.button("💾 Guardar Configuraciones de Backup", width='stretch'):
                 st.success("✅ Configuraciones de backup guardadas")
     
     with tab3:
@@ -3909,7 +3913,7 @@ def render_configuracion():
             col1, col2, col3 = st.columns([1, 2, 1])
             
             with col2:
-                if st.button("🚀 Procesar Archivo Personalizado", use_container_width=True, type="secondary"):
+                if st.button("🚀 Procesar Archivo Personalizado", width='stretch', type="secondary"):
                     try:
                         # Guardar archivo temporalmente
                         import tempfile
