@@ -2000,9 +2000,10 @@ def render_personal():
             col1, col2 = st.columns([3, 1])
             
             with col1:
-                df_shifts = pd.DataFrame(filtered_shifts)
-                st.dataframe(
-                    df_shifts[['employee_name', 'shift_type', 'start_time', 'end_time', 'hours', 'status', 'notes']],
+                if filtered_shifts:
+                    df_shifts = pd.DataFrame(filtered_shifts)
+                    st.dataframe(
+                        df_shifts[['employee_name', 'shift_type', 'start_time', 'end_time', 'hours', 'status', 'notes']],
                     use_container_width=True,
                     column_config={
                         "employee_name": "Empleado",
@@ -2014,6 +2015,8 @@ def render_personal():
                         "notes": "Notas"
                     }
                 )
+                else:
+                    st.info("📊 Nessun turno disponibile")
             
             with col2:
                 st.subheader("⚙️ Acciones de Turnos")
@@ -2187,26 +2190,32 @@ def render_personal():
             
             # Crear gráfico de barras
             import plotly.express as px
-            df_dept = pd.DataFrame(list(dept_counts.items()), columns=['Departamento', 'Cantidad'])
-            fig_dept = px.bar(df_dept, x='Departamento', y='Cantidad', 
-                            title="Empleados por Departamento",
-                            color='Cantidad',
-                            color_continuous_scale='Blues')
-            st.plotly_chart(fig_dept, use_container_width=True)
+            if dept_counts:
+                df_dept = pd.DataFrame(list(dept_counts.items()), columns=['Departamento', 'Cantidad'])
+                fig_dept = px.bar(df_dept, x='Departamento', y='Cantidad', 
+                                title="Empleados por Departamento",
+                                color='Cantidad',
+                                color_continuous_scale='Blues')
+                st.plotly_chart(fig_dept, use_container_width=True)
+            else:
+                st.info("📊 Nessun dato disponibile per il grafico dei dipartimenti")
         
         with col2:
             st.subheader("💰 Distribución de Salarios")
             
             # Crear gráfico de salarios
-            df_salaries = pd.DataFrame(sample_employees)
-            fig_salaries = px.histogram(df_salaries, x='salary', 
-                                      title="Distribución de Salarios",
-                                      nbins=10)
-            fig_salaries.update_layout(
-                xaxis_title="Salario ($)",
-                yaxis_title="Número de Empleados"
-            )
-            st.plotly_chart(fig_salaries, use_container_width=True)
+            if sample_employees:
+                df_salaries = pd.DataFrame(sample_employees)
+                fig_salaries = px.histogram(df_salaries, x='salary', 
+                                          title="Distribución de Salarios",
+                                          nbins=10)
+                fig_salaries.update_layout(
+                    xaxis_title="Salario ($)",
+                    yaxis_title="Número de Empleados"
+                )
+                st.plotly_chart(fig_salaries, use_container_width=True)
+            else:
+                st.info("📊 Nessun dato disponibile per il grafico dei salari")
         
         st.markdown("---")
         
