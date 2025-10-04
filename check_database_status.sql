@@ -11,7 +11,7 @@ SELECT tablename as tabella FROM pg_tables WHERE schemaname = 'public' ORDER BY 
 SELECT 'STATO RUOLI:' as info;
 SELECT 
     CASE WHEN EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'roles') 
-         THEN (SELECT COUNT(*) FROM roles) 
+         THEN (SELECT COUNT(*) FROM roles)::text
          ELSE 'Tabella roles non esiste' 
     END as conteggio_ruoli;
 
@@ -19,7 +19,7 @@ SELECT
 SELECT 'STATO UTENTI:' as info;
 SELECT 
     CASE WHEN EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users') 
-         THEN (SELECT COUNT(*) FROM users) 
+         THEN (SELECT COUNT(*) FROM users)::text
          ELSE 'Tabella users non esiste' 
     END as conteggio_utenti;
 
@@ -27,7 +27,7 @@ SELECT
 SELECT 'STATO IMPOSTAZIONI:' as info;
 SELECT 
     CASE WHEN EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'system_settings') 
-         THEN (SELECT COUNT(*) FROM system_settings) 
+         THEN (SELECT COUNT(*) FROM system_settings)::text
          ELSE 'Tabella system_settings non esiste' 
     END as conteggio_impostazioni;
 
