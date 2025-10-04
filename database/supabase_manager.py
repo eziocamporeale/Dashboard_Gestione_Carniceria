@@ -1233,6 +1233,10 @@ class SupabaseManager:
     def add_daily_income(self, amount: float, category: str, description: str = "", payment_method: str = "Efectivo", date: str = None) -> Optional[Dict]:
         """Aggiunge un'entrata giornaliera"""
         try:
+            if not self.is_connected():
+                logger.error("❌ Supabase non connesso")
+                return None
+                
             if not date:
                 date = datetime.now().date().isoformat()
             
@@ -1244,10 +1248,10 @@ class SupabaseManager:
                 'payment_method': payment_method
             }
             
-            result = self.insert('daily_income', income_data)
-            if result:
+            result = self.client.table('daily_income').insert(income_data).execute()
+            if result.data:
                 logger.info(f"✅ Entrata aggiunta: ${amount} - {category}")
-                return result
+                return result.data[0]
             return None
             
         except Exception as e:
@@ -1257,6 +1261,10 @@ class SupabaseManager:
     def add_daily_expense(self, amount: float, category: str, description: str = "", supplier: str = "", payment_method: str = "Efectivo", date: str = None) -> Optional[Dict]:
         """Aggiunge un'uscita giornaliera"""
         try:
+            if not self.is_connected():
+                logger.error("❌ Supabase non connesso")
+                return None
+                
             if not date:
                 date = datetime.now().date().isoformat()
             
@@ -1269,10 +1277,10 @@ class SupabaseManager:
                 'payment_method': payment_method
             }
             
-            result = self.insert('daily_expenses', expense_data)
-            if result:
+            result = self.client.table('daily_expenses').insert(expense_data).execute()
+            if result.data:
                 logger.info(f"✅ Uscita aggiunta: ${amount} - {category}")
-                return result
+                return result.data[0]
             return None
             
         except Exception as e:
@@ -1282,21 +1290,27 @@ class SupabaseManager:
     def get_daily_entries(self, date: str = None) -> Dict:
         """Ottiene tutte le entrate e uscite di un giorno"""
         try:
+            if not self.is_connected():
+                logger.error("❌ Supabase non connesso")
+                return {'date': date, 'income': [], 'expenses': [], 'total_income': 0, 'total_expenses': 0}
+                
             if not date:
                 date = datetime.now().date().isoformat()
             
             # Ottieni entrate del giorno
-            income_data = self.select('daily_income', filters={'date': date})
+            income_result = self.client.table('daily_income').select('*').eq('date', date).execute()
+            income_data = income_result.data if income_result.data else []
             
             # Ottieni uscite del giorno
-            expense_data = self.select('daily_expenses', filters={'date': date})
+            expense_result = self.client.table('daily_expenses').select('*').eq('date', date).execute()
+            expense_data = expense_result.data if expense_result.data else []
             
             return {
                 'date': date,
-                'income': income_data if income_data else [],
-                'expenses': expense_data if expense_data else [],
-                'total_income': sum([i['amount'] for i in income_data]) if income_data else 0,
-                'total_expenses': sum([e['amount'] for e in expense_data]) if expense_data else 0
+                'income': income_data,
+                'expenses': expense_data,
+                'total_income': sum([i['amount'] for i in income_data]),
+                'total_expenses': sum([e['amount'] for e in expense_data])
             }
             
         except Exception as e:
@@ -1337,12 +1351,17 @@ class SupabaseManager:
     def get_accounting_categories(self, category_type: str = None) -> List[Dict]:
         """Ottiene le categorie di contabilità"""
         try:
-            filters = {'is_active': True}
-            if category_type:
-                filters['type'] = category_type
+            if not self.is_connected():
+                logger.error("❌ Supabase non connesso")
+                return []
             
-            categories = self.select('accounting_categories', filters=filters)
-            return categories if categories else []
+            query = self.client.table('accounting_categories').select('*').eq('is_active', True)
+            
+            if category_type:
+                query = query.eq('type', category_type)
+            
+            result = query.execute()
+            return result.data if result.data else []
             
         except Exception as e:
             logger.error(f"❌ Errore ottenendo categorie: {e}")

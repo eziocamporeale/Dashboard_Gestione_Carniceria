@@ -3058,57 +3058,9 @@ def render_balance():
         with col2:
             st.info(f"💡 Inserisci entrate e uscite per il **{selected_date.strftime('%d/%m/%Y')}**")
         
-        # Ottieni categorie (con fallback se le tabelle non esistono)
-        try:
-            income_categories = db.get_accounting_categories('income')
-            expense_categories = db.get_accounting_categories('expense')
-        except Exception as e:
-            st.error("❌ **Error: Las tablas de contabilidad no están configuradas**")
-            st.info("""
-            **🔧 Para solucionar este problema:**
-            
-            1. Ve al panel de Supabase
-            2. Ejecuta las siguientes queries SQL en el SQL Editor:
-            
-            ```sql
-            -- Crear tabla de categorías
-            CREATE TABLE IF NOT EXISTS accounting_categories (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                name VARCHAR(100) NOT NULL UNIQUE,
-                type VARCHAR(20) NOT NULL CHECK (type IN ('income', 'expense')),
-                color VARCHAR(7) DEFAULT '#636EFA',
-                icon VARCHAR(50) DEFAULT '💰',
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            
-            -- Insertar categorías predefinidas
-            INSERT INTO accounting_categories (name, type, color, icon) VALUES
-            ('Ventas Carnes', 'income', '#00CC96', '🥩'),
-            ('Ventas Embutidos', 'income', '#00CC96', '🌭'),
-            ('Ventas Pollo', 'income', '#00CC96', '🐔'),
-            ('Ventas Varios', 'income', '#00CC96', '🛒'),
-            ('Otros Ingresos', 'income', '#00CC96', '💰'),
-            ('Compra Carnes', 'expense', '#FF6692', '🥩'),
-            ('Compra Embutidos', 'expense', '#FF6692', '🌭'),
-            ('Compra Pollo', 'expense', '#FF6692', '🐔'),
-            ('Gastos Operativos', 'expense', '#FF6692', '⚙️'),
-            ('Servicios Públicos', 'expense', '#FF6692', '💡'),
-            ('Alquiler', 'expense', '#FF6692', '🏠'),
-            ('Sueldos', 'expense', '#FF6692', '👥'),
-            ('Otros Gastos', 'expense', '#FF6692', '💸')
-            ON CONFLICT (name) DO NOTHING;
-            ```
-            
-            3. Recarga la página después de ejecutar las queries
-            """)
-            return
-        
-        # Verifica que hay categorías
-        if not income_categories and not expense_categories:
-            st.warning("⚠️ **No se encontraron categorías de contabilidad**")
-            st.info("Las categorías predefinidas no están configuradas. Ejecuta las queries SQL en Supabase.")
-            return
+        # Ottieni categorie
+        income_categories = db.get_accounting_categories('income')
+        expense_categories = db.get_accounting_categories('expense')
         
         # Form per inserimento entrate
         st.subheader("💰 Aggiungi Entrata")
