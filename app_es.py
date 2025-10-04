@@ -1047,7 +1047,7 @@ def render_clientes():
                 with col1:
                     df_segments = pd.DataFrame(segments)
                     fig_segments = px.pie(df_segments, values='count', names='segment', 
-                                        title="Distribución de Segmentos de Clientes"))
+                                        title="Distribución de Segmentos de Clientes")
                     st.plotly_chart(fig_segments, use_container_width=True)
                 
                 with col2:
