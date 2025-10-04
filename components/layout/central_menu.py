@@ -91,9 +91,8 @@ def render_central_menu(current_page: str = "🏠 Dashboard") -> str:
         ("⚙️ Configuración", "configuracion")
     ]
     
-    # Solo Admin può vedere le statistiche sistema
-    if user_info and user_info.get('is_admin', False):
-        menu_options.insert(6, ("📈 Sistema", "sistema"))
+    # Sistema ora è integrato in Configuración
+    # Rimossa tab Sistema separata
     
     # Crea i pulsanti del menu direttamente
     cols = st.columns(len(menu_options))
