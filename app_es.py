@@ -1188,11 +1188,13 @@ def render_clientes():
             selected_customer = st.selectbox("Seleccionar Cliente", customer_names)
             
             if selected_customer:
-                customer_id = int(selected_customer.split("ID: ")[1].split(")")[0])
+                customer_id = selected_customer.split("ID: ")[1].split(")")[0]
                 interactions = db.get_customer_interactions(customer_id)
                 
                 if interactions:
-                    st.subheader(f"📋 Historial de Interacciones - {customers[customer_id-1]['name']}")
+                    # Trova il cliente per nome usando l'ID
+                    customer_name = next((c['name'] for c in customers if c['id'] == customer_id), 'Cliente Desconocido')
+                    st.subheader(f"📋 Historial de Interacciones - {customer_name}")
                     
                     for interaction in interactions:
                         with st.expander(f"📅 {interaction['date']} - {interaction['type'].title()}"):
