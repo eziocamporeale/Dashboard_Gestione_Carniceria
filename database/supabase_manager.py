@@ -158,32 +158,76 @@ class SupabaseManager:
     def get_dashboard_stats(self) -> Dict[str, Any]:
         """Ottiene statistiche dashboard"""
         try:
-            # Statistiche vendite
-            sales_stats = self.select('sales', 'total_amount, sale_date')
-            total_sales = sum([sale['total_amount'] for sale in sales_stats])
+            # Prova prima a leggere dai dati Excel
+            excel_data = self.select('excel_data', 'data')
             
-            # Statistiche prodotti
-            products_count = len(self.select('products'))
-            low_stock_products = len(self.select('products', filters={'current_stock': 0}))
-            
-            # Statistiche clienti
-            customers_count = len(self.select('customers'))
-            
-            return {
-                'total_sales': total_sales,
-                'products_count': products_count,
-                'low_stock_products': low_stock_products,
-                'customers_count': customers_count,
-                'last_update': datetime.now().isoformat()
-            }
+            if excel_data and len(excel_data) > 0:
+                # Usa i dati Excel per le statistiche
+                data = excel_data[0]['data']
+                
+                # Calcola statistiche dalle vendite Excel
+                sales_data = data.get('sales', [])
+                total_sales = sum([sale.get('amount', 0) for sale in sales_data])
+                sales_today = len([s for s in sales_data if s.get('date', '') == datetime.now().strftime('%B %y')])
+                
+                # Calcola statistiche dagli acquisti Excel
+                purchases_data = data.get('purchases', [])
+                total_purchases = sum([p.get('amount', 0) for p in purchases_data])
+                
+                # Calcola statistiche dai fornitori Excel
+                suppliers_data = data.get('suppliers', [])
+                unique_suppliers = len(set([s.get('name', '') for s in suppliers_data]))
+                
+                return {
+                    'sales_today': {'count': sales_today, 'total': total_sales},
+                    'orders_today': {'count': len(purchases_data), 'total': total_purchases},
+                    'total_customers': unique_suppliers,  # Usa fornitori come proxy per clienti
+                    'total_products': len(sales_data),    # Usa vendite come proxy per prodotti
+                    'total_sales': total_sales,
+                    'products_count': len(sales_data),
+                    'low_stock_products': 0,  # Non disponibile nei dati Excel
+                    'customers_count': unique_suppliers,
+                    'last_update': datetime.now().isoformat()
+                }
+            else:
+                # Fallback alle tabelle originali se non ci sono dati Excel
+                sales_stats = self.select('sales', 'total_amount, sale_date')
+                total_sales = sum([sale['total_amount'] for sale in sales_stats])
+                
+                products_count = len(self.select('products'))
+                low_stock_products = len(self.select('products', filters={'current_stock': 0}))
+                
+                customers_count = len(self.select('customers'))
+                
+                return {
+                    'total_sales': total_sales,
+                    'products_count': products_count,
+                    'low_stock_products': low_stock_products,
+                    'customers_count': customers_count,
+                    'last_update': datetime.now().isoformat()
+                }
+                
         except Exception as e:
             logger.error(f"❌ Errore ottenendo statistiche dashboard: {e}")
-            return {}
+            return {
+                'sales_today': {'count': 0, 'total': 0},
+                'orders_today': {'count': 0, 'total': 0},
+                'total_customers': 0,
+                'total_products': 0
+            }
     
     def get_products_low_stock(self) -> List[Dict]:
         """Ottiene prodotti con stock basso"""
         try:
-            return self.select('products', filters={'current_stock': 0})
+            # Prova prima a leggere dai dati Excel
+            excel_data = self.select('excel_data', 'data')
+            
+            if excel_data and len(excel_data) > 0:
+                # Non ci sono dati di stock nei dati Excel, quindi restituisci lista vuota
+                return []
+            else:
+                # Fallback alle tabelle originali
+                return self.select('products', filters={'current_stock': 0})
         except Exception as e:
             logger.error(f"❌ Errore ottenendo prodotti stock basso: {e}")
             return []
@@ -191,8 +235,16 @@ class SupabaseManager:
     def get_products_expiring_soon(self, days: int = 7) -> List[Dict]:
         """Ottiene prodotti in scadenza"""
         try:
-            expiry_date = datetime.now() + timedelta(days=days)
-            return self.select('products', filters={'expiry_date': expiry_date.date().isoformat()})
+            # Prova prima a leggere dai dati Excel
+            excel_data = self.select('excel_data', 'data')
+            
+            if excel_data and len(excel_data) > 0:
+                # Non ci sono dati di scadenza nei dati Excel, quindi restituisci lista vuota
+                return []
+            else:
+                # Fallback alle tabelle originali
+                expiry_date = datetime.now() + timedelta(days=days)
+                return self.select('products', filters={'expiry_date': expiry_date.date().isoformat()})
         except Exception as e:
             logger.error(f"❌ Errore ottenendo prodotti in scadenza: {e}")
             return []
