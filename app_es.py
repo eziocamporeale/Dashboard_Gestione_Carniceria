@@ -3209,7 +3209,7 @@ def render_balance():
                         if expense['supplier']:
                             st.caption(f"🏪 {expense['supplier']}")
                     
-        with col2:
+                    with col2:
                         st.write(f"💳 {expense['payment_method']}")
                         st.caption(f"💸 ${expense['amount']:,.2f}")
                     
