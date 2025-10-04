@@ -1060,13 +1060,8 @@ class SimpleDatabaseManager:
     def get_sales_by_category(self) -> List[Dict[str, Any]]:
         """Obtiene ventas por categoría (versión simplificada)"""
         try:
-            return [
-                {'category': 'Carnes', 'sales': 45000.00, 'percentage': 36.0, 'transactions': 65},
-                {'category': 'Aves', 'sales': 28000.00, 'percentage': 22.4, 'transactions': 45},
-                {'category': 'Embutidos', 'sales': 25000.00, 'percentage': 20.0, 'transactions': 40},
-                {'category': 'Pescados', 'sales': 15000.00, 'percentage': 12.0, 'transactions': 25},
-                {'category': 'Verduras', 'sales': 12000.00, 'percentage': 9.6, 'transactions': 20}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo ventas por categoría: {e}")
             return []
@@ -1074,18 +1069,8 @@ class SimpleDatabaseManager:
     def get_top_selling_products(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Obtiene productos más vendidos (versión simplificada)"""
         try:
-            return [
-                {'product': 'Carne de Res Premium', 'category': 'Carnes', 'sales': 8500.00, 'quantity': 45, 'profit': 1700.00},
-                {'product': 'Pollo Entero', 'category': 'Aves', 'sales': 6200.00, 'quantity': 62, 'profit': 1240.00},
-                {'product': 'Jamón Serrano', 'category': 'Embutidos', 'sales': 4800.00, 'quantity': 24, 'profit': 960.00},
-                {'product': 'Salmón Fresco', 'category': 'Pescados', 'sales': 4200.00, 'quantity': 14, 'profit': 840.00},
-                {'product': 'Carne Molida', 'category': 'Carnes', 'sales': 3800.00, 'quantity': 38, 'profit': 760.00},
-                {'product': 'Pechuga de Pollo', 'category': 'Aves', 'sales': 3500.00, 'quantity': 35, 'profit': 700.00},
-                {'product': 'Chorizo Artesanal', 'category': 'Embutidos', 'sales': 3200.00, 'quantity': 32, 'profit': 640.00},
-                {'product': 'Atún Fresco', 'category': 'Pescados', 'sales': 2800.00, 'quantity': 14, 'profit': 560.00},
-                {'product': 'Tomates Frescos', 'category': 'Verduras', 'sales': 1500.00, 'quantity': 75, 'profit': 300.00},
-                {'product': 'Lechuga', 'category': 'Verduras', 'sales': 1200.00, 'quantity': 60, 'profit': 240.00}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Error obteniendo productos más vendidos: {e}")
             return []

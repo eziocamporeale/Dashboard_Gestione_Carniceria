@@ -971,29 +971,8 @@ class SupabaseManager:
     def get_sales_forecast(self, months: int = 6) -> List[Dict]:
         """Ottiene proiezione vendite"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            import datetime
-            from dateutil.relativedelta import relativedelta
-            
-            forecast_data = []
-            base_date = datetime.datetime.now()
-            
-            for i in range(months):
-                month_date = base_date + relativedelta(months=i)
-                predicted_sales = 30000 + (i * 2000)  # Crescita simulata
-                confidence_lower = predicted_sales * 0.85
-                confidence_upper = predicted_sales * 1.15
-                growth_rate = 0.05 + (i * 0.01)  # Crescita del 5-10%
-                
-                forecast_data.append({
-                    'month': month_date.strftime('%Y-%m'),
-                    'predicted_sales': predicted_sales,
-                    'confidence_lower': confidence_lower,
-                    'confidence_upper': confidence_upper,
-                    'growth_rate': growth_rate
-                })
-            
-            return forecast_data
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo proiezione vendite: {e}")
             return []
@@ -1001,28 +980,8 @@ class SupabaseManager:
     def get_daily_sales_data(self, days: int = 30) -> List[Dict]:
         """Ottiene dati vendite giornaliere"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            import datetime
-            from dateutil.relativedelta import relativedelta
-            
-            daily_data = []
-            base_date = datetime.datetime.now() - relativedelta(days=days)
-            
-            for i in range(days):
-                current_date = base_date + relativedelta(days=i)
-                # Simula vendite con variazione casuale
-                base_sales = 1000 + (i * 50)  # Crescita base
-                variation = (i % 7) * 200  # Variazione settimanale
-                daily_sales = base_sales + variation
-                
-                daily_data.append({
-                    'date': current_date.strftime('%Y-%m-%d'),
-                    'sales': daily_sales,
-                    'transactions': 15 + (i % 10),
-                    'avg_transaction': daily_sales / (15 + (i % 10))
-                })
-            
-            return daily_data
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo dati vendite giornaliere: {e}")
             return []
@@ -1030,14 +989,8 @@ class SupabaseManager:
     def get_sales_by_category(self) -> List[Dict]:
         """Ottiene vendite per categoria"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            return [
-                {'category': 'Carnes', 'sales': 15000.50, 'percentage': 45.2, 'transactions': 85},
-                {'category': 'Aves', 'sales': 8500.25, 'percentage': 25.6, 'transactions': 45},
-                {'category': 'Embutidos', 'sales': 6200.75, 'percentage': 18.7, 'transactions': 32},
-                {'category': 'Pescados', 'sales': 2800.00, 'percentage': 8.4, 'transactions': 18},
-                {'category': 'Verduras', 'sales': 1200.50, 'percentage': 3.6, 'transactions': 12}
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo vendite per categoria: {e}")
             return []
@@ -1045,44 +998,8 @@ class SupabaseManager:
     def get_top_selling_products(self, limit: int = 10) -> List[Dict]:
         """Ottiene prodotti più venduti"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            return [
-                {
-                    'product': 'Carne de Res Premium',
-                    'category': 'Carnes',
-                    'sales': 4500.75,
-                    'quantity': 25.5,
-                    'profit': 1125.19
-                },
-                {
-                    'product': 'Pollo Entero',
-                    'category': 'Aves',
-                    'sales': 3200.50,
-                    'quantity': 40.0,
-                    'profit': 800.13
-                },
-                {
-                    'product': 'Jamón Cocido',
-                    'category': 'Embutidos',
-                    'sales': 2800.25,
-                    'quantity': 15.0,
-                    'profit': 700.06
-                },
-                {
-                    'product': 'Salchichas',
-                    'category': 'Embutidos',
-                    'sales': 1950.00,
-                    'quantity': 30.0,
-                    'profit': 487.50
-                },
-                {
-                    'product': 'Bife de Chorizo',
-                    'category': 'Carnes',
-                    'sales': 1800.75,
-                    'quantity': 12.0,
-                    'profit': 450.19
-                }
-            ]
+            # Restituisce lista vuota - nessun dato fittizio
+            return []
         except Exception as e:
             logger.error(f"❌ Errore ottenendo prodotti più venduti: {e}")
             return []

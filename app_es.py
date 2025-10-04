@@ -2438,7 +2438,7 @@ def render_ventas():
             col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
             
             with col1:
-                producto = st.selectbox("Producto", ["Carne de Res Premium", "Pollo Entero", "Jamón Serrano", "Salmón Fresco", "Carne Molida"])
+                producto = st.selectbox("Producto", [])
             
             with col2:
                 cantidad = st.number_input("Cantidad", min_value=0.1, step=0.1, value=1.0)
