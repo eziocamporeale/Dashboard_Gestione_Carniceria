@@ -318,7 +318,7 @@ def render_dashboard():
                 y='name',
                 orientation='h',
                 title="Top 5 Productos",
-                labels={'total_quantity': 'Cantidad Vendida', 'name': 'Producto'}
+                labels={'total_quantity': 'Cantidad Vendida', 'name': ''}
             )
             fig.update_layout(height=300)
             st.plotly_chart(fig, width='stretch')
@@ -965,7 +965,7 @@ def render_clientes():
                 x='name',
                 y='total_purchases',
                 title="Top 10 Clientes por Compras",
-                labels={'total_purchases': 'Compras Totales ($)', 'name': 'Cliente'}
+                labels={'total_purchases': 'Compras Totales ($)', 'name': ''}
             )
             fig_customers.update_layout(xaxis=dict(tickangle=-45))
             st.plotly_chart(fig_customers, width='stretch')
@@ -1504,7 +1504,7 @@ def render_proveedores():
                         x='name',
                         y='total_amount',
                         title="Top 5 Proveedores por Monto",
-                        labels={'name': 'Proveedor', 'total_amount': 'Monto Total ($)'}
+                        labels={'name': '', 'total_amount': 'Monto Total ($)'}
                     )
                     fig_bar.update_layout(xaxis=dict(tickangle=-45))
                     st.plotly_chart(fig_bar, width='stretch')
@@ -1973,52 +1973,7 @@ def render_personal():
         st.subheader("⏰ Gestión de Turnos")
         
         # Datos de ejemplo para turnos
-        sample_shifts = [
-            {
-                'id': 1,
-                'employee_name': 'Juan Pérez',
-                'shift_date': '2024-09-22',
-                'shift_type': 'Mañana',
-                'start_time': '08:00',
-                'end_time': '16:00',
-                'hours': 8,
-                'status': 'Completado',
-                'notes': 'Turno normal'
-            },
-            {
-                'id': 2,
-                'employee_name': 'María González',
-                'shift_date': '2024-09-22',
-                'shift_type': 'Tarde',
-                'start_time': '14:00',
-                'end_time': '22:00',
-                'hours': 8,
-                'status': 'En Curso',
-                'notes': 'Turno de caja'
-            },
-            {
-                'id': 3,
-                'employee_name': 'Carlos Rodríguez',
-                'shift_date': '2024-09-22',
-                'shift_type': 'Mañana',
-                'start_time': '07:00',
-                'end_time': '15:00',
-                'hours': 8,
-                'status': 'Completado',
-                'notes': 'Ayuda en producción'
-            },
-            {
-                'id': 4,
-                'employee_name': 'Ana Martínez',
-                'shift_date': '2024-09-22',
-                'shift_type': 'Administrativo',
-                'start_time': '09:00',
-                'end_time': '17:00',
-                'hours': 8,
-                'status': 'En Curso',
-                'notes': 'Tareas administrativas'
-            }
-        ]
+        sample_shifts = []
         
         # Métricas de turnos
         col1, col2, col3, col4 = st.columns(4)
@@ -3095,15 +3050,15 @@ def render_balance():
         
         with col1:
             if st.button("🥩 Venta Carnes", help="Aggiungi vendita carni"):
-                st.session_state['quick_income'] = {'category': 'Ventas Carnes', 'description': 'Venta de carnes'}
+                st.session_state['quick_income'] = {'category': '', 'description': 'Venta de carnes'}
         
         with col2:
             if st.button("🌭 Venta Embutidos", help="Aggiungi vendita embutidos"):
-                st.session_state['quick_income'] = {'category': 'Ventas Embutidos', 'description': 'Venta de embutidos'}
+                st.session_state['quick_income'] = {'category': '', 'description': 'Venta de embutidos'}
         
         with col3:
             if st.button("⚙️ Gastos Operativos", help="Aggiungi gastos operativos"):
-                st.session_state['quick_expense'] = {'category': 'Gastos Operativos', 'description': 'Gastos operativos del día'}
+                st.session_state['quick_expense'] = {'category': '', 'description': 'Gastos operativos del día'}
         
         with col4:
             if st.button("💡 Servicios Públicos", help="Aggiungi servicios públicos"):
