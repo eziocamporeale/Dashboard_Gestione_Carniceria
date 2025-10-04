@@ -1924,20 +1924,48 @@ def render_personal():
                     if not all([new_name, new_email, new_phone, new_position, new_department]):
                         st.error("❌ Por favor completa todos los campos obligatorios (*)")
                     else:
-                        # Aquí se guardaría el nuevo empleado en la base de datos
-                        st.success("✅ Nuevo empleado creado exitosamente")
-                        st.balloons()
+                        # Crear el nuevo empleado en la base de datos
+                        employee_data = {
+                            'name': new_name,
+                            'email': new_email,
+                            'phone': new_phone,
+                            'address': new_address,
+                            'position': new_position,
+                            'department': new_department,
+                            'salary': new_salary,
+                            'hire_date': new_hire_date.isoformat(),
+                            'status': new_status,
+                            'contract_type': new_contract_type,
+                            'emergency_contact': new_emergency_contact,
+                            'emergency_phone': new_emergency_phone,
+                            'notes': new_notes,
+                            'created_at': datetime.now().isoformat(),
+                            'updated_at': datetime.now().isoformat()
+                        }
                         
-                        # Mostrar resumen del empleado creado
-                        st.info(f"""
-                        **📋 Resumen del Empleado Creado:**
-                        • **Nombre:** {new_name}
-                        • **Posición:** {new_position}
-                        • **Departamento:** {new_department}
-                        • **Salario:** ${new_salary:,.2f}
-                        • **Fecha Contratación:** {new_hire_date}
-                        • **Estado:** {new_status}
-                        """)
+                        try:
+                            result = db.insert('employees', employee_data)
+                            if result:
+                                st.success("✅ Nuevo empleado creado exitosamente")
+                                st.balloons()
+                                
+                                # Mostrar resumen del empleado creado
+                                st.info(f"""
+                                **📋 Resumen del Empleado Creado:**
+                                • **Nombre:** {new_name}
+                                • **Posición:** {new_position}
+                                • **Departamento:** {new_department}
+                                • **Salario:** ${new_salary:,.2f}
+                                • **Fecha Contratación:** {new_hire_date}
+                                • **Estado:** {new_status}
+                                """)
+                                
+                                # Limpiar el formulario
+                                st.rerun()
+                            else:
+                                st.error("❌ Error al crear el empleado en la base de datos")
+                        except Exception as e:
+                            st.error(f"❌ Error al crear el empleado: {str(e)}")
             
             with col2:
                 if st.form_submit_button("🔄 Limpiar Formulario", use_container_width=True, type="secondary"):
