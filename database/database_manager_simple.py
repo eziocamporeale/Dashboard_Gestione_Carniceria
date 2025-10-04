@@ -157,7 +157,7 @@ class SimpleDatabaseManager:
                 """, role)
             
             # Insertar usuario admin por defecto
-            admin_password = '$2b$12$N7ODldIPrnAg078f8VOOb.XRd.cEHJZ6YYhrDTSAE5BF9r52Km1Qm'  # Password hashed
+            admin_password = '$0.00b$0.00$N7ODldIPrnAg078f8VOOb.XRd.cEHJZ6YYhrDTSAE5BF9r52Km1Qm'  # Password hashed
             cursor.execute("""
                 INSERT OR IGNORE INTO users (username, email, password_hash, first_name, last_name, role_id, is_admin, created_by)
                 VALUES ('admin', 'admin@carniceria.com', ?, 'Admin', 'Sistema', 1, 1, 1)
@@ -598,48 +598,7 @@ class SimpleDatabaseManager:
     def get_all_products(self) -> List[Dict[str, Any]]:
         """Obtiene todos los productos (versión simplificada)"""
         try:
-            all_products = [
-                {
-                    'id': 1, 'name': 'Carne de Res Premium', 'code': 'CR001', 
-                    'price': 25.50, 'selling_price': 25.50, 'stock': 45, 'current_stock': 45,
-                    'min_stock_level': 10, 'category': 'Carnes', 'category_name': 'Carnes'
-                },
-                {
-                    'id': 2, 'name': 'Pollo Entero', 'code': 'PO001', 
-                    'price': 12.00, 'selling_price': 12.00, 'stock': 30, 'current_stock': 30,
-                    'min_stock_level': 8, 'category': 'Aves', 'category_name': 'Aves'
-                },
-                {
-                    'id': 3, 'name': 'Chorizo Artesanal', 'code': 'CH001', 
-                    'price': 8.50, 'selling_price': 8.50, 'stock': 25, 'current_stock': 25,
-                    'min_stock_level': 5, 'category': 'Embutidos', 'category_name': 'Embutidos'
-                },
-                {
-                    'id': 4, 'name': 'Jamón Serrano', 'code': 'JS001', 
-                    'price': 35.00, 'selling_price': 35.00, 'stock': 15, 'current_stock': 15,
-                    'min_stock_level': 3, 'category': 'Embutidos', 'category_name': 'Embutidos'
-                },
-                {
-                    'id': 5, 'name': 'Salchichas Premium', 'code': 'SP001', 
-                    'price': 6.50, 'selling_price': 6.50, 'stock': 40, 'current_stock': 40,
-                    'min_stock_level': 10, 'category': 'Embutidos', 'category_name': 'Embutidos'
-                },
-                {
-                    'id': 6, 'name': 'Carne de Cerdo', 'code': 'CC001', 
-                    'price': 18.75, 'selling_price': 18.75, 'stock': 20, 'current_stock': 20,
-                    'min_stock_level': 8, 'category': 'Carnes', 'category_name': 'Carnes'
-                },
-                {
-                    'id': 7, 'name': 'Pechuga de Pollo', 'code': 'PP001', 
-                    'price': 15.25, 'selling_price': 15.25, 'stock': 35, 'current_stock': 35,
-                    'min_stock_level': 10, 'category': 'Aves', 'category_name': 'Aves'
-                },
-                {
-                    'id': 8, 'name': 'Costillas de Cerdo', 'code': 'CO001', 
-                    'price': 22.00, 'selling_price': 22.00, 'stock': 18, 'current_stock': 18,
-                    'min_stock_level': 5, 'category': 'Carnes', 'category_name': 'Carnes'
-                }
-            ]
+            all_products = []
             
             # Filtra i prodotti eliminati
             active_products = [p for p in all_products if p['id'] not in self._deleted_products]
@@ -651,18 +610,7 @@ class SimpleDatabaseManager:
     def get_all_customers(self) -> List[Dict[str, Any]]:
         """Obtiene todos los clientes (versión simplificada)"""
         try:
-            all_customers = [
-                {'id': 1, 'name': 'Juan Pérez', 'email': 'juan@email.com', 'phone': '+54 11 1234-5678', 
-                 'total_orders': 15, 'total_purchases': 2850.50, 'last_purchase': '2024-09-20', 'is_active': True, 'address': 'Av. Corrientes 1234'},
-                {'id': 2, 'name': 'María García', 'email': 'maria@email.com', 'phone': '+54 11 2345-6789', 
-                 'total_orders': 12, 'total_purchases': 1950.00, 'last_purchase': '2024-09-18', 'is_active': True, 'address': 'Calle Florida 567'},
-                {'id': 3, 'name': 'Carlos López', 'email': 'carlos@email.com', 'phone': '+54 11 3456-7890', 
-                 'total_orders': 8, 'total_purchases': 2800.25, 'last_purchase': '2024-09-22', 'is_active': True, 'address': 'Av. Santa Fe 890'},
-                {'id': 4, 'name': 'Ana Martínez', 'email': 'ana@email.com', 'phone': '+54 11 4567-8901', 
-                 'total_orders': 20, 'total_purchases': 3200.75, 'last_purchase': '2024-09-19', 'is_active': True, 'address': 'Calle Lavalle 234'},
-                {'id': 5, 'name': 'Roberto Silva', 'email': 'roberto@email.com', 'phone': '+54 11 5678-9012', 
-                 'total_orders': 6, 'total_purchases': 1850.75, 'last_purchase': '2024-09-21', 'is_active': True, 'address': 'Av. Córdoba 456'}
-            ]
+            all_customers = []
             
             # Filtra i clienti eliminati
             active_customers = [c for c in all_customers if c['id'] not in self._deleted_customers]
@@ -722,7 +670,7 @@ class SimpleDatabaseManager:
                 {
                     'id': 3, 'customer_id': customer_id, 'type': 'visita', 'date': '2024-09-20',
                     'description': 'Visita al local para consulta', 'outcome': 'compra_realizada',
-                    'notes': 'Realizó compra por $450', 'employee': 'Carlos López'
+                    'notes': 'Realizó compra por $0.00', 'employee': 'Carlos López'
                 }
             ]
             return [i for i in interactions if i['customer_id'] == customer_id]
@@ -743,7 +691,7 @@ class SimpleDatabaseManager:
         """Obtiene segmentos de clientes"""
         try:
             return [
-                {'segment': 'VIP', 'count': 5, 'description': 'Clientes con compras > $5000', 'color': '#FFD700'},
+                {'segment': 'VIP', 'count': 5, 'description': 'Clientes con compras > $0.00', 'color': '#FFD700'},
                 {'segment': 'Frecuentes', 'count': 12, 'description': 'Clientes con > 10 compras', 'color': '#32CD32'},
                 {'segment': 'Ocasionales', 'count': 8, 'description': 'Clientes con 3-10 compras', 'color': '#FFA500'},
                 {'segment': 'Nuevos', 'count': 3, 'description': 'Clientes con < 3 compras', 'color': '#87CEEB'},
@@ -956,38 +904,7 @@ class SimpleDatabaseManager:
     def get_all_sales(self) -> List[Dict[str, Any]]:
         """Obtiene todas las ventas individuales"""
         try:
-            all_sales = [
-                {
-                    'id': 1, 'fecha': '2024-09-22', 'cliente': 'Juan Pérez',
-                    'producto': 'Carne de Res Premium', 'cantidad': 2.5, 'precio_unitario': 25.50,
-                    'total': 63.75, 'metodo_pago': 'Efectivo', 'vendedor': 'María González',
-                    'estado': 'Completada', 'observaciones': 'Cliente satisfecho'
-                },
-                {
-                    'id': 2, 'fecha': '2024-09-22', 'cliente': 'Ana Martínez',
-                    'producto': 'Pollo Entero', 'cantidad': 1.0, 'precio_unitario': 12.00,
-                    'total': 12.00, 'metodo_pago': 'Tarjeta', 'vendedor': 'Carlos Rodríguez',
-                    'estado': 'Completada', 'observaciones': ''
-                },
-                {
-                    'id': 3, 'fecha': '2024-09-21', 'cliente': 'Roberto Silva',
-                    'producto': 'Jamón Serrano', 'cantidad': 0.5, 'precio_unitario': 35.00,
-                    'total': 17.50, 'metodo_pago': 'Efectivo', 'vendedor': 'Ana Martínez',
-                    'estado': 'Completada', 'observaciones': 'Producto premium'
-                },
-                {
-                    'id': 4, 'fecha': '2024-09-21', 'cliente': 'María García',
-                    'producto': 'Salmón Fresco', 'cantidad': 1.2, 'precio_unitario': 18.75,
-                    'total': 22.50, 'metodo_pago': 'Transferencia', 'vendedor': 'Luis Fernández',
-                    'estado': 'Completada', 'observaciones': 'Pescado fresco del día'
-                },
-                {
-                    'id': 5, 'fecha': '2024-09-20', 'cliente': 'Carlos López',
-                    'producto': 'Carne Molida', 'cantidad': 3.0, 'precio_unitario': 8.50,
-                    'total': 25.50, 'metodo_pago': 'Efectivo', 'vendedor': 'María González',
-                    'estado': 'Completada', 'observaciones': 'Para hamburguesas'
-                }
-            ]
+            all_sales = []
             
             # Filtra le vendite eliminate
             active_sales = [s for s in all_sales if s['id'] not in self._deleted_sales]
@@ -1057,38 +974,7 @@ class SimpleDatabaseManager:
     def get_all_suppliers(self) -> List[Dict[str, Any]]:
         """Obtiene todos los proveedores (versión simplificada)"""
         try:
-            all_suppliers = [
-                {
-                    'id': 1, 'name': 'VARA DEL REY', 'contact_email': 'vara@email.com', 
-                    'phone': '+54 11 1111-1111', 'total_amount': 5000.00, 'transactions_count': 15,
-                    'address': 'Av. Principal 123, Buenos Aires', 'contact_person': 'Juan Vara',
-                    'created_at': '2024-01-15 10:30:00'
-                },
-                {
-                    'id': 2, 'name': 'CARNES PREMIUM', 'contact_email': 'premium@email.com', 
-                    'phone': '+54 11 2222-2222', 'total_amount': 3500.00, 'transactions_count': 12,
-                    'address': 'Calle Secundaria 456, Córdoba', 'contact_person': 'María Premium',
-                    'created_at': '2024-02-20 14:15:00'
-                },
-                {
-                    'id': 3, 'name': 'EMBUTIDOS ARTESANALES', 'contact_email': 'artesanal@email.com', 
-                    'phone': '+54 11 3333-3333', 'total_amount': 2800.00, 'transactions_count': 8,
-                    'address': 'Plaza Central 789, Rosario', 'contact_person': 'Carlos Artesanal',
-                    'created_at': '2024-03-10 09:45:00'
-                },
-                {
-                    'id': 4, 'name': 'AVES DEL CAMPO', 'contact_email': 'aves@email.com', 
-                    'phone': '+54 11 4444-4444', 'total_amount': 2200.00, 'transactions_count': 6,
-                    'address': 'Ruta Nacional 5, Mendoza', 'contact_person': 'Ana Campo',
-                    'created_at': '2024-04-05 16:20:00'
-                },
-                {
-                    'id': 5, 'name': 'PRODUCTOS FRESCOS', 'contact_email': 'frescos@email.com', 
-                    'phone': '+54 11 5555-5555', 'total_amount': 1800.00, 'transactions_count': 5,
-                    'address': 'Zona Rural, Tucumán', 'contact_person': 'Roberto Fresco',
-                    'created_at': '2024-05-12 11:30:00'
-                }
-            ]
+            all_suppliers = []
             
             # Filtra i fornitori eliminati
             active_suppliers = [s for s in all_suppliers if s['id'] not in self._deleted_suppliers]

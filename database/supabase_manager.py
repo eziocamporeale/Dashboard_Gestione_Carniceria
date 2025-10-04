@@ -223,18 +223,53 @@ class SupabaseManager:
         }
     
     def get_products_low_stock(self) -> List[Dict]:
-        """Ottiene prodotti con stock basso"""
+        """Ottiene prodotti con stock basso (ora usa categorie di entrata)"""
         try:
-            return self.select('products', filters={'current_stock': 0})
+            # Ora usa le categorie di entrata come "prodotti"
+            categories_result = self.client.table('accounting_categories').select('*').eq('is_active', True).eq('type', 'income').execute()
+            categories = categories_result.data if categories_result.data else []
+            
+            # Simula stock basso per categorie senza entrate recenti
+            low_stock = []
+            for category in categories:
+                # Controlla se ci sono entrate negli ultimi 7 giorni
+                week_ago = (datetime.now() - timedelta(days=7)).date().isoformat()
+                income_result = self.client.table('daily_income').select('amount').eq('category', category['name']).gte('date', week_ago).execute()
+                
+                if not income_result.data:
+                    low_stock.append({
+                        'name': category['name'],
+                        'current_stock': 0,
+                        'icon': category['icon']
+                    })
+            
+            return low_stock
         except Exception as e:
             logger.error(f"❌ Errore ottenendo prodotti stock basso: {e}")
             return []
     
     def get_products_expiring_soon(self, days: int = 7) -> List[Dict]:
-        """Ottiene prodotti in scadenza"""
+        """Ottiene prodotti in scadenza (ora usa categorie di entrata)"""
         try:
-            expiry_date = datetime.now() + timedelta(days=days)
-            return self.select('products', filters={'expiry_date': expiry_date.date().isoformat()})
+            # Ora usa le categorie di entrata come "prodotti"
+            categories_result = self.client.table('accounting_categories').select('*').eq('is_active', True).eq('type', 'income').execute()
+            categories = categories_result.data if categories_result.data else []
+            
+            # Simula prodotti in scadenza per categorie senza entrate recenti
+            expiring = []
+            for category in categories:
+                # Controlla se ci sono entrate negli ultimi 3 giorni
+                three_days_ago = (datetime.now() - timedelta(days=3)).date().isoformat()
+                income_result = self.client.table('daily_income').select('amount').eq('category', category['name']).gte('date', three_days_ago).execute()
+                
+                if not income_result.data:
+                    expiring.append({
+                        'name': category['name'],
+                        'expiry_date': (datetime.now() + timedelta(days=days)).date().isoformat(),
+                        'icon': category['icon']
+                    })
+            
+            return expiring
         except Exception as e:
             logger.error(f"❌ Errore ottenendo prodotti in scadenza: {e}")
             return []
@@ -362,40 +397,41 @@ class SupabaseManager:
             return []
     
     def get_all_products(self) -> List[Dict]:
-        """Ottiene tutti i prodotti"""
+        """Ottiene tutti i prodotti (ora usa categorie di entrata)"""
         try:
-            # Leggi i prodotti dalla tabella products
-            products_data = self.select('products')
-            
-            if not products_data:
+            if not self.is_connected():
+                logger.error("❌ Supabase non connesso")
                 return []
             
-            # Leggi anche le categorie e unità per ottenere i nomi
-            categories_data = self.select('product_categories', 'id, name')
-            categories_map = {c['id']: c['name'] for c in categories_data}
+            # Ora usa le categorie di entrata come "prodotti"
+            categories_result = self.client.table('accounting_categories').select('*').eq('is_active', True).eq('type', 'income').execute()
+            categories = categories_result.data if categories_result.data else []
             
-            units_data = self.select('units_of_measure', 'id, name')
-            units_map = {u['id']: u['name'] for u in units_data}
-            
-            # Converti i dati in formato compatibile con la dashboard
+            # Converti le categorie in formato "prodotti"
             all_products = []
-            for product in products_data:
+            for category in categories:
+                # Ottieni statistiche per questa categoria
+                income_result = self.client.table('daily_income').select('amount').eq('category', category['name']).execute()
+                total_sales = sum([i['amount'] for i in income_result.data]) if income_result.data else 0
+                
                 product_record = {
-                    'id': product['id'],
-                    'name': product['name'],
-                    'code': product.get('code', ''),
-                    'description': product.get('description', ''),
-                    'category_id': product.get('category_id'),
-                    'category_name': categories_map.get(product.get('category_id'), 'Generale'),
-                    'unit_id': product.get('unit_id'),
-                    'unit_name': units_map.get(product.get('unit_id'), 'Unidad'),
-                    'cost_price': float(product.get('cost_price', 0)),
-                    'selling_price': float(product.get('selling_price', 0)),
-                    'current_stock': float(product.get('current_stock', 0)),
-                    'min_stock_level': float(product.get('min_stock_level', 0)),
-                    'expiry_date': product.get('expiry_date'),
-                    'supplier_id': product.get('supplier_id'),
-                    'is_active': product.get('is_active', True)
+                    'id': category['id'],
+                    'name': category['name'],
+                    'code': category['name'][:3].upper(),
+                    'description': f"Categoría de {category['name']}",
+                    'category_id': category['id'],
+                    'category_name': 'Categorías de Venta',
+                    'unit_id': category['id'],
+                    'unit_name': 'Unidad',
+                    'cost_price': 0.0,
+                    'selling_price': total_sales / 10 if total_sales > 0 else 0.0,
+                    'current_stock': 100.0,
+                    'min_stock_level': 10.0,
+                    'expiry_date': None,
+                    'supplier_id': None,
+                    'is_active': category['is_active'],
+                    'icon': category['icon'],
+                    'total_sales': total_sales
                 }
                 all_products.append(product_record)
             
@@ -406,29 +442,38 @@ class SupabaseManager:
             return []
     
     def get_all_suppliers(self) -> List[Dict]:
-        """Ottiene tutti i fornitori"""
+        """Ottiene tutti i fornitori (ora usa categorie di uscita)"""
         try:
-            # Leggi i fornitori dalla tabella suppliers
-            suppliers_data = self.select('suppliers')
-            
-            if not suppliers_data:
+            if not self.is_connected():
+                logger.error("❌ Supabase non connesso")
                 return []
             
-            # Converti i dati in formato compatibile con la dashboard
+            # Ora usa le categorie di uscita come "fornitori"
+            categories_result = self.client.table('accounting_categories').select('*').eq('is_active', True).eq('type', 'expense').execute()
+            categories = categories_result.data if categories_result.data else []
+            
+            # Converti le categorie in formato "fornitori"
             all_suppliers = []
-            for supplier in suppliers_data:
+            for category in categories:
+                # Ottieni statistiche per questa categoria
+                expense_result = self.client.table('daily_expenses').select('amount, supplier').eq('category', category['name']).execute()
+                total_amount = sum([e['amount'] for e in expense_result.data]) if expense_result.data else 0
+                suppliers = list(set([e['supplier'] for e in expense_result.data if e['supplier']]))
+                
                 supplier_record = {
-                    'id': supplier['id'],
-                    'name': supplier['name'],
-                    'contact_person': supplier.get('contact_person', ''),
-                    'phone': supplier.get('phone', ''),
-                    'contact_email': supplier.get('contact_email', ''),
-                    'address': supplier.get('address', ''),
-                    'cuit': '',  # Non presente nella tabella
-                    'total_amount': float(supplier.get('total_amount', 0)),
-                    'transactions_count': int(supplier.get('transactions_count', 0)),
-                    'is_active': supplier.get('is_active', True),
-                    'created_at': supplier.get('created_at', datetime.now().isoformat())
+                    'id': category['id'],
+                    'name': category['name'],
+                    'contact_person': 'Contacto General',
+                    'phone': '+54 11 0000-0000',
+                    'contact_email': f"contacto@{category['name'].lower().replace(' ', '')}.com",
+                    'address': 'Dirección no especificada',
+                    'cuit': '',
+                    'total_amount': float(total_amount),
+                    'transactions_count': int(len(expense_result.data)) if expense_result.data else 0,
+                    'is_active': category['is_active'],
+                    'created_at': category['created_at'],
+                    'icon': category['icon'],
+                    'suppliers': suppliers
                 }
                 all_suppliers.append(supplier_record)
             
@@ -521,7 +566,7 @@ class SupabaseManager:
                 {
                     'id': 3, 'customer_id': customer_id, 'type': 'visita', 'date': '2024-09-20',
                     'description': 'Visita al local para consulta', 'outcome': 'compra_realizada',
-                    'notes': 'Realizó compra por $450', 'employee': 'Carlos López'
+                    'notes': 'Realizó compra por $0.00', 'employee': 'Carlos López'
                 }
             ]
             return [i for i in interactions if i['customer_id'] == customer_id]
@@ -542,7 +587,7 @@ class SupabaseManager:
         """Obtiene segmentos de clientes"""
         try:
             return [
-                {'segment': 'VIP', 'count': 5, 'description': 'Clientes con compras > $5000', 'color': '#FFD700'},
+                {'segment': 'VIP', 'count': 5, 'description': 'Clientes con compras > $0.00', 'color': '#FFD700'},
                 {'segment': 'Frecuentes', 'count': 12, 'description': 'Clientes con > 10 compras', 'color': '#32CD32'},
                 {'segment': 'Ocasionales', 'count': 8, 'description': 'Clientes con 3-10 compras', 'color': '#FFA500'},
                 {'segment': 'Nuevos', 'count': 3, 'description': 'Clientes con < 3 compras', 'color': '#87CEEB'},

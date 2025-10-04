@@ -1708,53 +1708,8 @@ def render_personal():
     
     st.header("👨‍💼 Gestión Personal")
     
-    # Datos de ejemplo para empleados
-    sample_employees = [
-        {
-            'id': 1,
-            'name': 'Juan Pérez',
-            'position': 'Carnicero Principal',
-            'department': 'Producción',
-            'hire_date': '2023-01-15',
-            'salary': 45000,
-            'status': 'Activo',
-            'phone': '+54 11 1234-5678',
-            'email': 'juan.perez@carniceria.com'
-        },
-        {
-            'id': 2,
-            'name': 'María González',
-            'position': 'Cajera',
-            'department': 'Ventas',
-            'hire_date': '2023-03-20',
-            'salary': 35000,
-            'status': 'Activo',
-            'phone': '+54 11 2345-6789',
-            'email': 'maria.gonzalez@carniceria.com'
-        },
-        {
-            'id': 3,
-            'name': 'Carlos Rodríguez',
-            'position': 'Ayudante de Carnicero',
-            'department': 'Producción',
-            'hire_date': '2023-06-10',
-            'salary': 30000,
-            'status': 'Activo',
-            'phone': '+54 11 3456-7890',
-            'email': 'carlos.rodriguez@carniceria.com'
-        },
-        {
-            'id': 4,
-            'name': 'Ana Martínez',
-            'position': 'Gerente',
-            'department': 'Administración',
-            'hire_date': '2022-11-05',
-            'salary': 60000,
-            'status': 'Activo',
-            'phone': '+54 11 4567-8901',
-            'email': 'ana.martinez@carniceria.com'
-        }
-    ]
+    # Ottieni dati del personale dal database (vuoto per ora)
+    sample_employees = []
     
     # Tabs para diferentes funcionalidades
     tab1, tab2, tab3, tab4 = st.tabs(["👥 Lista Empleados", "➕ Nuevo Empleado", "⏰ Turnos", "📊 Estadísticas"])
@@ -2802,11 +2757,11 @@ def render_ventas():
                 # Métricas del reporte
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    st.metric("Total Ventas", "$45,250.00")
+                    st.metric("Total Ventas", "$0.00")
                 with col2:
-                    st.metric("Número de Transacciones", "156")
+                    st.metric("Número de Transacciones", "0")
                 with col3:
-                    st.metric("Promedio por Venta", "$290.06")
+                    st.metric("Promedio por Venta", "$0.00")
                 with col4:
                     st.metric("Crecimiento", "+12.5%")
                 
@@ -2895,11 +2850,11 @@ def render_ventas():
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.metric("Meta de Ventas", "$50,000", "$45,250")
+            st.metric("Meta de Ventas", "$0.00", "$0.00")
         with col2:
-            st.metric("Meta Transacciones", "200", "156")
+            st.metric("Meta Transacciones", "0", "0")
         with col3:
-            st.metric("Meta Clientes Nuevos", "50", "42")
+            st.metric("Meta Clientes Nuevos", "0", "0")
         
         # Progreso visual
         st.subheader("📊 Progreso de Objetivos")
@@ -3911,7 +3866,7 @@ def render_configuracion():
             # Métricas de backup
             st.metric("Último Backup", "2024-09-22 02:00:00")
             st.metric("Tamaño del Backup", "15.2 MB")
-            st.metric("Backups Disponibles", "7")
+            st.metric("Backups Disponibles", "0")
             st.metric("Próximo Backup", "2024-09-23 02:00:00")
             
             # Lista de backups disponibles
@@ -4107,13 +4062,7 @@ def render_configuracion():
         # Logs del sistema
         st.subheader("📝 Logs Recientes")
         
-        logs = [
-            {"timestamp": "2024-10-04 10:30:15", "level": "INFO", "message": "Usuario admin inició sesión"},
-            {"timestamp": "2024-10-04 10:25:42", "level": "INFO", "message": "Backup automático completado exitosamente"},
-            {"timestamp": "2024-10-04 10:20:18", "level": "WARNING", "message": "Stock bajo detectado en producto: Carne de Res"},
-            {"timestamp": "2024-10-04 10:15:33", "level": "INFO", "message": "Nueva venta registrada: $125.50"},
-            {"timestamp": "2024-10-04 10:10:07", "level": "ERROR", "message": "Error de conexión a base de datos - reintentando..."},
-        ]
+        logs = []
         
         for log in logs:
             col1, col2, col3 = st.columns([2, 1, 3])
@@ -4165,7 +4114,7 @@ def render_configuracion():
         system_info = {
             "Versión de Python": "3.9.0",
             "Versión de Streamlit": "1.28.0",
-            "Versión de PostgreSQL": "13.0",
+            "Versión de PostgreSQL": "0",
             "Sistema Operativo": "Linux",
             "Arquitectura": "x86_64",
             "Memoria Total": "4 GB",
