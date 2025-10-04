@@ -1945,7 +1945,7 @@ def render_personal():
                         }
                         
                         try:
-                            result = db.insert('employees', employee_data)
+                            result = db.add_employee(employee_data)
                             if result:
                                 st.success("✅ Nuevo empleado creado exitosamente")
                                 st.balloons()

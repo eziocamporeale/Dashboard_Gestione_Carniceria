@@ -849,6 +849,24 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore durante log attività: {e}")
             return None
 
+    def add_employee(self, employee_data: Dict[str, Any]) -> bool:
+        """Aggiunge un nuovo impiegato"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                # Per Supabase
+                response = self.supabase_manager.client.table('employees').insert(employee_data).execute()
+                return response.data is not None
+            else:
+                # Per SQLite
+                if hasattr(self.sqlite_manager, 'add_employee'):
+                    return self.sqlite_manager.add_employee(employee_data)
+                else:
+                    logger.error("❌ Metodo add_employee non disponibile per SQLite")
+                    return False
+        except Exception as e:
+            logger.error(f"❌ Errore aggiungendo impiegato: {e}")
+            return False
+
 # Istanza globale
 
 _hybrid_manager = None
