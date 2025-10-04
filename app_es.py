@@ -3405,7 +3405,7 @@ def render_balance():
                 if monthly_data['total_profit'] > 0:
                     st.success("✅ **Mese Positivo**")
                     st.write("Profitto generato")
-                            else:
+                else:
                     st.error("❌ **Mese Negativo**")
                     st.write("Perdita registrata")
             
@@ -3431,7 +3431,7 @@ def render_balance():
             start_date = f"{selected_year}-{selected_month:02d}-01"
             if selected_month == 12:
                 end_date = f"{selected_year + 1}-01-01"
-                        else:
+            else:
                 end_date = f"{selected_year}-{selected_month + 1:02d}-01"
             
             # Analisi entrate per categoria
@@ -3506,8 +3506,7 @@ def render_balance():
                 if st.button("📧 Invia Email", help="Invia report via email"):
                     st.info("🚧 Funzionalità in sviluppo")
                 else:
-            st.warning("⚠️ Nessun dato per questo mese")
-            st.info("Inserisci dati giornalieri per vedere il report mensile")
+                    st.info("📧 Email non inviata")
 
 def render_configuracion():
     """Renderiza la sección configuración"""
@@ -3647,8 +3646,6 @@ def render_configuracion():
                                 st.error("❌ Error eliminando usuario")
         
         st.markdown("---")
-        else:
-            st.info("No hay usuarios que coincidan con los filtros")
         
         # Formulario para nuevo usuario
         st.subheader("➕ Nuevo Usuario")
