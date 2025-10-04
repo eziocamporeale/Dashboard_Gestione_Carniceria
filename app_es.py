@@ -3161,6 +3161,9 @@ def render_balance():
                 df_monthly = pd.DataFrame(monthly_breakdown).T
                 df_monthly.index.name = 'Mes'
                 
+                # Calcola il margine di profitto
+                df_monthly['profit_margin'] = ((df_monthly['sales'] - df_monthly['purchases'] - df_monthly['expenses']) / df_monthly['sales'] * 100).round(2)
+                
                 # Gráfico de tendencia de ventas
                 st.subheader("📊 Tendencia de Ventas Mensuales")
                 fig_sales = px.line(
