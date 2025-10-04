@@ -862,7 +862,7 @@ class SupabaseManager:
                     'id': sale['id'],
                     'fecha': sale['sale_date'][:10] if sale['sale_date'] else datetime.now().strftime('%Y-%m-%d'),
                     'cliente': customer_name,
-                    'producto': 'Venta Excel',  # Prodotto generico per i dati Excel
+                    'producto': 'Venta General',  # Prodotto generico
                     'cantidad': 1.0,
                     'precio_unitario': sale['total_amount'],
                     'total': sale['final_amount'],
@@ -925,8 +925,8 @@ class SupabaseManager:
                 'total_sales_month': total_sales_month,
                 'total_sales_year': total_sales_year,
                 'average_daily_sales': avg_daily_sales,
-                'best_selling_product': 'Venta Excel',  # Prodotto generico
-                'best_selling_category': 'Generale',  # Categoria generica
+                'best_selling_product': 'N/A',  # Nessun prodotto
+                'best_selling_category': 'N/A',  # Nessuna categoria
                 'total_transactions': total_transactions,
                 'average_transaction_value': avg_transaction_value
             }

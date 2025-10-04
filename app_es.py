@@ -3050,12 +3050,12 @@ def render_balance():
                     st.rerun()
                 else:
                     st.error("❌ Errore aggiungendo entrata")
-        
-        st.markdown("---")
-        
+            
+            st.markdown("---")
+            
         # Form per inserimento uscite
         st.subheader("💸 Aggiungi Uscita")
-        
+            
         with st.form("add_expense_form"):
             col1, col2, col3 = st.columns(3)
             
@@ -3085,7 +3085,7 @@ def render_balance():
                 if result:
                     st.success(f"✅ Uscita di ${expense_amount:,.2f} aggiunta!")
                     st.rerun()
-                else:
+        else:
                     st.error("❌ Errore aggiungendo uscita")
         
         # Azioni rapide
@@ -3165,25 +3165,25 @@ def render_balance():
         
         # Metriche principali
         col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric(
+                
+                with col1:
+                    st.metric(
                 "💰 Entrate",
                 f"${daily_entries['total_income']:,.2f}",
                 help="Total entrate del giorno"
-            )
-        
-        with col2:
-            st.metric(
+                    )
+                
+                with col2:
+                    st.metric(
                 "💸 Uscite",
                 f"${daily_entries['total_expenses']:,.2f}",
                 help="Total uscite del giorno"
-            )
-        
-        with col3:
+                    )
+                
+                with col3:
             net_profit = daily_entries['total_income'] - daily_entries['total_expenses']
             profit_color = "normal" if net_profit >= 0 else "inverse"
-            st.metric(
+                    st.metric(
                 "📈 Profitto",
                 f"${net_profit:,.2f}",
                 delta=f"{daily_report.get('profit_margin', 0):.1f}%" if daily_report else "0%",
@@ -3280,7 +3280,7 @@ def render_balance():
                         if expense['supplier']:
                             st.caption(f"🏪 {expense['supplier']}")
                     
-                    with col2:
+        with col2:
                         st.write(f"💳 {expense['payment_method']}")
                         st.caption(f"💸 ${expense['amount']:,.2f}")
                     
@@ -3323,24 +3323,24 @@ def render_balance():
             total_expenses = sum([d['total_expenses'] for d in weekly_data])
             total_profit = sum([d['net_profit'] for d in weekly_data])
             total_transactions = sum([d['transactions_count'] for d in weekly_data])
-            
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
+                            
+                            col1, col2, col3, col4 = st.columns(4)
+                            
+                            with col1:
                 st.metric(
                     "💰 Entrate Settimanali",
                     f"${total_income:,.2f}",
                     help="Total entrate della settimana"
                 )
-            
-            with col2:
+                            
+                            with col2:
                 st.metric(
                     "💸 Uscite Settimanali",
                     f"${total_expenses:,.2f}",
                     help="Total uscite della settimana"
                 )
-            
-            with col3:
+                            
+                            with col3:
                 profit_color = "normal" if total_profit >= 0 else "inverse"
                 profit_margin = (total_profit / total_income * 100) if total_income > 0 else 0
                 st.metric(
@@ -3350,8 +3350,8 @@ def render_balance():
                     delta_color=profit_color,
                     help="Profitto netto della settimana"
                 )
-            
-            with col4:
+                            
+                            with col4:
                 st.metric(
                     "📊 Transazioni Totali",
                     total_transactions,
@@ -3440,23 +3440,23 @@ def render_balance():
         
         if monthly_data and monthly_data['days_with_data'] > 0:
             # Metriche mensili
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
+                                col1, col2, col3, col4 = st.columns(4)
+                                
+                                with col1:
                 st.metric(
                     "💰 Entrate Mensili",
                     f"${monthly_data['total_income']:,.2f}",
                     help="Total entrate del mese"
                 )
             
-            with col2:
+                                with col2:
                 st.metric(
                     "💸 Uscite Mensili",
                     f"${monthly_data['total_expenses']:,.2f}",
                     help="Total uscite del mese"
                 )
             
-            with col3:
+                                with col3:
                 profit_color = "normal" if monthly_data['total_profit'] >= 0 else "inverse"
                 st.metric(
                     "📈 Profitto Mensile",
@@ -3466,7 +3466,7 @@ def render_balance():
                     help="Profitto netto del mese"
                 )
             
-            with col4:
+                                with col4:
                 st.metric(
                     "📊 Transazioni Totali",
                     monthly_data['total_transactions'],
@@ -3482,7 +3482,7 @@ def render_balance():
                 if monthly_data['total_profit'] > 0:
                     st.success("✅ **Mese Positivo**")
                     st.write("Profitto generato")
-                else:
+                            else:
                     st.error("❌ **Mese Negativo**")
                     st.write("Perdita registrata")
             
@@ -3508,7 +3508,7 @@ def render_balance():
             start_date = f"{selected_year}-{selected_month:02d}-01"
             if selected_month == 12:
                 end_date = f"{selected_year + 1}-01-01"
-            else:
+                        else:
                 end_date = f"{selected_year}-{selected_month + 1:02d}-01"
             
             # Analisi entrate per categoria
@@ -3582,7 +3582,7 @@ def render_balance():
             with col3:
                 if st.button("📧 Invia Email", help="Invia report via email"):
                     st.info("🚧 Funzionalità in sviluppo")
-        else:
+                else:
             st.warning("⚠️ Nessun dato per questo mese")
             st.info("Inserisci dati giornalieri per vedere il report mensile")
 
@@ -3722,8 +3722,8 @@ def render_configuracion():
                                 st.rerun()
                             else:
                                 st.error("❌ Error eliminando usuario")
-                    
-                    st.markdown("---")
+        
+        st.markdown("---")
         else:
             st.info("No hay usuarios que coincidan con los filtros")
         
