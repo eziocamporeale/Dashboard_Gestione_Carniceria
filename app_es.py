@@ -3315,7 +3315,8 @@ def render_balance():
         uploaded_file = st.file_uploader(
             "📁 Cargar Archivo Excel con Datos Históricos",
             type=['xlsx', 'xls'],
-            help="Sube tu archivo Excel con los datos históricos de la carnicería"
+            help="Sube tu archivo Excel con los datos históricos de la carnicería",
+            key="balance_historical_file_uploader"
         )
         
         # Opción para caricare file specifico
@@ -3385,7 +3386,8 @@ def render_balance():
         uploaded_file = st.file_uploader(
             "📁 Cargar Archivo Excel con Datos Históricos",
             type=['xlsx', 'xls'],
-            help="Sube tu archivo Excel con los datos históricos de la carnicería"
+            help="Sube tu archivo Excel con los datos históricos de la carnicería",
+            key="balance_custom_file_uploader"
         )
         
         if uploaded_file is not None:
