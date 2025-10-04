@@ -1835,7 +1835,7 @@ def render_personal():
                     new_hire_date = st.date_input("Fecha Contratación", value=pd.to_datetime(emp['hire_date']).date())
                 
                 with col2:
-                    new_salary = st.number_input("Salario", value=emp['salary'], min_value=0, step=1000)
+                    new_salary = st.number_input("Salario", value=float(emp['salary']), min_value=0.0, step=1000.0)
                     new_status = st.selectbox("Estado", ["Activo", "Inactivo"], 
                                             index=["Activo", "Inactivo"].index(emp['status']))
                     new_phone = st.text_input("Teléfono", value=emp['phone'])
@@ -1894,7 +1894,7 @@ def render_personal():
                 st.subheader("💼 Información Laboral")
                 new_position = st.text_input("Posición *", placeholder="Ej: Carnicero Principal")
                 new_department = st.selectbox("Departamento *", ["Producción", "Ventas", "Administración"])
-                new_salary = st.number_input("Salario *", min_value=0, step=1000, value=30000)
+                new_salary = st.number_input("Salario *", min_value=0.0, step=1000.0, value=30000.0)
                 new_hire_date = st.date_input("Fecha de Contratación *")
             
             st.markdown("---")
