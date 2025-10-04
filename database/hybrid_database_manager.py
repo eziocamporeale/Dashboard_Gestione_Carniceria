@@ -867,6 +867,22 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore aggiungendo impiegato: {e}")
             return False
 
+    def execute_sql(self, sql: str) -> bool:
+        """Esegue uno script SQL"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                # Per Supabase, usa l'endpoint SQL
+                response = self.supabase_manager.client.post('/rest/v1/rpc/exec', {
+                    'sql': sql
+                }).execute()
+                return True
+            else:
+                logger.error("❌ Esecuzione SQL non disponibile per SQLite")
+                return False
+        except Exception as e:
+            logger.error(f"❌ Errore esecuzione SQL: {e}")
+            return False
+
 # Istanza globale
 
 _hybrid_manager = None
