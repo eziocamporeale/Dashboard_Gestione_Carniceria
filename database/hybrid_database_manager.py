@@ -867,6 +867,31 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore aggiungendo impiegato: {e}")
             return False
 
+    def select(self, table_name: str, filters: dict = None) -> List[Dict[str, Any]]:
+        """Seleziona record da una tabella"""
+        try:
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                # Per Supabase
+                query = self.supabase_manager.client.table(table_name).select('*')
+                
+                # Applica filtri se specificati
+                if filters:
+                    for key, value in filters.items():
+                        query = query.eq(key, value)
+                
+                response = query.execute()
+                return response.data or []
+            else:
+                # Per SQLite
+                if hasattr(self.sqlite_manager, 'select'):
+                    return self.sqlite_manager.select(table_name, filters) or []
+                else:
+                    logger.error(f"❌ Metodo select non disponibile per SQLite")
+                    return []
+        except Exception as e:
+            logger.error(f"❌ Errore durante selezione da {table_name}: {e}")
+            return []
+
     def execute_sql(self, sql: str) -> bool:
         """Esegue uno script SQL"""
         try:
