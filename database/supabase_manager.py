@@ -340,27 +340,43 @@ class SupabaseManager:
     def get_all_products(self) -> List[Dict]:
         """Ottiene tutti i prodotti"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            return [
-                {
-                    'id': 1, 'name': 'Carne de Res', 'code': 'BOV001', 'description': 'Carne de res fresca',
-                    'category_id': 1, 'category_name': 'Carnes', 'unit_id': 1, 'unit_name': 'Kilogramo',
-                    'cost_price': 15.50, 'selling_price': 25.00, 'current_stock': 50.0, 'min_stock_level': 10.0,
-                    'expiry_date': '2024-10-15', 'supplier_id': 1, 'is_active': True
-                },
-                {
-                    'id': 2, 'name': 'Pollo', 'code': 'AVE001', 'description': 'Pollo fresco',
-                    'category_id': 2, 'category_name': 'Aves', 'unit_id': 1, 'unit_name': 'Kilogramo',
-                    'cost_price': 8.50, 'selling_price': 12.00, 'current_stock': 30.0, 'min_stock_level': 5.0,
-                    'expiry_date': '2024-10-10', 'supplier_id': 2, 'is_active': True
-                },
-                {
-                    'id': 3, 'name': 'Chorizo', 'code': 'EMB001', 'description': 'Chorizo artesanal',
-                    'category_id': 3, 'category_name': 'Embutidos', 'unit_id': 3, 'unit_name': 'Unidad',
-                    'cost_price': 5.00, 'selling_price': 8.50, 'current_stock': 20.0, 'min_stock_level': 3.0,
-                    'expiry_date': '2024-10-20', 'supplier_id': 3, 'is_active': True
+            # Leggi i prodotti dalla tabella products
+            products_data = self.select('products')
+            
+            if not products_data:
+                return []
+            
+            # Leggi anche le categorie e unità per ottenere i nomi
+            categories_data = self.select('product_categories', 'id, name')
+            categories_map = {c['id']: c['name'] for c in categories_data}
+            
+            units_data = self.select('units_of_measure', 'id, name')
+            units_map = {u['id']: u['name'] for u in units_data}
+            
+            # Converti i dati in formato compatibile con la dashboard
+            all_products = []
+            for product in products_data:
+                product_record = {
+                    'id': product['id'],
+                    'name': product['name'],
+                    'code': product.get('code', ''),
+                    'description': product.get('description', ''),
+                    'category_id': product.get('category_id'),
+                    'category_name': categories_map.get(product.get('category_id'), 'Generale'),
+                    'unit_id': product.get('unit_id'),
+                    'unit_name': units_map.get(product.get('unit_id'), 'Unidad'),
+                    'cost_price': float(product.get('cost_price', 0)),
+                    'selling_price': float(product.get('selling_price', 0)),
+                    'current_stock': float(product.get('current_stock', 0)),
+                    'min_stock_level': float(product.get('min_stock_level', 0)),
+                    'expiry_date': product.get('expiry_date'),
+                    'supplier_id': product.get('supplier_id'),
+                    'is_active': product.get('is_active', True)
                 }
-            ]
+                all_products.append(product_record)
+            
+            return all_products
+            
         except Exception as e:
             logger.error(f"❌ Errore ottenendo prodotti: {e}")
             return []
@@ -368,34 +384,32 @@ class SupabaseManager:
     def get_all_suppliers(self) -> List[Dict]:
         """Ottiene tutti i fornitori"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            all_suppliers = [
-                {
-                    'id': 1, 'name': 'Carnes del Norte', 'contact_person': 'Juan Pérez',
-                    'phone': '+54 11 1234-5678', 'contact_email': 'juan@carnesdelnorte.com',
-                    'address': 'Av. Corrientes 1234, Buenos Aires', 'cuit': '20-12345678-9',
-                    'total_amount': 45000.00, 'transactions_count': 25, 'is_active': True,
-                    'created_at': '2024-01-15T10:30:00Z'
-                },
-                {
-                    'id': 2, 'name': 'Aves Frescas S.A.', 'contact_person': 'María García',
-                    'phone': '+54 11 2345-6789', 'contact_email': 'maria@avesfrescas.com',
-                    'address': 'Av. Santa Fe 5678, Buenos Aires', 'cuit': '20-23456789-0',
-                    'total_amount': 32000.00, 'transactions_count': 18, 'is_active': True,
-                    'created_at': '2024-02-20T14:15:00Z'
-                },
-                {
-                    'id': 3, 'name': 'Embutidos Artesanales', 'contact_person': 'Carlos López',
-                    'phone': '+54 11 3456-7890', 'contact_email': 'carlos@embutidosartesanales.com',
-                    'address': 'Av. Córdoba 9012, Buenos Aires', 'cuit': '20-34567890-1',
-                    'total_amount': 28000.00, 'transactions_count': 15, 'is_active': True,
-                    'created_at': '2024-03-10T09:45:00Z'
-                }
-            ]
+            # Leggi i fornitori dalla tabella suppliers
+            suppliers_data = self.select('suppliers')
             
-            # Filtra i fornitori eliminati
-            active_suppliers = [s for s in all_suppliers if s['id'] not in self._deleted_suppliers]
-            return active_suppliers
+            if not suppliers_data:
+                return []
+            
+            # Converti i dati in formato compatibile con la dashboard
+            all_suppliers = []
+            for supplier in suppliers_data:
+                supplier_record = {
+                    'id': supplier['id'],
+                    'name': supplier['name'],
+                    'contact_person': supplier.get('contact_person', ''),
+                    'phone': supplier.get('phone', ''),
+                    'contact_email': supplier.get('contact_email', ''),
+                    'address': supplier.get('address', ''),
+                    'cuit': '',  # Non presente nella tabella
+                    'total_amount': float(supplier.get('total_amount', 0)),
+                    'transactions_count': int(supplier.get('transactions_count', 0)),
+                    'is_active': supplier.get('is_active', True),
+                    'created_at': supplier.get('created_at', datetime.now().isoformat())
+                }
+                all_suppliers.append(supplier_record)
+            
+            return all_suppliers
+            
         except Exception as e:
             logger.error(f"❌ Errore ottenendo fornitori: {e}")
             return []
@@ -403,43 +417,31 @@ class SupabaseManager:
     def get_all_customers(self) -> List[Dict]:
         """Ottiene tutti i clienti"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
-            all_customers = [
-                {
-                    'id': 1, 'name': 'Juan Pérez', 'email': 'juan.perez@email.com',
-                    'phone': '+54 11 1234-5678', 'address': 'Av. Corrientes 1234, Buenos Aires',
-                    'total_purchases': 4500.75, 'total_orders': 12, 'last_purchase': '2024-09-28',
-                    'is_active': True, 'created_at': '2024-01-15T10:30:00Z'
-                },
-                {
-                    'id': 2, 'name': 'María García', 'email': 'maria.garcia@email.com',
-                    'phone': '+54 11 2345-6789', 'address': 'Av. Santa Fe 5678, Buenos Aires',
-                    'total_purchases': 3200.50, 'total_orders': 8, 'last_purchase': '2024-09-25',
-                    'is_active': True, 'created_at': '2024-02-20T14:15:00Z'
-                },
-                {
-                    'id': 3, 'name': 'Carlos López', 'email': 'carlos.lopez@email.com',
-                    'phone': '+54 11 3456-7890', 'address': 'Av. Córdoba 9012, Buenos Aires',
-                    'total_purchases': 2800.25, 'total_orders': 6, 'last_purchase': '2024-09-22',
-                    'is_active': True, 'created_at': '2024-03-10T09:45:00Z'
-                },
-                {
-                    'id': 4, 'name': 'Ana Martínez', 'email': 'ana.martinez@email.com',
-                    'phone': '+54 11 4567-8901', 'address': 'Av. Rivadavia 3456, Buenos Aires',
-                    'total_purchases': 1950.00, 'total_orders': 4, 'last_purchase': '2024-09-20',
-                    'is_active': True, 'created_at': '2024-04-05T16:20:00Z'
-                },
-                {
-                    'id': 5, 'name': 'Luis Rodríguez', 'email': 'luis.rodriguez@email.com',
-                    'phone': '+54 11 5678-9012', 'address': 'Av. Callao 7890, Buenos Aires',
-                    'total_purchases': 1200.75, 'total_orders': 3, 'last_purchase': '2024-09-18',
-                    'is_active': True, 'created_at': '2024-05-12T11:30:00Z'
-                }
-            ]
+            # Leggi i clienti dalla tabella customers
+            customers_data = self.select('customers')
             
-            # Filtra i clienti eliminati
-            active_customers = [c for c in all_customers if c['id'] not in self._deleted_customers]
-            return active_customers
+            if not customers_data:
+                return []
+            
+            # Converti i dati in formato compatibile con la dashboard
+            all_customers = []
+            for customer in customers_data:
+                customer_record = {
+                    'id': customer['id'],
+                    'name': customer['name'],
+                    'email': customer.get('email', ''),
+                    'phone': customer.get('phone', ''),
+                    'address': customer.get('address', ''),
+                    'total_purchases': float(customer.get('total_purchases', 0)),
+                    'total_orders': 0,  # Non presente nella tabella, calcolato dalle vendite
+                    'last_purchase': customer.get('last_purchase'),
+                    'is_active': customer.get('is_active', True),
+                    'created_at': customer.get('created_at', datetime.now().isoformat())
+                }
+                all_customers.append(customer_record)
+            
+            return all_customers
+            
         except Exception as e:
             logger.error(f"❌ Errore ottenendo clienti: {e}")
             return []
@@ -769,42 +771,38 @@ class SupabaseManager:
     def get_all_sales(self) -> List[Dict[str, Any]]:
         """Obtiene todas las ventas individuales"""
         try:
-            all_sales = [
-                {
-                    'id': 1, 'fecha': '2024-09-22', 'cliente': 'Juan Pérez',
-                    'producto': 'Carne de Res Premium', 'cantidad': 2.5, 'precio_unitario': 25.50,
-                    'total': 63.75, 'metodo_pago': 'Efectivo', 'vendedor': 'María González',
-                    'estado': 'Completada', 'observaciones': 'Cliente satisfecho'
-                },
-                {
-                    'id': 2, 'fecha': '2024-09-22', 'cliente': 'Ana Martínez',
-                    'producto': 'Pollo Entero', 'cantidad': 1.0, 'precio_unitario': 12.00,
-                    'total': 12.00, 'metodo_pago': 'Tarjeta', 'vendedor': 'Carlos Rodríguez',
-                    'estado': 'Completada', 'observaciones': ''
-                },
-                {
-                    'id': 3, 'fecha': '2024-09-21', 'cliente': 'Roberto Silva',
-                    'producto': 'Jamón Serrano', 'cantidad': 0.5, 'precio_unitario': 35.00,
-                    'total': 17.50, 'metodo_pago': 'Efectivo', 'vendedor': 'Ana Martínez',
-                    'estado': 'Completada', 'observaciones': 'Producto premium'
-                },
-                {
-                    'id': 4, 'fecha': '2024-09-21', 'cliente': 'María García',
-                    'producto': 'Salmón Fresco', 'cantidad': 1.2, 'precio_unitario': 18.75,
-                    'total': 22.50, 'metodo_pago': 'Transferencia', 'vendedor': 'Luis Fernández',
-                    'estado': 'Completada', 'observaciones': 'Pescado fresco del día'
-                },
-                {
-                    'id': 5, 'fecha': '2024-09-20', 'cliente': 'Carlos López',
-                    'producto': 'Carne Molida', 'cantidad': 3.0, 'precio_unitario': 8.50,
-                    'total': 25.50, 'metodo_pago': 'Efectivo', 'vendedor': 'María González',
-                    'estado': 'Completada', 'observaciones': 'Para hamburguesas'
-                }
-            ]
+            # Leggi le vendite dalla tabella sales
+            sales_data = self.select('sales', 'id, sale_date, total_amount, final_amount, payment_method, notes, customer_id')
             
-            # Filtra le vendite eliminate
-            active_sales = [s for s in all_sales if s['id'] not in self._deleted_sales]
-            return active_sales
+            if not sales_data:
+                return []
+            
+            # Leggi anche i clienti per ottenere i nomi
+            customers_data = self.select('customers', 'id, name')
+            customers_map = {c['id']: c['name'] for c in customers_data}
+            
+            # Converti i dati in formato compatibile con la dashboard
+            all_sales = []
+            for sale in sales_data:
+                customer_name = customers_map.get(sale['customer_id'], 'Cliente Generico Excel')
+                
+                sale_record = {
+                    'id': sale['id'],
+                    'fecha': sale['sale_date'][:10] if sale['sale_date'] else datetime.now().strftime('%Y-%m-%d'),
+                    'cliente': customer_name,
+                    'producto': 'Venta Excel',  # Prodotto generico per i dati Excel
+                    'cantidad': 1.0,
+                    'precio_unitario': sale['total_amount'],
+                    'total': sale['final_amount'],
+                    'metodo_pago': sale['payment_method'] or 'Efectivo',
+                    'vendedor': 'Sistema Excel',
+                    'estado': 'Completada',
+                    'observaciones': sale['notes'] or 'Venta dal file Excel'
+                }
+                all_sales.append(sale_record)
+            
+            return all_sales
+            
         except Exception as e:
             logger.error(f"❌ Error obteniendo todas las ventas: {e}")
             return []
@@ -812,17 +810,53 @@ class SupabaseManager:
     def get_sales_summary(self) -> Dict:
         """Ottiene riepilogo vendite"""
         try:
-            # Dati di esempio per compatibilità con il dashboard
+            # Leggi le vendite dalla tabella sales
+            sales_data = self.select('sales', 'sale_date, final_amount')
+            
+            if not sales_data:
+                return {
+                    'total_sales_today': 0,
+                    'total_sales_week': 0,
+                    'total_sales_month': 0,
+                    'total_sales_year': 0,
+                    'average_daily_sales': 0,
+                    'best_selling_product': 'Nessun prodotto',
+                    'best_selling_category': 'Nessuna categoria',
+                    'total_transactions': 0,
+                    'average_transaction_value': 0
+                }
+            
+            # Calcola statistiche reali
+            today = datetime.now().date().isoformat()
+            total_sales_today = sum([s['final_amount'] for s in sales_data if s['sale_date'][:10] == today])
+            
+            # Calcola vendite settimanali (ultimi 7 giorni)
+            week_ago = (datetime.now() - timedelta(days=7)).date().isoformat()
+            total_sales_week = sum([s['final_amount'] for s in sales_data if s['sale_date'][:10] >= week_ago])
+            
+            # Calcola vendite mensili (ultimi 30 giorni)
+            month_ago = (datetime.now() - timedelta(days=30)).date().isoformat()
+            total_sales_month = sum([s['final_amount'] for s in sales_data if s['sale_date'][:10] >= month_ago])
+            
+            # Calcola vendite annuali (ultimi 365 giorni)
+            year_ago = (datetime.now() - timedelta(days=365)).date().isoformat()
+            total_sales_year = sum([s['final_amount'] for s in sales_data if s['sale_date'][:10] >= year_ago])
+            
+            # Media giornaliera e valore medio transazione
+            avg_daily_sales = total_sales_month / 30 if total_sales_month > 0 else 0
+            total_transactions = len(sales_data)
+            avg_transaction_value = total_sales_year / total_transactions if total_transactions > 0 else 0
+            
             return {
-                'total_sales_today': 1250.75,
-                'total_sales_week': 8750.50,
-                'total_sales_month': 32500.25,
-                'total_sales_year': 125000.00,
-                'average_daily_sales': 1083.33,
-                'best_selling_product': 'Carne de Res Premium',
-                'best_selling_category': 'Carnes',
-                'total_transactions': 156,
-                'average_transaction_value': 801.28
+                'total_sales_today': total_sales_today,
+                'total_sales_week': total_sales_week,
+                'total_sales_month': total_sales_month,
+                'total_sales_year': total_sales_year,
+                'average_daily_sales': avg_daily_sales,
+                'best_selling_product': 'Venta Excel',  # Prodotto generico
+                'best_selling_category': 'Generale',  # Categoria generica
+                'total_transactions': total_transactions,
+                'average_transaction_value': avg_transaction_value
             }
         except Exception as e:
             logger.error(f"❌ Errore ottenendo riepilogo vendite: {e}")
