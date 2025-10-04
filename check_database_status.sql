@@ -33,6 +33,8 @@ SELECT
 
 -- Se le tabelle esistono, mostra i dettagli
 DO $$
+DECLARE
+    rec RECORD;
 BEGIN
     -- Mostra ruoli se la tabella esiste
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'roles') THEN
