@@ -156,47 +156,71 @@ class SupabaseManager:
     # ==================== METODI SPECIFICI PER CARNICERÍA ====================
     
     def get_dashboard_stats(self) -> Dict[str, Any]:
-        """Ottiene statistiche dashboard"""
+        """Ottiene statistiche dashboard dai dati di contabilità giornaliera"""
         try:
-            # Leggi dalle tabelle corrette (sales, customers, suppliers, products)
-            sales_stats = self.select('sales', 'total_amount, sale_date')
-            total_sales = sum([sale['total_amount'] for sale in sales_stats])
+            if not self.is_connected():
+                logger.error("❌ Supabase non connesso")
+                return self._get_empty_stats()
             
-            # Vendite di oggi
             today = datetime.now().date().isoformat()
-            sales_today = [s for s in sales_stats if s['sale_date'][:10] == today]
-            sales_today_total = sum([s['total_amount'] for s in sales_today])
             
-            # Statistiche prodotti
-            products_count = len(self.select('products'))
-            low_stock_products = len(self.select('products', filters={'current_stock': 0}))
+            # Ottieni entrate di oggi (vendite)
+            income_today_result = self.client.table('daily_income').select('*').eq('date', today).execute()
+            income_today = income_today_result.data if income_today_result.data else []
+            sales_today_total = sum([i['amount'] for i in income_today])
             
-            # Statistiche clienti
-            customers_count = len(self.select('customers'))
+            # Ottieni uscite di oggi (ordini/acquisti)
+            expenses_today_result = self.client.table('daily_expenses').select('*').eq('date', today).execute()
+            expenses_today = expenses_today_result.data if expenses_today_result.data else []
             
-            # Statistiche fornitori
-            suppliers_count = len(self.select('suppliers'))
+            # Ottieni totale entrate (vendite totali)
+            all_income_result = self.client.table('daily_income').select('amount').execute()
+            all_income = all_income_result.data if all_income_result.data else []
+            total_sales = sum([i['amount'] for i in all_income])
+            
+            # Ottieni categorie per contare prodotti
+            categories_result = self.client.table('accounting_categories').select('*').eq('is_active', True).execute()
+            categories = categories_result.data if categories_result.data else []
+            
+            # Conta categorie di vendita come "prodotti"
+            income_categories = [c for c in categories if c['type'] == 'income']
+            
+            # Ottieni clienti (se esistono ancora)
+            try:
+                customers_result = self.client.table('customers').select('id').execute()
+                customers_count = len(customers_result.data) if customers_result.data else 0
+            except:
+                customers_count = 0
             
             return {
-                'sales_today': {'count': len(sales_today), 'total': sales_today_total},
-                'orders_today': {'count': suppliers_count, 'total': 0},  # Usa fornitori come proxy
+                'sales_today': {'count': len(income_today), 'total': sales_today_total},
+                'orders_today': {'count': len(expenses_today), 'total': sum([e['amount'] for e in expenses_today])},
                 'total_customers': customers_count,
-                'total_products': products_count if products_count > 0 else len(sales_stats),
+                'total_products': len(income_categories),
                 'total_sales': total_sales,
-                'products_count': products_count if products_count > 0 else len(sales_stats),
-                'low_stock_products': low_stock_products,
+                'products_count': len(income_categories),
+                'low_stock_products': 0,  # Non più rilevante
                 'customers_count': customers_count,
                 'last_update': datetime.now().isoformat()
             }
                 
         except Exception as e:
             logger.error(f"❌ Errore ottenendo statistiche dashboard: {e}")
-            return {
-                'sales_today': {'count': 0, 'total': 0},
-                'orders_today': {'count': 0, 'total': 0},
-                'total_customers': 0,
-                'total_products': 0
-            }
+            return self._get_empty_stats()
+    
+    def _get_empty_stats(self) -> Dict[str, Any]:
+        """Ritorna statistiche vuote"""
+        return {
+            'sales_today': {'count': 0, 'total': 0},
+            'orders_today': {'count': 0, 'total': 0},
+            'total_customers': 0,
+            'total_products': 0,
+            'total_sales': 0,
+            'products_count': 0,
+            'low_stock_products': 0,
+            'customers_count': 0,
+            'last_update': datetime.now().isoformat()
+        }
     
     def get_products_low_stock(self) -> List[Dict]:
         """Ottiene prodotti con stock basso"""
@@ -814,7 +838,7 @@ class SupabaseManager:
             sales_data = self.select('sales', 'sale_date, final_amount')
             
             if not sales_data:
-                return {
+            return {
                     'total_sales_today': 0,
                     'total_sales_week': 0,
                     'total_sales_month': 0,
