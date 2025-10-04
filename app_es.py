@@ -1927,7 +1927,9 @@ def render_personal():
                     else:
                         # Crear el nuevo empleado en la base de datos
                         employee_data = {
-                            'name': new_name,
+                            'first_name': new_name.split()[0] if new_name else 'Sin Nombre',
+                            'last_name': ' '.join(new_name.split()[1:]) if len(new_name.split()) > 1 else '',
+                            'name': new_name,  # Mantenemos también name por compatibilidad
                             'email': new_email,
                             'phone': new_phone,
                             'address': new_address,
