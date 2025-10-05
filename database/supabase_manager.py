@@ -1631,6 +1631,24 @@ class SupabaseManager:
             logger.error(f"❌ Errore creando backup: {e}")
             return {}
 
+    def delete_supplier(self, supplier_id: str) -> bool:
+        """Elimina un proveedor"""
+        try:
+            if self.is_connected():
+                response = self.client.table('suppliers').delete().eq('id', supplier_id).execute()
+                if response.data is not None:
+                    logger.info(f"✅ Proveedor {supplier_id} eliminado")
+                    return True
+                else:
+                    logger.error(f"❌ No se pudo eliminar el proveedor {supplier_id}")
+                    return False
+            else:
+                logger.error("❌ No hay conexión a Supabase")
+                return False
+        except Exception as e:
+            logger.error(f"❌ Error eliminando proveedor {supplier_id}: {e}")
+            return False
+
 # Instanza globale
 _supabase_manager = None
 
