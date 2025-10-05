@@ -149,3 +149,4 @@ Il componente è **pronto per la produzione** e risolve completamente il problem
 **Creato da Ezio Camporeale**  
 **Data**: Ottobre 2024  
 **Stato**: ✅ COMPLETATO E TESTATO
+

@@ -8,3 +8,4 @@ from .suppliers_manager import SuppliersManager
 from .suppliers_ui import SuppliersUI, render_suppliers_page
 
 __all__ = ['SuppliersManager', 'SuppliersUI', 'render_suppliers_page']
+

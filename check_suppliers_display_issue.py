@@ -248,3 +248,4 @@ if __name__ == "__main__":
         print("⚠️  PROBLEMA: Situazione non chiara, verifica necessaria")
     
     print("\n🎯 Diagnosi completata!")
+

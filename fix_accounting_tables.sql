@@ -103,3 +103,4 @@ UNION ALL
 SELECT 'daily_reports' as table_name, COUNT(*) as record_count FROM daily_reports
 UNION ALL
 SELECT 'accounting_categories' as table_name, COUNT(*) as record_count FROM accounting_categories;
+

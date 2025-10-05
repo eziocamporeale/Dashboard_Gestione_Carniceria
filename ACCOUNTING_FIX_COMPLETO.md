@@ -165,3 +165,4 @@ def select(self, table: str, columns: str = "*", filters: Dict = None, limit: in
 **Stato**: ✅ COMPLETATO E TESTATO
 
 Il sistema di contabilità è ora **completamente funzionale** e risolve tutti i problemi riscontrati nei log!
+

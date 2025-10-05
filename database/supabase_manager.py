@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 import json
 import sys
 from pathlib import Path
+import atexit
+import weakref
 
 # Aggiungi il percorso della directory corrente al path di Python
 current_dir = Path(__file__).parent.parent
@@ -25,10 +27,26 @@ logger = logging.getLogger(__name__)
 class SupabaseManager:
     """Gestore database Supabase per l'applicazione"""
     
+    # Singleton pattern per evitare multiple connessioni
+    _instance = None
+    _initialized = False
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SupabaseManager, cls).__new__(cls)
+        return cls._instance
+    
     def __init__(self):
         """Inizializza il gestore Supabase"""
+        if self._initialized:
+            return
+            
         self.config = SupabaseConfig()
         self.client = None
+        self._connection_count = 0
+        self._max_connections = 10  # Limite connessioni simultanee
+        
+        # Cache per ridurre chiamate database
         self._deleted_customers = set()  # Traccia clienti eliminati
         self._customers_cache = None     # Cache per i clienti
         self._deleted_suppliers = set()  # Traccia fornitori eliminati
@@ -40,6 +58,12 @@ class SupabaseManager:
         self._deleted_sales = set()      # Traccia vendite eliminate
         self._sales_cache = None         # Cache per le vendite
         
+        # Registra cleanup automatico
+        atexit.register(self.cleanup)
+        weakref.finalize(self, self.cleanup)
+        
+        self._initialized = True
+        
         if self.config.is_supabase_configured():
             try:
                 from supabase import create_client, Client
@@ -48,6 +72,7 @@ class SupabaseManager:
                     self.config.SUPABASE_ANON_KEY
                 )
                 logger.info("✅ Connessione Supabase inizializzata")
+                self._connection_count += 1
             except ImportError:
                 logger.error("❌ Libreria supabase non installata. Esegui: pip install supabase")
                 self.client = None
@@ -1664,6 +1689,51 @@ class SupabaseManager:
         except Exception as e:
             logger.error(f"❌ Error eliminando proveedor {supplier_id}: {e}")
             return False
+
+    def cleanup(self):
+        """Pulizia risorse e chiusura connessioni"""
+        try:
+            if hasattr(self, 'client') and self.client is not None:
+                # Chiudi connessioni HTTP
+                if hasattr(self.client, 'close'):
+                    self.client.close()
+                
+                # Reset cache per liberare memoria
+                self._customers_cache = None
+                self._suppliers_cache = None
+                self._orders_cache = None
+                self._products_cache = None
+                self._sales_cache = None
+                
+                # Pulisci set di tracking
+                self._deleted_customers.clear()
+                self._deleted_suppliers.clear()
+                self._deleted_orders.clear()
+                self._deleted_products.clear()
+                self._deleted_sales.clear()
+                
+                logger.info("✅ Cleanup risorse Supabase completato")
+                
+        except Exception as e:
+            logger.error(f"❌ Errore durante cleanup: {e}")
+        finally:
+            self.client = None
+            self._connection_count = 0
+
+    def get_connection_info(self) -> Dict[str, Any]:
+        """Ottiene informazioni sulle connessioni"""
+        return {
+            'connection_count': self._connection_count,
+            'max_connections': self._max_connections,
+            'is_connected': self.is_connected(),
+            'cache_size': {
+                'customers': len(self._customers_cache) if self._customers_cache else 0,
+                'suppliers': len(self._suppliers_cache) if self._suppliers_cache else 0,
+                'orders': len(self._orders_cache) if self._orders_cache else 0,
+                'products': len(self._products_cache) if self._products_cache else 0,
+                'sales': len(self._sales_cache) if self._sales_cache else 0
+            }
+        }
 
 # Instanza globale
 _supabase_manager = None

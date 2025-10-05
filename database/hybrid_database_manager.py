@@ -10,6 +10,8 @@ from typing import List, Dict, Optional, Any
 from datetime import datetime
 import sys
 from pathlib import Path
+import atexit
+import weakref
 
 # Aggiungi il percorso della directory corrente al path di Python
 current_dir = Path(__file__).parent.parent
@@ -39,14 +41,32 @@ logger = logging.getLogger(__name__)
 class HybridDatabaseManager:
     """Gestore database ibrido: Supabase principale, SQLite fallback"""
     
+    # Singleton pattern per evitare multiple istanze
+    _instance = None
+    _initialized = False
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(HybridDatabaseManager, cls).__new__(cls)
+        return cls._instance
+    
     def __init__(self):
         """Inizializza il gestore ibrido"""
+        if self._initialized:
+            return
+            
         if SUPABASE_AVAILABLE and SupabaseManager:
             self.supabase_manager = SupabaseManager()
             self.use_supabase = self.supabase_manager.is_connected()
         else:
             self.supabase_manager = None
             self.use_supabase = False
+            
+        # Registra cleanup automatico
+        atexit.register(self.cleanup)
+        weakref.finalize(self, self.cleanup)
+        
+        self._initialized = True
             
         if SQLITE_AVAILABLE and SimpleDatabaseManager:
             self.sqlite_manager = SimpleDatabaseManager()
@@ -985,6 +1005,37 @@ class HybridDatabaseManager:
         except Exception as e:
             logger.error(f"❌ Errore ottenendo impiegato: {e}")
             return {}
+
+    def cleanup(self):
+        """Pulizia risorse e chiusura connessioni"""
+        try:
+            # Cleanup Supabase
+            if hasattr(self, 'supabase_manager') and self.supabase_manager:
+                if hasattr(self.supabase_manager, 'cleanup'):
+                    self.supabase_manager.cleanup()
+            
+            # Cleanup SQLite
+            if hasattr(self, 'sqlite_manager') and self.sqlite_manager:
+                if hasattr(self.sqlite_manager, 'close'):
+                    self.sqlite_manager.close()
+                    
+            logger.info("✅ Cleanup HybridDatabaseManager completato")
+            
+        except Exception as e:
+            logger.error(f"❌ Errore durante cleanup HybridDatabaseManager: {e}")
+
+    def get_connection_info(self) -> Dict[str, Any]:
+        """Ottiene informazioni sulle connessioni"""
+        info = {
+            'use_supabase': self.use_supabase,
+            'supabase_available': SUPABASE_AVAILABLE,
+            'sqlite_available': SQLITE_AVAILABLE
+        }
+        
+        if self.supabase_manager and hasattr(self.supabase_manager, 'get_connection_info'):
+            info['supabase'] = self.supabase_manager.get_connection_info()
+            
+        return info
 
 # Istanza globale
 

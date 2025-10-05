@@ -30,6 +30,7 @@ sys.path.insert(0, str(project_root))
 # Importar módulos del proyecto
 from config_es import APP_NAME, APP_VERSION, APP_AUTHOR
 from database.hybrid_database_manager import get_hybrid_manager
+from components.resource_manager import init_resource_manager, show_resource_status, cleanup_on_page_change
 
 # Importa il menu centrale
 try:
@@ -53,6 +54,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Inicializar Resource Manager para evitar "Too many open files"
+try:
+    resource_manager = init_resource_manager()
+    logger.info("✅ Resource Manager inicializado")
+except Exception as e:
+    logger.error(f"❌ Error inicializando Resource Manager: {e}")
 
 # CSS personalizado
 st.markdown("""
@@ -191,6 +199,14 @@ def render_sidebar():
                 if st.button("👥 Nuevo Cliente", width='stretch'):
                     st.session_state['current_page'] = 'clientes'
                     st.rerun()
+            
+            st.markdown("---")
+            
+            # Monitor risorse per evitare "Too many open files"
+            try:
+                show_resource_status()
+            except Exception as e:
+                logger.error(f"❌ Error mostrando estado recursos: {e}")
             
             st.markdown("---")
             

@@ -158,3 +158,4 @@ if __name__ == "__main__":
         print("\n❌ Creazione categorie fallita")
     
     print("\n🎯 Script completato!")
+

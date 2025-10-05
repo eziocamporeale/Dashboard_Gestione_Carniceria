@@ -196,3 +196,4 @@ if __name__ == "__main__":
         print("✅ Struttura daily_reports OK")
     
     print("\n🎯 Diagnosi completata!")
+

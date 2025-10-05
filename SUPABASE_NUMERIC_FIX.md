@@ -89,3 +89,4 @@ Potrai inserire importi come:
 - ✅ 15000.00
 - ✅ 99999.99
 - ✅ Qualsiasi importo ragionevole per una macelleria
+

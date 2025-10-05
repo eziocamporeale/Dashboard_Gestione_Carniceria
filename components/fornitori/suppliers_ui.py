@@ -418,3 +418,4 @@ def render_suppliers_page():
     """Funzione principale per renderizzare la pagina fornitori"""
     ui = SuppliersUI()
     ui.render_suppliers_page()
+

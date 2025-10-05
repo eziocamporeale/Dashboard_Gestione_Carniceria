@@ -98,3 +98,4 @@ if __name__ == "__main__":
         print("❌ Impossibile determinare la struttura della tabella")
     
     print("\n🎯 Verifica completata!")
+
