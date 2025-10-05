@@ -7,10 +7,17 @@ Creado por Ezio Camporeale
 
 import streamlit as st
 import gc
-import psutil
 import atexit
 from typing import Dict, Any
 import logging
+
+# Import condizionale di psutil (opzionale per monitoraggio)
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    psutil = None
+    PSUTIL_AVAILABLE = False
 
 # Configurazione logging
 logger = logging.getLogger(__name__)
@@ -47,10 +54,13 @@ class ResourceManager:
             
             # Log info sistema
             try:
-                process = psutil.Process()
-                memory_mb = process.memory_info().rss / 1024 / 1024
-                open_files = process.num_fds()
-                logger.info(f"📊 Risorsse dopo cleanup - Memoria: {memory_mb:.2f} MB, File aperti: {open_files}")
+                if PSUTIL_AVAILABLE:
+                    process = psutil.Process()
+                    memory_mb = process.memory_info().rss / 1024 / 1024
+                    open_files = process.num_fds()
+                    logger.info(f"📊 Risorsse dopo cleanup - Memoria: {memory_mb:.2f} MB, File aperti: {open_files}")
+                else:
+                    logger.info("📊 Cleanup completato (psutil non disponibile per monitoraggio)")
             except Exception:
                 pass
                 
@@ -60,15 +70,26 @@ class ResourceManager:
     def get_resource_info(self) -> Dict[str, Any]:
         """Ottiene informazioni sulle risorse"""
         try:
-            process = psutil.Process()
-            
-            info = {
-                'memory_mb': process.memory_info().rss / 1024 / 1024,
-                'open_files': process.num_fds(),
-                'threads': process.num_threads(),
-                'cpu_percent': process.cpu_percent(),
-                'session_id': self._session_id
-            }
+            if PSUTIL_AVAILABLE:
+                process = psutil.Process()
+                
+                info = {
+                    'memory_mb': process.memory_info().rss / 1024 / 1024,
+                    'open_files': process.num_fds(),
+                    'threads': process.num_threads(),
+                    'cpu_percent': process.cpu_percent(),
+                    'session_id': self._session_id
+                }
+            else:
+                # Fallback quando psutil non è disponibile
+                info = {
+                    'memory_mb': 0,
+                    'open_files': 0,
+                    'threads': 0,
+                    'cpu_percent': 0,
+                    'session_id': self._session_id,
+                    'psutil_available': False
+                }
             
             # Info database se disponibile
             if 'db' in st.session_state:
@@ -80,29 +101,56 @@ class ResourceManager:
             
         except Exception as e:
             logger.error(f"❌ Errore ottenendo info risorse: {e}")
-            return {}
+            return {
+                'memory_mb': 0,
+                'open_files': 0,
+                'threads': 0,
+                'cpu_percent': 0,
+                'session_id': self._session_id,
+                'error': str(e)
+            }
     
     def check_limits(self) -> Dict[str, bool]:
         """Verifica se siamo vicini ai limiti"""
         try:
             info = self.get_resource_info()
             
+            # Se psutil non è disponibile, assumiamo che tutto sia OK
+            if not PSUTIL_AVAILABLE or info.get('psutil_available') is False:
+                return {
+                    'memory_ok': True,
+                    'files_ok': True,
+                    'cpu_ok': True,
+                    'monitoring_available': False
+                }
+            
             limits = {
                 'memory_ok': info.get('memory_mb', 0) < 500,  # Meno di 500MB
                 'files_ok': info.get('open_files', 0) < 100,  # Meno di 100 file aperti
-                'cpu_ok': info.get('cpu_percent', 0) < 80    # Meno di 80% CPU
+                'cpu_ok': info.get('cpu_percent', 0) < 80,   # Meno di 80% CPU
+                'monitoring_available': True
             }
             
             return limits
             
         except Exception as e:
             logger.error(f"❌ Errore verificando limiti: {e}")
-            return {'memory_ok': True, 'files_ok': True, 'cpu_ok': True}
+            return {
+                'memory_ok': True, 
+                'files_ok': True, 
+                'cpu_ok': True,
+                'monitoring_available': False,
+                'error': str(e)
+            }
     
     def auto_cleanup_if_needed(self):
         """Esegue cleanup automatico se necessario"""
         try:
             limits = self.check_limits()
+            
+            # Se il monitoraggio non è disponibile, non fare cleanup automatico
+            if not limits.get('monitoring_available', True):
+                return False
             
             if not limits['memory_ok'] or not limits['files_ok']:
                 logger.warning("⚠️  Limiti risorse superati, eseguo cleanup automatico")
@@ -136,32 +184,42 @@ def show_resource_status():
         if 'resource_manager' in st.session_state:
             resource_manager = st.session_state.resource_manager
             
-            with st.sidebar.expander("📊 Stato Risorse", expanded=False):
+            with st.sidebar.expander("📊 Estado Risorse", expanded=False):
                 info = resource_manager.get_resource_info()
                 limits = resource_manager.check_limits()
                 
-                # Memoria
-                memory_mb = info.get('memory_mb', 0)
-                memory_color = "🟢" if limits['memory_ok'] else "🔴"
-                st.metric("💾 Memoria", f"{memory_mb:.1f} MB", delta=None)
+                # Verifica se il monitoraggio è disponibile
+                monitoring_available = limits.get('monitoring_available', True)
                 
-                # File aperti
-                open_files = info.get('open_files', 0)
-                files_color = "🟢" if limits['files_ok'] else "🔴"
-                st.metric("📁 File Aperti", open_files, delta=None)
+                if not monitoring_available:
+                    st.info("ℹ️ Monitoraggio risorse non disponibile (psutil non installato)")
+                    st.metric("💾 Memoria", "N/A", delta=None)
+                    st.metric("📁 File Aperti", "N/A", delta=None)
+                    st.metric("⚡ CPU", "N/A", delta=None)
+                    st.write("🟡 **Estado:** Monitoraggio limitato")
+                else:
+                    # Memoria
+                    memory_mb = info.get('memory_mb', 0)
+                    memory_color = "🟢" if limits['memory_ok'] else "🔴"
+                    st.metric("💾 Memoria", f"{memory_mb:.1f} MB", delta=None)
+                    
+                    # File aperti
+                    open_files = info.get('open_files', 0)
+                    files_color = "🟢" if limits['files_ok'] else "🔴"
+                    st.metric("📁 File Aperti", open_files, delta=None)
+                    
+                    # CPU
+                    cpu_percent = info.get('cpu_percent', 0)
+                    cpu_color = "🟢" if limits['cpu_ok'] else "🔴"
+                    st.metric("⚡ CPU", f"{cpu_percent:.1f}%", delta=None)
+                    
+                    # Stato generale
+                    all_ok = limits['memory_ok'] and limits['files_ok'] and limits['cpu_ok']
+                    status_color = "🟢" if all_ok else "🔴"
+                    status_text = "OK" if all_ok else "ATTENZIONE"
+                    st.write(f"{status_color} **Estado:** {status_text}")
                 
-                # CPU
-                cpu_percent = info.get('cpu_percent', 0)
-                cpu_color = "🟢" if limits['cpu_ok'] else "🔴"
-                st.metric("⚡ CPU", f"{cpu_percent:.1f}%", delta=None)
-                
-                # Stato generale
-                all_ok = all(limits.values())
-                status_color = "🟢" if all_ok else "🔴"
-                status_text = "OK" if all_ok else "ATTENZIONE"
-                st.write(f"{status_color} **Stato:** {status_text}")
-                
-                # Pulsante cleanup manuale
+                # Pulsante cleanup manuale (sempre disponibile)
                 if st.button("🧹 Cleanup Manuale", use_container_width=True):
                     resource_manager.cleanup_all()
                     st.success("✅ Cleanup completato!")

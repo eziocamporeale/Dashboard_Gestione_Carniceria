@@ -6,9 +6,16 @@ Creado por Ezio Camporeale
 
 import os
 import sys
-import psutil
 import gc
 from pathlib import Path
+
+# Import condizionale di psutil
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    psutil = None
+    PSUTIL_AVAILABLE = False
 
 # Aggiungi il percorso della directory corrente al path di Python
 current_dir = Path(__file__).parent
@@ -27,31 +34,40 @@ def get_system_info():
     print("🖥️  INFORMAZIONI SISTEMA")
     print("=" * 30)
     
-    # Processo corrente
-    process = psutil.Process()
+    if not PSUTIL_AVAILABLE:
+        print("❌ psutil non disponibile - monitoraggio limitato")
+        print("💡 Per monitoraggio completo, installa: pip install psutil")
+        return
     
-    print(f"📊 Process ID: {process.pid}")
-    print(f"💾 Memoria utilizzata: {process.memory_info().rss / 1024 / 1024:.2f} MB")
-    print(f"🔗 File aperti: {process.num_fds()}")
-    print(f"🧵 Thread attivi: {process.num_threads()}")
-    print(f"⏱️  Tempo CPU: {process.cpu_percent()}%")
-    
-    # Memoria sistema
-    memory = psutil.virtual_memory()
-    print(f"\n💾 Memoria Sistema:")
-    print(f"  - Totale: {memory.total / 1024 / 1024 / 1024:.2f} GB")
-    print(f"  - Disponibile: {memory.available / 1024 / 1024 / 1024:.2f} GB")
-    print(f"  - Utilizzata: {memory.percent}%")
-    
-    # Limiti sistema
     try:
-        import resource
-        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-        print(f"\n📁 Limiti File Descriptors:")
-        print(f"  - Soft limit: {soft}")
-        print(f"  - Hard limit: {hard}")
+        # Processo corrente
+        process = psutil.Process()
+        
+        print(f"📊 Process ID: {process.pid}")
+        print(f"💾 Memoria utilizzata: {process.memory_info().rss / 1024 / 1024:.2f} MB")
+        print(f"🔗 File aperti: {process.num_fds()}")
+        print(f"🧵 Thread attivi: {process.num_threads()}")
+        print(f"⏱️  Tempo CPU: {process.cpu_percent()}%")
+        
+        # Memoria sistema
+        memory = psutil.virtual_memory()
+        print(f"\n💾 Memoria Sistema:")
+        print(f"  - Totale: {memory.total / 1024 / 1024 / 1024:.2f} GB")
+        print(f"  - Disponibile: {memory.available / 1024 / 1024 / 1024:.2f} GB")
+        print(f"  - Utilizzata: {memory.percent}%")
+        
+        # Limiti sistema
+        try:
+            import resource
+            soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+            print(f"\n📁 Limiti File Descriptors:")
+            print(f"  - Soft limit: {soft}")
+            print(f"  - Hard limit: {hard}")
+        except Exception as e:
+            print(f"❌ Errore ottenendo limiti: {e}")
+            
     except Exception as e:
-        print(f"❌ Errore ottenendo limiti: {e}")
+        print(f"❌ Errore ottenendo info sistema: {e}")
 
 def get_database_info():
     """Ottiene informazioni sulle connessioni database"""
@@ -99,9 +115,15 @@ def cleanup_resources():
         print(f"✅ Garbage collection: {collected} oggetti rimossi")
         
         # Info dopo cleanup
-        process = psutil.Process()
-        print(f"🔗 File aperti dopo cleanup: {process.num_fds()}")
-        print(f"💾 Memoria dopo cleanup: {process.memory_info().rss / 1024 / 1024:.2f} MB")
+        if PSUTIL_AVAILABLE:
+            try:
+                process = psutil.Process()
+                print(f"🔗 File aperti dopo cleanup: {process.num_fds()}")
+                print(f"💾 Memoria dopo cleanup: {process.memory_info().rss / 1024 / 1024:.2f} MB")
+            except Exception as e:
+                print(f"❌ Errore ottenendo info dopo cleanup: {e}")
+        else:
+            print("ℹ️ Info dettagliate non disponibili (psutil non installato)")
         
     except Exception as e:
         print(f"❌ Errore durante cleanup: {e}")
@@ -111,6 +133,11 @@ def check_file_descriptors():
     
     print("\n📁 FILE DESCRIPTORS APERTI")
     print("=" * 30)
+    
+    if not PSUTIL_AVAILABLE:
+        print("❌ psutil non disponibile - impossibile verificare file descriptors")
+        print("💡 Per verificare file descriptors, installa: pip install psutil")
+        return
     
     try:
         process = psutil.Process()
@@ -167,13 +194,19 @@ def monitor_connections():
                 print("✅ Connessioni OK")
         
         # Verifica memoria
-        process = psutil.Process()
-        memory_mb = process.memory_info().rss / 1024 / 1024
-        
-        if memory_mb > 500:  # Più di 500MB
-            print(f"⚠️  ATTENZIONE: Uso memoria alto: {memory_mb:.2f} MB")
+        if PSUTIL_AVAILABLE:
+            try:
+                process = psutil.Process()
+                memory_mb = process.memory_info().rss / 1024 / 1024
+                
+                if memory_mb > 500:  # Più di 500MB
+                    print(f"⚠️  ATTENZIONE: Uso memoria alto: {memory_mb:.2f} MB")
+                else:
+                    print(f"✅ Memoria OK: {memory_mb:.2f} MB")
+            except Exception as e:
+                print(f"❌ Errore verificando memoria: {e}")
         else:
-            print(f"✅ Memoria OK: {memory_mb:.2f} MB")
+            print("ℹ️ Verifica memoria non disponibile (psutil non installato)")
             
     except Exception as e:
         print(f"❌ Errore monitorando connessioni: {e}")
