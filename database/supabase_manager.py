@@ -520,9 +520,17 @@ class SupabaseManager:
     def create_customer(self, customer_data: Dict[str, Any]) -> bool:
         """Crea un nuevo cliente"""
         try:
-            # En una implementación real, aquí se insertaría en Supabase
-            logger.info(f"✅ Nuevo cliente creado: {customer_data}")
-            return True
+            if self.is_connected():
+                response = self.client.table('customers').insert(customer_data).execute()
+                if response.data:
+                    logger.info(f"✅ Nuevo cliente creado: {customer_data}")
+                    return True
+                else:
+                    logger.error("❌ Error: No se pudo crear el cliente")
+                    return False
+            else:
+                logger.error("❌ No hay conexión a Supabase")
+                return False
         except Exception as e:
             logger.error(f"❌ Error creando cliente: {e}")
             return False

@@ -355,10 +355,16 @@ class HybridDatabaseManager:
             return []
     
     def create_customer(self, customer_data: Dict[str, Any]) -> bool:
-        """Crea un nuovo cliente"""
+        """Crea un nuevo cliente"""
         try:
-            manager = self._get_manager()
-            return manager.create_customer(customer_data)
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                return self.supabase_manager.create_customer(customer_data)
+            else:
+                if hasattr(self.sqlite_manager, 'create_customer'):
+                    return self.sqlite_manager.create_customer(customer_data)
+                else:
+                    logger.error("❌ Metodo create_customer non disponibile per SQLite")
+                    return False
         except Exception as e:
             logger.error(f"❌ Errore creando cliente: {e}")
             return False
