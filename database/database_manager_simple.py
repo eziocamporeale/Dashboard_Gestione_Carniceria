@@ -754,7 +754,29 @@ class SimpleDatabaseManager:
     def create_supplier(self, supplier_data: Dict[str, Any]) -> bool:
         """Crea un nuevo proveedor"""
         try:
-            # En una implementación real, aquí se insertaría en la base de datos
+            # Implementación real para SQLite
+            import sqlite3
+            from datetime import datetime
+            
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Preparar datos con timestamp
+            supplier_data_with_timestamp = supplier_data.copy()
+            supplier_data_with_timestamp['created_at'] = datetime.now().isoformat()
+            supplier_data_with_timestamp['updated_at'] = datetime.now().isoformat()
+            
+            # Insertar en la tabla suppliers
+            columns = ', '.join(supplier_data_with_timestamp.keys())
+            placeholders = ', '.join(['?' for _ in supplier_data_with_timestamp.keys()])
+            values = list(supplier_data_with_timestamp.values())
+            
+            query = f"INSERT INTO suppliers ({columns}) VALUES ({placeholders})"
+            cursor.execute(query, values)
+            
+            conn.commit()
+            conn.close()
+            
             logger.info(f"✅ Nuevo proveedor creado: {supplier_data}")
             return True
         except Exception as e:

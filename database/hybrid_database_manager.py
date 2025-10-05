@@ -442,8 +442,14 @@ class HybridDatabaseManager:
     def create_supplier(self, supplier_data: Dict[str, Any]) -> bool:
         """Crea un nuevo proveedor"""
         try:
-            manager = self._get_manager()
-            return manager.create_supplier(supplier_data)
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                return self.supabase_manager.create_supplier(supplier_data)
+            else:
+                if hasattr(self.sqlite_manager, 'create_supplier'):
+                    return self.sqlite_manager.create_supplier(supplier_data)
+                else:
+                    logger.error("❌ Metodo create_supplier non disponibile per SQLite")
+                    return False
         except Exception as e:
             logger.error(f"❌ Errore creando proveedor: {e}")
             return False
