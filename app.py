@@ -486,8 +486,12 @@ def render_fornitori():
     """Renderizza la sezione fornitori"""
     require_permission("fornitori")
     
-    st.header("🚚 Gestione Fornitori")
-    st.info("🚧 Funzionalità in sviluppo - Gestione fornitori e approvvigionamento")
+    try:
+        from components.fornitori.suppliers_ui import render_suppliers_page
+        render_suppliers_page()
+    except ImportError as e:
+        st.error(f"❌ Errore nel caricamento del componente fornitori: {e}")
+        st.info("🚧 Funzionalità fornitori non disponibile - Contatta l'amministratore")
 
 def render_personale():
     """Renderizza la sezione personale"""

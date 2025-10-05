@@ -1105,7 +1105,7 @@ def render_proveedores():
     
     # Obtener datos de proveedores
     db = get_hybrid_manager()
-    suppliers = db.get_all_suppliers()
+    suppliers = db.select('suppliers') or []
     
     # Tabs para diferentes funcionalidades
     tab1, tab2, tab3, tab4 = st.tabs(["📋 Lista Proveedores", "➕ Nuevo Proveedor", "📊 Estadísticas", "📦 Pedidos"])
