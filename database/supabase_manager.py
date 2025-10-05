@@ -1430,7 +1430,8 @@ class SupabaseManager:
         """Elimina un'entrata o uscita giornaliera"""
         try:
             table = 'daily_income' if entry_type == 'income' else 'daily_expenses'
-            result = self.delete(table, entry_id)
+            # Il metodo delete si aspetta un dizionario di filtri, non l'ID direttamente
+            result = self.delete(table, {'id': entry_id})
             
             if result:
                 logger.info(f"✅ {entry_type} eliminato: {entry_id}")

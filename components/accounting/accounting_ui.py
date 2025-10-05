@@ -154,21 +154,36 @@ class AccountingUI:
                     else:
                         st.error(message)
         
-        # Lista entrate recenti
+        # Lista entrate recenti con pulsanti eliminazione
         st.subheader("📋 Entrate Recenti")
         
         recent_income = self._get_recent_income()
         
         if recent_income:
-            df = pd.DataFrame(recent_income)
-            df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
-            df['amount'] = df['amount'].apply(lambda x: f"${x:,.2f}")
-            
-            st.dataframe(
-                df[['date', 'amount', 'category', 'description', 'payment_method']],
-                use_container_width=True,
-                hide_index=True
-            )
+            for income in recent_income:
+                col1, col2, col3, col4, col5 = st.columns([2, 1, 2, 2, 1])
+                
+                with col1:
+                    st.write(f"**{income['date']}**")
+                
+                with col2:
+                    st.write(f"${income['amount']:,.2f}")
+                
+                with col3:
+                    st.write(f"📂 {income['category']}")
+                
+                with col4:
+                    st.write(f"💳 {income['payment_method']}")
+                
+                with col5:
+                    if st.button("🗑️", key=f"delete_income_{income['id']}", help="Elimina entrata"):
+                        if self.db.supabase_manager.delete_daily_entry('income', str(income['id'])):
+                            st.success("✅ Entrata eliminata")
+                            st.rerun()
+                        else:
+                            st.error("❌ Errore durante l'eliminazione")
+                
+                st.markdown("---")
         else:
             st.info("ℹ️ Nessuna entrata registrata")
     
@@ -204,21 +219,39 @@ class AccountingUI:
                     else:
                         st.error(message)
         
-        # Lista uscite recenti
+        # Lista uscite recenti con pulsanti eliminazione
         st.subheader("📋 Uscite Recenti")
         
         recent_expenses = self._get_recent_expenses()
         
         if recent_expenses:
-            df = pd.DataFrame(recent_expenses)
-            df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
-            df['amount'] = df['amount'].apply(lambda x: f"${x:,.2f}")
-            
-            st.dataframe(
-                df[['date', 'amount', 'category', 'description', 'supplier', 'payment_method']],
-                use_container_width=True,
-                hide_index=True
-            )
+            for expense in recent_expenses:
+                col1, col2, col3, col4, col5, col6 = st.columns([2, 1, 2, 2, 2, 1])
+                
+                with col1:
+                    st.write(f"**{expense['date']}**")
+                
+                with col2:
+                    st.write(f"${expense['amount']:,.2f}")
+                
+                with col3:
+                    st.write(f"📂 {expense['category']}")
+                
+                with col4:
+                    st.write(f"🏢 {expense.get('supplier', 'N/A')}")
+                
+                with col5:
+                    st.write(f"💳 {expense['payment_method']}")
+                
+                with col6:
+                    if st.button("🗑️", key=f"delete_expense_{expense['id']}", help="Elimina uscita"):
+                        if self.db.supabase_manager.delete_daily_entry('expense', str(expense['id'])):
+                            st.success("✅ Uscita eliminata")
+                            st.rerun()
+                        else:
+                            st.error("❌ Errore durante l'eliminazione")
+                
+                st.markdown("---")
         else:
             st.info("ℹ️ Nessuna uscita registrata")
     
