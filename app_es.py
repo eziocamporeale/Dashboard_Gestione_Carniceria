@@ -272,7 +272,7 @@ def render_dashboard():
                 <div class="alert-card">
                     <strong>⏰ {product['name']}</strong><br>
                     Vence: {product['expiry_date']}<br>
-                    Lote: {product['batch_number']}
+                    Cantidad: {product.get('quantity', 'N/A')}
                 </div>
                 """, unsafe_allow_html=True)
         else:
