@@ -121,6 +121,7 @@ def render_sidebar():
                 ("🛒 Vendite", "vendite"),
                 ("👥 Clienti", "clienti"),
                 ("🚚 Fornitori", "fornitori"),
+                ("💰 Contabilità", "accounting"),
                 ("👨‍💼 Personale", "personale"),
                 ("📊 Analytics", "analytics"),
                 ("⚙️ Impostazioni", "settings")
@@ -493,6 +494,17 @@ def render_fornitori():
         st.error(f"❌ Errore nel caricamento del componente fornitori: {e}")
         st.info("🚧 Funzionalità fornitori non disponibile - Contatta l'amministratore")
 
+def render_accounting():
+    """Renderizza la sezione contabilità"""
+    require_permission("accounting")
+    
+    try:
+        from components.accounting.accounting_ui import render_accounting_page
+        render_accounting_page()
+    except ImportError as e:
+        st.error(f"❌ Errore nel caricamento del componente accounting: {e}")
+        st.info("🚧 Funzionalità contabilità non disponibile - Contatta l'amministratore")
+
 def render_personale():
     """Renderizza la sezione personale"""
     require_permission("personale")
@@ -545,6 +557,8 @@ def main():
             render_clienti()
         elif current_page == 'fornitori':
             render_fornitori()
+        elif current_page == 'accounting':
+            render_accounting()
         elif current_page == 'personale':
             render_personale()
         elif current_page == 'analytics':

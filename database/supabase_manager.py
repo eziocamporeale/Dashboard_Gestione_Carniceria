@@ -89,7 +89,22 @@ class SupabaseManager:
             
             if filters:
                 for key, value in filters.items():
-                    query = query.eq(key, value)
+                    # Gestisce filtri di range per le date
+                    if key.endswith('__gte'):
+                        column_name = key.replace('__gte', '')
+                        query = query.gte(column_name, value)
+                    elif key.endswith('__lte'):
+                        column_name = key.replace('__lte', '')
+                        query = query.lte(column_name, value)
+                    elif key.endswith('__lt'):
+                        column_name = key.replace('__lt', '')
+                        query = query.lt(column_name, value)
+                    elif key.endswith('__gt'):
+                        column_name = key.replace('__gt', '')
+                        query = query.gt(column_name, value)
+                    else:
+                        # Filtro normale con eq
+                        query = query.eq(key, value)
             
             if order_by:
                 query = query.order(order_by)
