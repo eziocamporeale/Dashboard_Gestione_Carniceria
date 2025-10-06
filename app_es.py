@@ -2820,67 +2820,423 @@ def render_ventas():
             st.info("👥 **Capacitación del equipo**\n- Técnicas de venta\n- Productos premium\n- Atención al cliente")
 
 def render_analytics():
-    """Renderiza la sección analytics"""
+    """Renderiza la sección analytics completa"""
     require_permission("analytics")
     
     st.header("📊 Analytics y Reportes")
+    
+    # Ottieni il database manager
+    db = get_hybrid_manager()
     
     # Tabs para diferentes tipos de reportes
     tab1, tab2, tab3, tab4 = st.tabs(["📈 Ventas", "💰 Financiero", "📦 Inventario", "👥 Clientes"])
     
     with tab1:
-        st.subheader("📈 Reportes de Ventas")
+        st.subheader("📈 Analytics de Ventas")
         
-        # Nessun dato fittizio - usa dati reali dal database
-        sales_data = []
+        # Selettore periodo
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            period = st.selectbox("📅 Período", ["Últimos 7 días", "Últimos 30 días", "Últimos 90 días", "Este mes", "Mes pasado"])
         
-        if sales_data:
-            df_sales = pd.DataFrame(sales_data)
-        else:
-            # Crea DataFrame vuoto per evitare errori
-            df_sales = pd.DataFrame(columns=['fecha', 'ventas', 'clientes', 'productos_vendidos'])
+        with col2:
+            st.info(f"📊 Analytics para el **{period}**")
         
-        # Métricas de ventas
-        if not df_sales.empty:
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                total_sales = df_sales['ventas'].sum()
-                st.metric("Ventas Totales (30 días)", f"${total_sales:,.2f}")
-            with col2:
-                avg_daily = df_sales['ventas'].mean()
-                st.metric("Promedio Diario", f"${avg_daily:,.2f}")
-            with col3:
-                best_day = df_sales.loc[df_sales['ventas'].idxmax()]
-                st.metric("Mejor Día", f"${best_day['ventas']:,.2f}")
-            with col4:
-                total_customers = df_sales['clientes'].sum()
-                st.metric("Total Clientes", f"{total_customers:,}")
-        else:
-            st.info("📊 Nessun dato di vendita disponibile. Inserisci dati reali per vedere le metriche.")
-        
-        # Gráfico de ventas
-        if not df_sales.empty:
-            fig_line = px.line(
-                df_sales,
-                x='fecha',
-                y='ventas',
-                title="Ventas Diarias (Últimos 30 días)")
-            fig_line.update_layout(xaxis=dict(tickangle=-45))
-            st.plotly_chart(fig_line, width='stretch')
-        else:
-            st.info("📊 Nessun dato disponibile per il grafico delle vendite.")
+        # Ottieni dati vendite dal database
+        try:
+            # Usa i dati delle entrate come proxy per le vendite
+            if hasattr(db, 'get_monthly_transactions'):
+                current_date = datetime.now().date()
+                monthly_data = db.get_monthly_transactions(current_date.year, current_date.month)
+                
+                # Filtra le entrate (vendite)
+                sales_transactions = monthly_data.get('income', [])
+                
+                if sales_transactions:
+                    # Crea DataFrame per analytics
+                    sales_data = []
+                    for transaction in sales_transactions:
+                        sales_data.append({
+                            'fecha': transaction.get('date', ''),
+                            'ventas': float(transaction.get('amount', 0)),
+                            'categoria': transaction.get('category', 'N/A'),
+                            'descripcion': transaction.get('description', 'N/A'),
+                            'metodo_pago': transaction.get('payment_method', 'N/A')
+                        })
+                    
+                    df_sales = pd.DataFrame(sales_data)
+                    df_sales['fecha'] = pd.to_datetime(df_sales['fecha'])
+                    
+                    # Metriche vendite
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        total_sales = df_sales['ventas'].sum()
+                        st.metric("💰 Ventas Totales", f"${total_sales:,.2f}")
+                    
+                    with col2:
+                        avg_daily = df_sales['ventas'].mean()
+                        st.metric("📊 Promedio Diario", f"${avg_daily:,.2f}")
+                    
+                    with col3:
+                        best_day = df_sales.loc[df_sales['ventas'].idxmax()]
+                        st.metric("🏆 Mejor Día", f"${best_day['ventas']:,.2f}")
+                        st.caption(f"{best_day['fecha'].strftime('%d/%m')}")
+                    
+                    with col4:
+                        total_transactions = len(df_sales)
+                        st.metric("📋 Transacciones", f"{total_transactions}")
+                    
+                    # Grafici vendite
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Grafico vendite per categoria
+                        category_sales = df_sales.groupby('categoria')['ventas'].sum().reset_index()
+                        fig_pie = px.pie(
+                            category_sales,
+                            values='ventas',
+                            names='categoria',
+                            title="Ventas por Categoría"
+                        )
+                        st.plotly_chart(fig_pie, width='stretch')
+                    
+                    with col2:
+                        # Grafico vendite per metodo di pagamento
+                        payment_sales = df_sales.groupby('metodo_pago')['ventas'].sum().reset_index()
+                        fig_bar = px.bar(
+                            payment_sales,
+                            x='metodo_pago',
+                            y='ventas',
+                            title="Ventas por Método de Pago",
+                            color='metodo_pago'
+                        )
+                        st.plotly_chart(fig_bar, width='stretch')
+                    
+                    # Tabella dettagliata vendite
+                    st.subheader("📋 Detalle de Ventas")
+                    df_display = df_sales.copy()
+                    df_display['fecha'] = df_display['fecha'].dt.strftime('%d/%m/%Y')
+                    df_display['ventas'] = df_display['ventas'].apply(lambda x: f"${x:,.2f}")
+                    st.dataframe(df_display[['fecha', 'ventas', 'categoria', 'descripcion', 'metodo_pago']], 
+                               width='stretch', hide_index=True)
+                else:
+                    st.info("📊 Nessun dato di vendita disponibile per questo mese.")
+                    st.write("💡 Inserisci entrate giornaliere per vedere le analytics delle vendite.")
+            else:
+                st.info("📊 Sistema di analytics in caricamento...")
+        except Exception as e:
+            st.error(f"❌ Errore caricando analytics vendite: {e}")
     
     with tab2:
-        st.subheader("💰 Reportes Financieros")
-        st.info("🚧 Reportes financieros en desarrollo")
+        st.subheader("💰 Analytics Financieras")
+        
+        # Selettore periodo finanziario
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            financial_period = st.selectbox("📅 Período Financiero", ["Este mes", "Mes pasado", "Últimos 3 meses", "Este año"])
+        
+        with col2:
+            st.info(f"💰 Analytics financieras para **{financial_period}**")
+        
+        try:
+            # Ottieni dati finanziari
+            current_date = datetime.now().date()
+            monthly_data = db.get_monthly_transactions(current_date.year, current_date.month)
+            
+            income_data = monthly_data.get('income', [])
+            expense_data = monthly_data.get('expenses', [])
+            
+            if income_data or expense_data:
+                # Calcola metriche finanziarie
+                total_income = sum([float(t.get('amount', 0)) for t in income_data])
+                total_expenses = sum([float(t.get('amount', 0)) for t in expense_data])
+                net_profit = total_income - total_expenses
+                profit_margin = (net_profit / total_income * 100) if total_income > 0 else 0
+                
+                # Metriche finanziarie
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("💰 Ingresos Totales", f"${total_income:,.2f}")
+                
+                with col2:
+                    st.metric("💸 Gastos Totales", f"${total_expenses:,.2f}")
+                
+                with col3:
+                    profit_color = "normal" if net_profit >= 0 else "inverse"
+                    st.metric("📈 Beneficio Neto", f"${net_profit:,.2f}", 
+                            delta=f"{profit_margin:.1f}%", delta_color=profit_color)
+                
+                with col4:
+                    total_transactions = len(income_data) + len(expense_data)
+                    st.metric("📊 Total Transacciones", f"{total_transactions}")
+                
+                # Grafici finanziari
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Grafico entrate vs uscite
+                    fig_financial = go.Figure()
+                    fig_financial.add_trace(go.Bar(
+                        x=['Ingresos', 'Gastos'],
+                        y=[total_income, total_expenses],
+                        marker_color=['#00D084', '#FF6B6B'],
+                        text=[f"${total_income:,.2f}", f"${total_expenses:,.2f}"],
+                        textposition='auto'
+                    ))
+                    fig_financial.update_layout(
+                        title="Ingresos vs Gastos",
+                        yaxis_title="Monto ($)",
+                        height=400
+                    )
+                    st.plotly_chart(fig_financial, width='stretch')
+                
+                with col2:
+                    # Grafico categorie di spesa
+                    if expense_data:
+                        expense_categories = {}
+                        for expense in expense_data:
+                            cat = expense.get('category', 'N/A')
+                            amount = float(expense.get('amount', 0))
+                            expense_categories[cat] = expense_categories.get(cat, 0) + amount
+                        
+                        fig_expenses = px.pie(
+                            values=list(expense_categories.values()),
+                            names=list(expense_categories.keys()),
+                            title="Gastos por Categoría"
+                        )
+                        st.plotly_chart(fig_expenses, width='stretch')
+                    else:
+                        st.info("📊 Nessun dato di spesa disponibile")
+                
+                # Analisi trend
+                st.subheader("📈 Análisis de Tendencia")
+                
+                if len(income_data) > 1 or len(expense_data) > 1:
+                    # Crea grafico trend giornaliero
+                    daily_data = {}
+                    
+                    for income in income_data:
+                        date = income.get('date', '')[:10]
+                        amount = float(income.get('amount', 0))
+                        if date not in daily_data:
+                            daily_data[date] = {'income': 0, 'expenses': 0}
+                        daily_data[date]['income'] += amount
+                    
+                    for expense in expense_data:
+                        date = expense.get('date', '')[:10]
+                        amount = float(expense.get('amount', 0))
+                        if date not in daily_data:
+                            daily_data[date] = {'income': 0, 'expenses': 0}
+                        daily_data[date]['expenses'] += amount
+                    
+                    # Crea DataFrame per trend
+                    trend_data = []
+                    for date, data in sorted(daily_data.items()):
+                        trend_data.append({
+                            'fecha': date,
+                            'ingresos': data['income'],
+                            'gastos': data['expenses'],
+                            'beneficio': data['income'] - data['expenses']
+                        })
+                    
+                    df_trend = pd.DataFrame(trend_data)
+                    df_trend['fecha'] = pd.to_datetime(df_trend['fecha'])
+                    
+                    fig_trend = px.line(
+                        df_trend,
+                        x='fecha',
+                        y=['ingresos', 'gastos', 'beneficio'],
+                        title="Tendencia Financiera Diaria"
+                    )
+                    st.plotly_chart(fig_trend, width='stretch')
+                else:
+                    st.info("📊 Dati insufficienti per l'analisi trend. Inserisci più transazioni.")
+            else:
+                st.info("📊 Nessun dato finanziario disponibile per questo periodo.")
+                st.write("💡 Inserisci entrate e uscite giornaliere per vedere le analytics finanziarie.")
+        except Exception as e:
+            st.error(f"❌ Errore caricando analytics finanziarie: {e}")
     
     with tab3:
-        st.subheader("📦 Reportes de Inventario")
-        st.info("🚧 Reportes de inventario en desarrollo")
+        st.subheader("📦 Analytics de Inventario")
+        
+        try:
+            # Ottieni dati prodotti
+            products = db.get_all_products()
+            
+            if products:
+                # Metriche inventario
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    total_products = len(products)
+                    st.metric("📦 Total Productos", f"{total_products}")
+                
+                with col2:
+                    low_stock = len([p for p in products if float(p.get('stock', 0)) < 10])
+                    st.metric("⚠️ Stock Bajo", f"{low_stock}")
+                
+                with col3:
+                    total_value = sum([float(p.get('price', 0)) * float(p.get('stock', 0)) for p in products])
+                    st.metric("💰 Valor Total", f"${total_value:,.2f}")
+                
+                with col4:
+                    categories = len(set([p.get('category', 'N/A') for p in products]))
+                    st.metric("🏷️ Categorías", f"{categories}")
+                
+                # Grafici inventario
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Grafico prodotti per categoria
+                    category_counts = {}
+                    for product in products:
+                        cat = product.get('category', 'N/A')
+                        category_counts[cat] = category_counts.get(cat, 0) + 1
+                    
+                    fig_categories = px.pie(
+                        values=list(category_counts.values()),
+                        names=list(category_counts.keys()),
+                        title="Productos por Categoría"
+                    )
+                    st.plotly_chart(fig_categories, width='stretch')
+                
+                with col2:
+                    # Grafico stock per prodotto
+                    product_stock = []
+                    for product in products[:10]:  # Top 10 prodotti
+                        product_stock.append({
+                            'producto': product.get('name', 'N/A')[:20],
+                            'stock': float(product.get('stock', 0))
+                        })
+                    
+                    if product_stock:
+                        df_stock = pd.DataFrame(product_stock)
+                        fig_stock = px.bar(
+                            df_stock,
+                            x='producto',
+                            y='stock',
+                            title="Stock por Producto (Top 10)"
+                        )
+                        fig_stock.update_xaxis(tickangle=-45)
+                        st.plotly_chart(fig_stock, width='stretch')
+                
+                # Tabella prodotti con stock basso
+                st.subheader("⚠️ Productos con Stock Bajo")
+                low_stock_products = [p for p in products if float(p.get('stock', 0)) < 10]
+                
+                if low_stock_products:
+                    low_stock_data = []
+                    for product in low_stock_products:
+                        low_stock_data.append({
+                            'Producto': product.get('name', 'N/A'),
+                            'Categoría': product.get('category', 'N/A'),
+                            'Stock Actual': int(float(product.get('stock', 0))),
+                            'Precio': f"${float(product.get('price', 0)):,.2f}",
+                            'Proveedor': product.get('supplier', 'N/A')
+                        })
+                    
+                    df_low_stock = pd.DataFrame(low_stock_data)
+                    st.dataframe(df_low_stock, width='stretch', hide_index=True)
+                else:
+                    st.success("✅ Todos los productos tienen stock suficiente")
+            else:
+                st.info("📊 Nessun prodotto nel database.")
+                st.write("💡 Aggiungi prodotti all'inventario per vedere le analytics.")
+        except Exception as e:
+            st.error(f"❌ Errore caricando analytics inventario: {e}")
     
     with tab4:
-        st.subheader("👥 Reportes de Clientes")
-        st.info("🚧 Reportes de clientes en desarrollo")
+        st.subheader("👥 Analytics de Clientes")
+        
+        try:
+            # Ottieni dati clienti
+            customers = db.get_all_customers()
+            
+            if customers:
+                # Metriche clienti
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    total_customers = len(customers)
+                    st.metric("👥 Total Clientes", f"{total_customers}")
+                
+                with col2:
+                    active_customers = len([c for c in customers if c.get('is_active', True)])
+                    st.metric("✅ Clientes Activos", f"{active_customers}")
+                
+                with col3:
+                    # Calcola clienti per città
+                    cities = {}
+                    for customer in customers:
+                        city = customer.get('city', 'N/A')
+                        cities[city] = cities.get(city, 0) + 1
+                    top_city = max(cities.items(), key=lambda x: x[1]) if cities else ('N/A', 0)
+                    st.metric("🏙️ Ciudad Principal", f"{top_city[0]}")
+                    st.caption(f"{top_city[1]} clientes")
+                
+                with col4:
+                    # Calcola clienti per tipo
+                    customer_types = {}
+                    for customer in customers:
+                        ctype = customer.get('customer_type', 'N/A')
+                        customer_types[ctype] = customer_types.get(ctype, 0) + 1
+                    st.metric("📊 Tipos Cliente", f"{len(customer_types)}")
+                
+                # Grafici clienti
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Grafico clienti per città
+                    if len(cities) > 1:
+                        fig_cities = px.bar(
+                            x=list(cities.keys()),
+                            y=list(cities.values()),
+                            title="Clientes por Ciudad",
+                            labels={'x': 'Ciudad', 'y': 'Número de Clientes'}
+                        )
+                        fig_cities.update_xaxis(tickangle=-45)
+                        st.plotly_chart(fig_cities, width='stretch')
+                    else:
+                        st.info("📊 Dati insufficienti per grafico città")
+                
+                with col2:
+                    # Grafico clienti per tipo
+                    if len(customer_types) > 1:
+                        fig_types = px.pie(
+                            values=list(customer_types.values()),
+                            names=list(customer_types.keys()),
+                            title="Clientes por Tipo"
+                        )
+                        st.plotly_chart(fig_types, width='stretch')
+                    else:
+                        st.info("📊 Dati insufficienti per grafico tipi")
+                
+                # Tabella clienti attivi
+                st.subheader("👥 Lista de Clientes Activos")
+                active_customers_data = []
+                for customer in customers[:20]:  # Mostra primi 20
+                    if customer.get('is_active', True):
+                        active_customers_data.append({
+                            'Cliente': customer.get('name', 'N/A'),
+                            'Email': customer.get('email', 'N/A'),
+                            'Teléfono': customer.get('phone', 'N/A'),
+                            'Ciudad': customer.get('city', 'N/A'),
+                            'Tipo': customer.get('customer_type', 'N/A')
+                        })
+                
+                if active_customers_data:
+                    df_customers = pd.DataFrame(active_customers_data)
+                    st.dataframe(df_customers, width='stretch', hide_index=True)
+                else:
+                    st.info("📊 Nessun cliente attivo trovato")
+            else:
+                st.info("📊 Nessun cliente nel database.")
+                st.write("💡 Aggiungi clienti per vedere le analytics.")
+        except Exception as e:
+            st.error(f"❌ Errore caricando analytics clienti: {e}")
 
 def render_balance():
     """Renderiza la sección balance y contabilidad giornaliera"""
