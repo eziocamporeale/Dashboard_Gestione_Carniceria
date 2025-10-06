@@ -1,0 +1,19 @@
+[server]
+# Disabilita file watching per evitare "inotify instance limit reached"
+fileWatcherType = "none"
+
+# Ottimizzazioni per Streamlit Cloud
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+
+[theme]
+# Tema personalizzato
+primaryColor = "#FF6B35"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+
+[logger]
+# Configurazione logging
+level = "info"
