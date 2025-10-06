@@ -1051,6 +1051,67 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo transazioni mensili: {e}")
             return {'income': [], 'expenses': []}
 
+    def get_weekly_summary(self, week_start_date: str) -> List[Dict[str, Any]]:
+        """Ottiene il riepilogo settimanale per una settimana specifica"""
+        try:
+            from datetime import datetime, timedelta
+            
+            # Converte la data di inizio settimana
+            start_date = datetime.fromisoformat(week_start_date).date()
+            end_date = start_date + timedelta(days=6)
+            
+            weekly_data = []
+            
+            # Itera attraverso ogni giorno della settimana
+            for i in range(7):
+                current_date = start_date + timedelta(days=i)
+                date_str = current_date.isoformat()
+                
+                # Ottieni le transazioni del giorno
+                if hasattr(self, 'get_monthly_transactions'):
+                    monthly_data = self.get_monthly_transactions(current_date.year, current_date.month)
+                    
+                    # Filtra per il giorno specifico
+                    day_income = [t for t in monthly_data.get('income', []) if t.get('date', '').startswith(date_str)]
+                    day_expenses = [t for t in monthly_data.get('expenses', []) if t.get('date', '').startswith(date_str)]
+                    
+                    # Calcola totali del giorno
+                    total_income = sum([float(t.get('amount', 0)) for t in day_income])
+                    total_expenses = sum([float(t.get('amount', 0)) for t in day_expenses])
+                    net_profit = total_income - total_expenses
+                    transactions_count = len(day_income) + len(day_expenses)
+                    
+                    # Calcola margine di profitto
+                    profit_margin = (net_profit / total_income * 100) if total_income > 0 else 0
+                    
+                    daily_summary = {
+                        'date': date_str,
+                        'total_income': total_income,
+                        'total_expenses': total_expenses,
+                        'net_profit': net_profit,
+                        'profit_margin': profit_margin,
+                        'transactions_count': transactions_count
+                    }
+                    
+                    weekly_data.append(daily_summary)
+                else:
+                    # Fallback se il metodo non esiste
+                    daily_summary = {
+                        'date': date_str,
+                        'total_income': 0,
+                        'total_expenses': 0,
+                        'net_profit': 0,
+                        'profit_margin': 0,
+                        'transactions_count': 0
+                    }
+                    weekly_data.append(daily_summary)
+            
+            return weekly_data
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo riepilogo settimanale: {e}")
+            return []
+
     def cleanup(self):
         """Pulizia risorse e chiusura connessioni"""
         try:
