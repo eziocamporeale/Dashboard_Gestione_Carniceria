@@ -419,3 +419,4 @@ def render_suppliers_page():
     ui = SuppliersUI()
     ui.render_suppliers_page()
 
+

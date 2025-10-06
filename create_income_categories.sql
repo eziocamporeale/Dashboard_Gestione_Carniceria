@@ -11,3 +11,4 @@ INSERT INTO accounting_categories (name, type, description, is_active, created_a
 -- Verifica le categorie inserite
 SELECT * FROM accounting_categories WHERE type = 'income' AND is_active = true;
 
+

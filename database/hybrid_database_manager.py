@@ -1006,6 +1006,51 @@ class HybridDatabaseManager:
             logger.error(f"❌ Errore ottenendo impiegato: {e}")
             return {}
 
+    def get_monthly_transactions(self, year: int, month: int) -> Dict[str, List[Dict[str, Any]]]:
+        """Ottiene tutte le transazioni di un mese specifico"""
+        try:
+            # Formatta le date per il mese
+            start_date = f"{year}-{month:02d}-01"
+            if month == 12:
+                end_date = f"{year + 1}-01-01"
+            else:
+                end_date = f"{year}-{month + 1:02d}-01"
+            
+            monthly_income = []
+            monthly_expenses = []
+            
+            if self.use_supabase and self.supabase_manager and self.supabase_manager.is_connected():
+                # Query Supabase per entrate del mese
+                try:
+                    income_response = self.supabase_manager.client.table('daily_income').select('*').gte('date', start_date).lt('date', end_date).execute()
+                    monthly_income = income_response.data or []
+                except Exception as e:
+                    logger.error(f"❌ Errore ottenendo entrate mensili: {e}")
+                
+                # Query Supabase per uscite del mese
+                try:
+                    expense_response = self.supabase_manager.client.table('daily_expenses').select('*').gte('date', start_date).lt('date', end_date).execute()
+                    monthly_expenses = expense_response.data or []
+                except Exception as e:
+                    logger.error(f"❌ Errore ottenendo uscite mensili: {e}")
+            else:
+                # Fallback SQLite
+                if hasattr(self.sqlite_manager, 'get_monthly_transactions'):
+                    result = self.sqlite_manager.get_monthly_transactions(year, month)
+                    monthly_income = result.get('income', [])
+                    monthly_expenses = result.get('expenses', [])
+                else:
+                    logger.error("❌ Metodo get_monthly_transactions non disponibile per SQLite")
+            
+            return {
+                'income': monthly_income,
+                'expenses': monthly_expenses
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo transazioni mensili: {e}")
+            return {'income': [], 'expenses': []}
+
     def cleanup(self):
         """Pulizia risorse e chiusura connessioni"""
         try:

@@ -3419,6 +3419,150 @@ def render_balance():
                 for category in expense_categories[:5]:
                     st.write(f"• {category['icon']} {category['name']}")
             
+            # Sezione dettaglio transazioni del periodo
+            st.subheader("📋 Riepilogo Transazioni del Periodo")
+            
+            # Ottieni tutte le transazioni del mese
+            try:
+                # Usa il database manager per ottenere le transazioni mensili
+                if hasattr(db, 'get_monthly_transactions'):
+                    monthly_data_transactions = db.get_monthly_transactions(selected_year, selected_month)
+                    monthly_income = monthly_data_transactions.get('income', [])
+                    monthly_expenses = monthly_data_transactions.get('expenses', [])
+                else:
+                    # Fallback: ottieni tutte le transazioni e filtra manualmente
+                    all_income = db.select('daily_income') if hasattr(db, 'select') else []
+                    all_expenses = db.select('daily_expenses') if hasattr(db, 'select') else []
+                    
+                    # Filtra per il mese selezionato
+                    monthly_income = []
+                    monthly_expenses = []
+                    
+                    for income in all_income:
+                        income_date = income.get('date', '')
+                        if income_date.startswith(f"{selected_year}-{selected_month:02d}-"):
+                            monthly_income.append(income)
+                    
+                    for expense in all_expenses:
+                        expense_date = expense.get('date', '')
+                        if expense_date.startswith(f"{selected_year}-{selected_month:02d}-"):
+                            monthly_expenses.append(expense)
+            except Exception as e:
+                logger.error(f"❌ Errore ottenendo transazioni mensili: {e}")
+                monthly_income = []
+                monthly_expenses = []
+            
+            if monthly_income or monthly_expenses:
+                # Tab per entrate e uscite
+                trans_tab1, trans_tab2 = st.tabs(["💰 Entrate del Periodo", "💸 Uscite del Periodo"])
+                
+                with trans_tab1:
+                    if monthly_income:
+                        st.write(f"**📊 Totale Entrate: {len(monthly_income)} transazioni**")
+                        
+                        # Tabella entrate
+                        income_data = []
+                        for income in monthly_income:
+                            income_data.append({
+                                'Data': income.get('date', 'N/A')[:10],
+                                'Importo': f"${float(income.get('amount', 0)):,.2f}",
+                                'Categoria': income.get('category', 'N/A'),
+                                'Descrizione': income.get('description', 'N/A'),
+                                'Metodo Pago': income.get('payment_method', 'N/A')
+                            })
+                        
+                        df_income = pd.DataFrame(income_data)
+                        st.dataframe(df_income, width='stretch', hide_index=True)
+                        
+                        # Riepilogo per categoria
+                        st.subheader("📊 Riepilogo per Categoria - Entrate")
+                        category_summary = {}
+                        for income in monthly_income:
+                            cat = income.get('category', 'N/A')
+                            amount = float(income.get('amount', 0))
+                            if cat not in category_summary:
+                                category_summary[cat] = {'total': 0, 'count': 0}
+                            category_summary[cat]['total'] += amount
+                            category_summary[cat]['count'] += 1
+                        
+                        for cat, data in sorted(category_summary.items(), key=lambda x: x[1]['total'], reverse=True):
+                            col1, col2, col3 = st.columns([2, 1, 1])
+                            with col1:
+                                st.write(f"**{cat}**")
+                            with col2:
+                                st.write(f"${data['total']:,.2f}")
+                            with col3:
+                                st.write(f"{data['count']} transazioni")
+                    else:
+                        st.info("📊 Nessuna entrata registrata per questo periodo")
+                
+                with trans_tab2:
+                    if monthly_expenses:
+                        st.write(f"**📊 Totale Uscite: {len(monthly_expenses)} transazioni**")
+                        
+                        # Tabella uscite
+                        expense_data = []
+                        for expense in monthly_expenses:
+                            expense_data.append({
+                                'Data': expense.get('date', 'N/A')[:10],
+                                'Importo': f"${float(expense.get('amount', 0)):,.2f}",
+                                'Categoria': expense.get('category', 'N/A'),
+                                'Descrizione': expense.get('description', 'N/A'),
+                                'Fornitore': expense.get('supplier', 'N/A'),
+                                'Metodo Pago': expense.get('payment_method', 'N/A')
+                            })
+                        
+                        df_expense = pd.DataFrame(expense_data)
+                        st.dataframe(df_expense, width='stretch', hide_index=True)
+                        
+                        # Riepilogo per categoria
+                        st.subheader("📊 Riepilogo per Categoria - Uscite")
+                        category_summary = {}
+                        for expense in monthly_expenses:
+                            cat = expense.get('category', 'N/A')
+                            amount = float(expense.get('amount', 0))
+                            if cat not in category_summary:
+                                category_summary[cat] = {'total': 0, 'count': 0}
+                            category_summary[cat]['total'] += amount
+                            category_summary[cat]['count'] += 1
+                        
+                        for cat, data in sorted(category_summary.items(), key=lambda x: x[1]['total'], reverse=True):
+                            col1, col2, col3 = st.columns([2, 1, 1])
+                            with col1:
+                                st.write(f"**{cat}**")
+                            with col2:
+                                st.write(f"${data['total']:,.2f}")
+                            with col3:
+                                st.write(f"{data['count']} transazioni")
+                    else:
+                        st.info("📊 Nessuna uscita registrata per questo periodo")
+                
+                # Riepilogo generale
+                st.subheader("📈 Riepilogo Generale del Periodo")
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    total_income_count = len(monthly_income)
+                    st.metric("💰 Transazioni Entrate", total_income_count)
+                
+                with col2:
+                    total_expense_count = len(monthly_expenses)
+                    st.metric("💸 Transazioni Uscite", total_expense_count)
+                
+                with col3:
+                    total_transactions = total_income_count + total_expense_count
+                    st.metric("📊 Totale Transazioni", total_transactions)
+                
+                with col4:
+                    if total_transactions > 0:
+                        avg_transaction = (monthly_data['total_income'] + monthly_data['total_expenses']) / total_transactions
+                        st.metric("💵 Transazione Media", f"${avg_transaction:,.2f}")
+                    else:
+                        st.metric("💵 Transazione Media", "$0.00")
+            else:
+                st.info("📊 Nessuna transazione registrata per questo periodo")
+                st.write("💡 Inserisci entrate e uscite giornaliere per vedere il dettaglio delle transazioni")
+            
             # Confronto con mese precedente
             st.subheader("📈 Confronto Mese Precedente")
             
