@@ -1154,6 +1154,11 @@ class HybridDatabaseManager:
                     monthly_data = self.get_monthly_transactions(year, month)
                     annual_data['income'].extend(monthly_data.get('income', []))
                     annual_data['expenses'].extend(monthly_data.get('expenses', []))
+                    
+                    # Piccolo delay per evitare sovraccarico Supabase
+                    import time
+                    time.sleep(0.1)
+                    
                 except Exception as e:
                     logger.error(f"❌ Errore ottenendo dati per {month}/{year}: {e}")
                     continue

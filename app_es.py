@@ -4068,7 +4068,7 @@ def render_balance():
                         title=f"Trend Financiero Anual {selected_year}",
                         labels={'value': 'Monto ($)', 'month_name': 'Mes'}
                     )
-                    fig_trend.update_xaxis(tickangle=-45)
+                    fig_trend.update_layout(xaxis=dict(tickangle=-45))
                     st.plotly_chart(fig_trend, width='stretch')
                 
                 with col2:
@@ -4081,7 +4081,7 @@ def render_balance():
                         barmode='group',
                         labels={'value': 'Monto ($)', 'month_name': 'Mes'}
                     )
-                    fig_bars.update_xaxis(tickangle=-45)
+                    fig_bars.update_layout(xaxis=dict(tickangle=-45))
                     st.plotly_chart(fig_bars, width='stretch')
                 
                 # Tabella dettagliata mensile
