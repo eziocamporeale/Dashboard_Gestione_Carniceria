@@ -3248,7 +3248,7 @@ def render_balance():
     db = get_hybrid_manager()
     
     # Tabs para diferentes funcionalidades
-    tab1, tab2, tab3, tab4 = st.tabs(["📝 Entrada Diaria", "📊 Panel Diario", "📈 Reporte Semanal", "📋 Reporte Mensual"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📝 Entrada Diaria", "📊 Panel Diario", "📈 Reporte Semanal", "📋 Reporte Mensual", "📅 Reporte Anual"])
     
     with tab1:
         st.subheader("📝 Entrada Diaria")
@@ -3974,6 +3974,183 @@ def render_balance():
                     st.info("🚧 Funzionalità in sviluppo")
                 else:
                     st.info("📧 Email non inviata")
+
+    with tab5:
+        st.subheader("📅 Reporte Anual")
+        
+        # Selettore anno
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            current_year = datetime.now().year
+            selected_year = st.selectbox("📅 Año", 
+                                       options=range(current_year-2, current_year+2), 
+                                       index=2)
+        
+        with col2:
+            st.info(f"📊 Reporte anual para el **{selected_year}**")
+        
+        # Ottieni dati annuali
+        try:
+            # Raccoglie dati di tutti i mesi dell'anno
+            annual_data = []
+            monthly_totals = {'income': [], 'expenses': [], 'profit': []}
+            
+            for month in range(1, 13):
+                try:
+                    monthly_data = db.get_monthly_transactions(selected_year, month)
+                    
+                    monthly_income = monthly_data.get('income', [])
+                    monthly_expenses = monthly_data.get('expenses', [])
+                    
+                    # Calcola totali mensili
+                    total_income = sum([float(t.get('amount', 0)) for t in monthly_income])
+                    total_expenses = sum([float(t.get('amount', 0)) for t in monthly_expenses])
+                    total_profit = total_income - total_expenses
+                    
+                    monthly_totals['income'].append(total_income)
+                    monthly_totals['expenses'].append(total_expenses)
+                    monthly_totals['profit'].append(total_profit)
+                    
+                    # Aggiungi dati mensili
+                    annual_data.append({
+                        'month': month,
+                        'month_name': datetime(selected_year, month, 1).strftime('%B'),
+                        'income': total_income,
+                        'expenses': total_expenses,
+                        'profit': total_profit,
+                        'transactions': len(monthly_income) + len(monthly_expenses)
+                    })
+                    
+                except Exception as e:
+                    logger.error(f"❌ Errore ottenendo dati per {month}/{selected_year}: {e}")
+                    monthly_totals['income'].append(0)
+                    monthly_totals['expenses'].append(0)
+                    monthly_totals['profit'].append(0)
+            
+            # Calcola totali annuali
+            annual_income = sum(monthly_totals['income'])
+            annual_expenses = sum(monthly_totals['expenses'])
+            annual_profit = annual_income - annual_expenses
+            annual_margin = (annual_profit / annual_income * 100) if annual_income > 0 else 0
+            
+            # Metriche annuali
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("💰 Ingresos Anuales", f"${annual_income:,.2f}")
+            
+            with col2:
+                st.metric("💸 Gastos Anuales", f"${annual_expenses:,.2f}")
+            
+            with col3:
+                profit_color = "normal" if annual_profit >= 0 else "inverse"
+                st.metric("📈 Beneficio Anual", f"${annual_profit:,.2f}", 
+                        delta=f"{annual_margin:.1f}%", delta_color=profit_color)
+            
+            with col4:
+                best_month = max(annual_data, key=lambda x: x['profit'])
+                st.metric("🏆 Mejor Mes", f"${best_month['profit']:,.2f}")
+                st.caption(f"{best_month['month_name']}")
+            
+            # Grafici annuali
+            if annual_income > 0 or annual_expenses > 0:
+                # Crea DataFrame per grafici
+                df_annual = pd.DataFrame(annual_data)
+                
+                # Grafico trend mensile
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig_trend = px.line(
+                        df_annual,
+                        x='month_name',
+                        y=['income', 'expenses', 'profit'],
+                        title=f"Trend Financiero Anual {selected_year}",
+                        labels={'value': 'Monto ($)', 'month_name': 'Mes'}
+                    )
+                    fig_trend.update_xaxis(tickangle=-45)
+                    st.plotly_chart(fig_trend, width='stretch')
+                
+                with col2:
+                    # Grafico a barre mensili
+                    fig_bars = px.bar(
+                        df_annual,
+                        x='month_name',
+                        y=['income', 'expenses'],
+                        title=f"Ingresos vs Gastos por Mes {selected_year}",
+                        barmode='group',
+                        labels={'value': 'Monto ($)', 'month_name': 'Mes'}
+                    )
+                    fig_bars.update_xaxis(tickangle=-45)
+                    st.plotly_chart(fig_bars, width='stretch')
+                
+                # Tabella dettagliata mensile
+                st.subheader("📋 Resumen Mensual")
+                
+                # Prepara dati per tabella
+                table_data = []
+                for data in annual_data:
+                    table_data.append({
+                        'Mes': data['month_name'],
+                        'Ingresos': f"${data['income']:,.2f}",
+                        'Gastos': f"${data['expenses']:,.2f}",
+                        'Beneficio': f"${data['profit']:,.2f}",
+                        'Transacciones': data['transactions']
+                    })
+                
+                df_table = pd.DataFrame(table_data)
+                st.dataframe(df_table, width='stretch', hide_index=True)
+                
+                # Analisi performance
+                st.subheader("📊 Análisis de Performance")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Mesi più redditizi
+                    profitable_months = [d for d in annual_data if d['profit'] > 0]
+                    if profitable_months:
+                        st.write("**🏆 Meses Más Rentables:**")
+                        for month_data in sorted(profitable_months, key=lambda x: x['profit'], reverse=True)[:3]:
+                            margin = (month_data['profit'] / month_data['income'] * 100) if month_data['income'] > 0 else 0
+                            st.write(f"• {month_data['month_name']}: ${month_data['profit']:,.2f} ({margin:.1f}% margen)")
+                    else:
+                        st.write("**⚠️ Ningún mes fue rentable**")
+                
+                with col2:
+                    # Mesi con più transazioni
+                    busy_months = sorted(annual_data, key=lambda x: x['transactions'], reverse=True)[:3]
+                    st.write("**📊 Meses con Más Actividad:**")
+                    for month_data in busy_months:
+                        st.write(f"• {month_data['month_name']}: {month_data['transactions']} transacciones")
+                
+                # Previsione annuale
+                if len([d for d in annual_data if d['income'] > 0]) >= 3:
+                    st.subheader("🔮 Proyección Anual")
+                    
+                    # Calcola media mensile
+                    avg_monthly_income = annual_income / 12
+                    avg_monthly_expenses = annual_expenses / 12
+                    avg_monthly_profit = avg_monthly_income - avg_monthly_expenses
+                    
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        st.metric("📈 Ingreso Mensual Promedio", f"${avg_monthly_income:,.2f}")
+                    
+                    with col2:
+                        st.metric("💸 Gasto Mensual Promedio", f"${avg_monthly_expenses:,.2f}")
+                    
+                    with col3:
+                        st.metric("📊 Beneficio Mensual Promedio", f"${avg_monthly_profit:,.2f}")
+                
+            else:
+                st.info(f"📊 No hay datos financieros para el año {selected_year}")
+                st.write("💡 Inserisci entrate e uscite per vedere il reporte annuale")
+                
+        except Exception as e:
+            st.error(f"❌ Errore caricando dati annuali: {e}")
+            logger.error(f"❌ Errore reporte anual: {e}")
 
 def render_configuracion():
     """Renderiza la sección configuración"""

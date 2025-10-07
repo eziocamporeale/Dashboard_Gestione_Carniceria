@@ -1143,6 +1143,28 @@ class HybridDatabaseManager:
             
         return info
 
+    def get_annual_transactions(self, year: int) -> Dict[str, List[Dict[str, Any]]]:
+        """Ottiene tutte le transazioni di un anno specifico"""
+        try:
+            annual_data = {'income': [], 'expenses': []}
+            
+            # Raccoglie dati di tutti i mesi dell'anno
+            for month in range(1, 13):
+                try:
+                    monthly_data = self.get_monthly_transactions(year, month)
+                    annual_data['income'].extend(monthly_data.get('income', []))
+                    annual_data['expenses'].extend(monthly_data.get('expenses', []))
+                except Exception as e:
+                    logger.error(f"❌ Errore ottenendo dati per {month}/{year}: {e}")
+                    continue
+            
+            logger.info(f"✅ Dati annuali ottenuti per {year}: {len(annual_data['income'])} entrate, {len(annual_data['expenses'])} uscite")
+            return annual_data
+            
+        except Exception as e:
+            logger.error(f"❌ Errore ottenendo transazioni annuali per {year}: {e}")
+            return {'income': [], 'expenses': []}
+
 # Istanza globale
 
 _hybrid_manager = None
